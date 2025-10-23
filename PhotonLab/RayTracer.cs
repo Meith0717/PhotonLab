@@ -1,0 +1,89 @@
+﻿// RayTracer.cs 
+// Copyright (c) 2023-2025 Thierry Meiers 
+// All rights reserved.
+
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using MonoKit.Camera;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+
+namespace PhotonLab
+{
+    internal class RayTracer(GraphicsDevice graphicsDevice)
+    {
+        private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
+        private Ray[] _cameraRays;
+        private Color[] _colorArray;
+
+        public VertexBuffer VertexBuffer { get; private set; } 
+
+        public void Initialize(Camera3D raytracingCam)
+        {
+            var viewport = _graphicsDevice.Viewport;
+            var viewportArea = viewport.Width * viewport.Height;
+
+            _cameraRays = new Ray[viewportArea];
+            _colorArray = new Color[viewportArea];
+
+            Parallel.For(0, viewport.Height, (y) =>
+            {
+                var dx = y * viewport.Width;
+                for (var x = 0; x < viewport.Width; x++)
+                    _cameraRays[dx + x] = GenerateRayAtZero(raytracingCam, x, y, viewport.Width, viewport.Height);
+            });
+
+            var rng = new Random();
+            var sampleCount = 500;
+            var vertices = new List<VertexPositionColor>();
+            var sample = rng.GetItems(_cameraRays, sampleCount / 2);
+            foreach (var ray in sample)
+            {
+                Vector3 start = ray.Position;
+                Vector3 end = ray.Position + ray.Direction * 5f;
+                vertices.Add(new VertexPositionColor(start, Color.Red));
+                vertices.Add(new VertexPositionColor(end, Color.Yellow));
+            }
+
+            VertexBuffer?.Dispose();
+            VertexBuffer = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColor), sampleCount, BufferUsage.WriteOnly);
+            VertexBuffer.SetData(vertices.ToArray());
+        }
+
+        public void ShadeIntersectedCameraRays((Vector3, Vector3, Vector3) face, Matrix cameraWorld)
+        {
+            for (var i = 0; i < _cameraRays.Length; i++)
+            {
+                var intersects = _cameraRays[i].IntersectsFace(face, out var _);
+                _colorArray[i] = intersects ? Color.Black : Color.White;
+            }
+        }
+
+        public void SaveImageFromColor()
+        {
+            using var screenshotTarget = new RenderTarget2D(_graphicsDevice, _graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height);
+            screenshotTarget.SetData(_colorArray);
+
+            using var fs = new FileStream("screen.png", FileMode.OpenOrCreate);
+            screenshotTarget.SaveAsPng(fs, screenshotTarget.Width, screenshotTarget.Height);
+        }
+
+        private static Ray GenerateRayAtZero(Camera3D camera3D, int pixelX, int pixelY, int screenWidth, int screenHeight)
+        {
+            float imagePlaneHeight = 2f * float.Tan(camera3D.Fov / 2f);
+            float imagePlaneWidth = imagePlaneHeight * camera3D.AspectRatio;
+
+            float u = (pixelX + .5f) / screenWidth - .5f;
+            float v = .5f - (pixelY + .5f) / screenHeight;
+
+            var px = u * imagePlaneWidth;
+            var py = v * imagePlaneHeight;
+
+            var rayDir = Vector3.Normalize(camera3D.Forward + px * camera3D.Right + py * camera3D.Up);
+
+            return new(camera3D.Position, rayDir);
+        }
+    }
+}

@@ -10,9 +10,8 @@ using MonoKit.Input;
 
 namespace PhotonLab.Input
 {
-    public class MoveByMouse(GraphicsDevice graphicsDevice) : ICamera3dBehaviour
+    public class MoveByMouse() : ICamera3dBehaviour
     {
-        private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
         private MouseState _prevMouseState;
         private float _yaw;
         private float _pitch;
@@ -24,21 +23,24 @@ namespace PhotonLab.Input
         {
             KeyboardState ks = Keyboard.GetState();
             var mouseState = Mouse.GetState();
-
             float sensitivity = 0.002f;
-            int deltaX = mouseState.X - _prevMouseState.X;
-            int deltaY = mouseState.Y - _prevMouseState.Y;
-            _yaw -= deltaX * sensitivity;
-            _pitch -= deltaY * sensitivity;
 
-            _pitch = float.Clamp(_pitch, -float.Pi / 2 + 0.01f, float.Pi / 2 - 0.01f);
+            if (inputHandler.HasAction((byte)ActionType.MoveCameraByMouse))
+            {
+                int deltaX = mouseState.X - _prevMouseState.X;
+                int deltaY = mouseState.Y - _prevMouseState.Y;
+                _yaw -= deltaX * sensitivity;
+                _pitch -= deltaY * sensitivity;
 
-            var x = float.Cos(_pitch) * float.Sin(_yaw);
-            var y = float.Sin(_pitch);
-            var z = float.Cos(_pitch) * float.Cos(_yaw);
-            owner.Forward = new(x, y, z);
-            owner.Right = Vector3.Normalize(Vector3.Cross(owner.Forward, Vector3.Up));
-            owner.Up = Vector3.Cross(owner.Right, owner.Forward);
+                _pitch = float.Clamp(_pitch, -float.Pi / 2 + 0.01f, float.Pi / 2 - 0.01f);
+
+                var x = float.Cos(_pitch) * float.Sin(_yaw);
+                var y = float.Sin(_pitch);
+                var z = float.Cos(_pitch) * float.Cos(_yaw);
+                owner.Forward = new(x, y, z);
+                owner.Right = Vector3.Normalize(Vector3.Cross(owner.Forward, Vector3.Up));
+                owner.Up = Vector3.Cross(owner.Right, owner.Forward);
+            }
 
             float movingSpeed = .01f * (float)elapsedGameTime;
             if (ks.IsKeyDown(Keys.W))
@@ -54,9 +56,7 @@ namespace PhotonLab.Input
             if (ks.IsKeyDown(Keys.PageDown))
                 owner.Position -= owner.Up * movingSpeed;
 
-            Mouse.SetPosition(_graphicsDevice.Viewport.Width / 2, _graphicsDevice.Viewport.Height / 2);
             _prevMouseState = Mouse.GetState();
         }
-
     }
 }

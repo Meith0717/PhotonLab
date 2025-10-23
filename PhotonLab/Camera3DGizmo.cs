@@ -1,4 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿// Camera3DGizmo.cs 
+// Copyright (c) 2023-2025 Thierry Meiers 
+// All rights reserved.
+
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
 using System;
@@ -35,28 +39,28 @@ namespace PhotonLab
             VertexPositionColor[] lines = new VertexPositionColor[]
             {
                 // From camera to near plane (red)
-                new(camPos, Color.White), new(nTL, Color.White),
-                new(camPos, Color.White), new(nTR, Color.White),
-                new(camPos, Color.White), new(nBL, Color.White),
-                new(camPos, Color.White), new(nBR, Color.White),
+                new(camPos, Color.DarkGray), new(nTL, Color.DarkGray),
+                new(camPos, Color.DarkGray), new(nTR, Color.DarkGray),
+                new(camPos, Color.DarkGray), new(nBL, Color.DarkGray),
+                new(camPos, Color.DarkGray), new(nBR, Color.DarkGray),
 
                 // Near plane rectangle (green)
-                new(nTL, Color.White), new(nTR, Color.White),
-                new(nTR, Color.White), new(nBR, Color.White),
-                new(nBR, Color.White), new(nBL, Color.White),
-                new(nBL, Color.White), new(nTL, Color.White),
+                new(nTL, Color.DarkGray), new(nTR, Color.DarkGray),
+                new(nTR, Color.DarkGray), new(nBR, Color.DarkGray),
+                new(nBR, Color.DarkGray), new(nBL, Color.DarkGray),
+                new(nBL, Color.DarkGray), new(nTL, Color.DarkGray),
             };
 
             BasicEffect effect = new(graphicsDevice)
             {
                 VertexColorEnabled = true,
+                World = Matrix.Identity,
                 View = mainCamera.View,
                 Projection = mainCamera.Projection,
-                World = Matrix.Identity
             };
 
             graphicsDevice.BlendState = BlendState.Opaque;
-            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
             graphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             foreach (var pass in effect.CurrentTechnique.Passes)
