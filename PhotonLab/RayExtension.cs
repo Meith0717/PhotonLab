@@ -8,7 +8,7 @@ namespace PhotonLab
 {
     internal static class RayExtension
     {
-        public static bool IntersectsFace(this Ray ray, (Vector3, Vector3, Vector3) face, out float t)
+        public static bool IntersectsFace(this Ray ray, (Vector3, Vector3, Vector3) face, out float b0, out float b1, out float b2, out float t)
         {
             var p0 = face.Item1;
             var p1 = face.Item2;
@@ -18,7 +18,7 @@ namespace PhotonLab
             var e2 = p2 - p0;
             var s = ray.Position - p0;
 
-            t = 0;
+            b0 = b1 = b2 = t = 0;
             var dCrossE2 = Vector3.Cross(ray.Direction, e2);
             var sCrossE1 = Vector3.Cross(s, e1);
 
@@ -29,10 +29,12 @@ namespace PhotonLab
                 return false;
 
             t = Vector3.Dot(sCrossE1, e2) * invDCrossE2TimesS;
-            var b1 = Vector3.Dot(dCrossE2, s) * invDCrossE2TimesS;
-            var b2 = Vector3.Dot(sCrossE1, ray.Direction) * invDCrossE2TimesS;
+            b1 = Vector3.Dot(dCrossE2, s) * invDCrossE2TimesS;
+            b2 = Vector3.Dot(sCrossE1, ray.Direction) * invDCrossE2TimesS;
+            b0 = 1 - b1 - b2; 
 
-            return t > 0 && b1 >= 0 && b2 >= 0 && (b1 + b2) <= 1;
+            var intersects = t > 0 && b1 >= 0 && b2 >= 0 && (b1 + b2) <= 1;
+            return intersects;
         }
     }
 }

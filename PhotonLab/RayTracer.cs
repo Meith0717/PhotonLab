@@ -36,9 +36,10 @@ namespace PhotonLab
             });
 
             var rng = new Random();
-            var sampleCount = 500;
+            var sampleCount = 20 * 20;
             var vertices = new List<VertexPositionColor>();
-            var sample = rng.GetItems(_cameraRays, sampleCount / 2);
+            var sample = rng.GetItems(_cameraRays, sampleCount);
+
             foreach (var ray in sample)
             {
                 Vector3 start = ray.Position;
@@ -48,16 +49,17 @@ namespace PhotonLab
             }
 
             VertexBuffer?.Dispose();
-            VertexBuffer = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColor), sampleCount, BufferUsage.WriteOnly);
+            VertexBuffer = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColor), sampleCount * 2, BufferUsage.WriteOnly);
             VertexBuffer.SetData(vertices.ToArray());
         }
 
-        public void ShadeIntersectedCameraRays((Vector3, Vector3, Vector3) face, Matrix cameraWorld)
+        public void ShadeIntersectedCameraRays((Vector3, Vector3, Vector3) face, (Vector3, Vector3, Vector3) colors, Matrix cameraWorld)
         {
             for (var i = 0; i < _cameraRays.Length; i++)
             {
-                var intersects = _cameraRays[i].IntersectsFace(face, out var _);
-                _colorArray[i] = intersects ? Color.Black : Color.White;
+                var intersects = _cameraRays[i].IntersectsFace(face, out var b0, out var b1, out var b2, out var _);
+                var color = b0 * colors.Item1 + b1 * colors.Item2 + b2 * colors.Item3;
+                _colorArray[i] = intersects ? new Color(color) : Color.Black;
             }
         }
 
