@@ -28,7 +28,6 @@ namespace PhotonLab
             _camera3D1.AddBehaviour(new ZoomByMouse(1));
             _basicEffect = new BasicEffect(graphicsDevice);
             _rayTracer = new(graphicsDevice);
-            _rayTracer.Initialize(_camera3D1);
 
             // Initialize triangle
             _triangleVertices = new VertexBuffer(graphicsDevice, typeof(VertexPositionColor), 4, BufferUsage.None);
@@ -46,9 +45,11 @@ namespace PhotonLab
             _camera3D1.Update(elapsedMolloseconds, inputHandler);
             if (inputHandler.HasAction((byte)ActionType.RayTrace))
             {
+                _rayTracer.Initialize(_camera3D);
+
                 var vertecies = new VertexPositionColor[3];
                 _triangleVertices.GetData(vertecies);
-                _rayTracer.ShadeIntersectedCameraRays((vertecies[0].Position, vertecies[1].Position, vertecies[2].Position), Matrix.Invert(_camera3D1.View));
+                _rayTracer.ShadeIntersectedCameraRays((vertecies[0].Position, vertecies[1].Position, vertecies[2].Position), Matrix.Invert(_camera3D.View));
                 _rayTracer.SaveImageFromColor();
             }
         }
@@ -68,11 +69,14 @@ namespace PhotonLab
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, 1);
             }
 
-            graphicsDevice.SetVertexBuffer(_rayTracer.VertexBuffer);
-            foreach (var pass in _basicEffect.CurrentTechnique.Passes)
+            if (_rayTracer.VertexBuffer is not null)
             {
-                pass.Apply();
-                graphicsDevice.DrawPrimitives(PrimitiveType.LineList, 0, _rayTracer.VertexBuffer.VertexCount);
+                graphicsDevice.SetVertexBuffer(_rayTracer.VertexBuffer);
+                foreach (var pass in _basicEffect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    graphicsDevice.DrawPrimitives(PrimitiveType.LineList, 0, _rayTracer.VertexBuffer.VertexCount);
+                }
             }
 
             Camera3DGizmo.Draw(graphicsDevice, _camera3D, _camera3D1);
