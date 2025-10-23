@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36429.23 d17.14
+VisualStudioVersion = 17.14.36429.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotonLab", "PhotonLab.csproj", "{D62CB51D-4294-4C27-A416-8E9410CB2894}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoKit", "..\..\MonoKit\MonoKit.csproj", "{D524C724-7112-FBB2-BB44-C2D6FB719957}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{D62CB51D-4294-4C27-A416-8E9410CB2894}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D62CB51D-4294-4C27-A416-8E9410CB2894}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D62CB51D-4294-4C27-A416-8E9410CB2894}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D524C724-7112-FBB2-BB44-C2D6FB719957}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D524C724-7112-FBB2-BB44-C2D6FB719957}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D524C724-7112-FBB2-BB44-C2D6FB719957}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D524C724-7112-FBB2-BB44-C2D6FB719957}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
