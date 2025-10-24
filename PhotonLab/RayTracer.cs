@@ -19,8 +19,6 @@ namespace PhotonLab
         private Ray[] _cameraRays;
         private Color[] _colorArray;
 
-        public VertexBuffer VertexBuffer { get; private set; } 
-
         public void Initialize(Camera3D raytracingCam)
         {
             var viewport = _graphicsDevice.Viewport;
@@ -35,23 +33,6 @@ namespace PhotonLab
                 for (var x = 0; x < viewport.Width; x++)
                     _cameraRays[dx + x] = GenerateRayAtZero(raytracingCam, x, y, viewport.Width, viewport.Height);
             });
-
-            var rng = new Random();
-            var sampleCount = 20 * 20;
-            var vertices = new List<VertexPositionColor>();
-            var sample = rng.GetItems(_cameraRays, sampleCount);
-
-            foreach (var ray in sample)
-            {
-                Vector3 start = ray.Position;
-                Vector3 end = ray.Position + ray.Direction * 5f;
-                vertices.Add(new VertexPositionColor(start, Color.Red));
-                vertices.Add(new VertexPositionColor(end, Color.Yellow));
-            }
-
-            VertexBuffer?.Dispose();
-            VertexBuffer = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColor), sampleCount * 2, BufferUsage.WriteOnly);
-            VertexBuffer.SetData(vertices.ToArray());
         }
 
         public void ShadeIntersectedCameraRays((Vector3, Vector3, Vector3) face, (Vector3, Vector3, Vector3) colors, Matrix cameraWorld)

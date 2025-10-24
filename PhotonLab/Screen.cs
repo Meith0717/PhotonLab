@@ -74,16 +74,6 @@ namespace PhotonLab
                 pass.Apply();
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, 1);
             }
-
-            if (_rayTracer.VertexBuffer is not null)
-            {
-                graphicsDevice.SetVertexBuffer(_rayTracer.VertexBuffer);
-                foreach (var pass in _basicEffect.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    graphicsDevice.DrawPrimitives(PrimitiveType.LineList, 0, _rayTracer.VertexBuffer.VertexCount);
-                }
-            }
         }
     }
 }
