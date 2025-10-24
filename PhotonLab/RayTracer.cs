@@ -5,6 +5,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
+using MonoKit.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -63,12 +64,13 @@ namespace PhotonLab
             }
         }
 
-        public void SaveImageFromColor()
+        public void SaveImageFromColor(PathManager<Paths> pathManager)
         {
             using var screenshotTarget = new RenderTarget2D(_graphicsDevice, _graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height);
             screenshotTarget.SetData(_colorArray);
 
-            using var fs = new FileStream("screen.png", FileMode.OpenOrCreate);
+            var fileName = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
+            using var fs = new FileStream(fileName, FileMode.OpenOrCreate);
             screenshotTarget.SaveAsPng(fs, screenshotTarget.Width, screenshotTarget.Height);
         }
 

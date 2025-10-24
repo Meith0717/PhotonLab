@@ -50,7 +50,7 @@ namespace PhotonLab
 
             var mouseBindings = new Dictionary<(MouseButton, InputEventType), byte>()
             {
-                {(MouseButton.Mid, InputEventType.Held), (byte)ActionType.MoveCameraByMouse }
+                {(MouseButton.Right, InputEventType.Held), (byte)ActionType.MoveCameraByMouse }
             };
             _inputHandler.RegisterDevice(new MouseListener(mouseBindings));
 

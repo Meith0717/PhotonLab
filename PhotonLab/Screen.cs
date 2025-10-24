@@ -5,21 +5,27 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
+using MonoKit.Core;
 using MonoKit.Input;
 using PhotonLab.Input;
 
 namespace PhotonLab
 {
+    public enum Paths { Images }
+
     internal class Screen
     {
         private Camera3D _camera3D;
 
+        private readonly PathManager<Paths> _pathManager = new("PhotonLab", System.Environment.SpecialFolder.MyDocuments);
         private VertexBuffer _triangleVertices;
         private BasicEffect _basicEffect;
         private RayTracer _rayTracer;
 
         public void Initialize(GraphicsDevice graphicsDevice)
         {
+            _pathManager.RegisterPath(Paths.Images, "images");
+
             _camera3D = new(graphicsDevice);
             _camera3D.AddBehaviour(new MoveByMouse());
             _camera3D.AddBehaviour(new ZoomByMouse(1));
@@ -49,7 +55,7 @@ namespace PhotonLab
                     (vertecies[0].Position, vertecies[1].Position, vertecies[2].Position),
                     (vertecies[0].Color.ToVector3(), vertecies[1].Color.ToVector3(), vertecies[2].Color.ToVector3()),
                     Matrix.Invert(_camera3D.View));
-                _rayTracer.SaveImageFromColor();
+                _rayTracer.SaveImageFromColor(_pathManager);
             }
         }
 
