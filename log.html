@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Raytracer Project Logbook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            margin: 20px;
+            background-color: #f0f2f5;
+        }
+        h1 {
+            color: #222;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .week-box {
+            background: #fff;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        .week-box h2 {
+            margin-top: 0;
+            color: #111;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 8px;
+        }
+        .progress-item {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .progress-item img {
+            max-width: 35%;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+        .progress-text {
+            flex: 1;
+        }
+        .progress-text ul {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .caption {
+            font-size: 0.85em;
+            color: #555;
+            margin-top: 5px;
+        }
+        @media (max-width: 800px) {
+            .progress-item {
+                flex-direction: column;
+            }
+            .progress-item img {
+                max-width: 80%;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Raytracer Project Logbook</h1>
+
+    <div class="week-box">
+        <h2>Week 1</h2>
+
+        <div class="progress-item">
+            <div class="progress-text">
+                <p>Created an interactive MonoGame environment with a movable camera to fly around and capture raytraced images. The scene is rasterized for display.</p>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <img src="images/2025-10-26_23-18-16.png" alt="B&W Triangle Render">
+            <div class="progress-text">
+                <p>Implemented the first step suggested by the professor: placing a single triangle face and raycasting it.</p>
+                <ul>
+                    <li>Produced a black-and-white render: white for intersections, black for no intersection.</li>
+                    <li>Intersection tests were done using <strong>Barycentric coordinates</strong>, which are also used to determine the color inside the triangle.</li>
+                </ul>
+                <div class="caption">Black-and-white triangle render using Barycentric coordinates</div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <img src="images/2025-10-26_23-19-43.png" alt="Color Triangle Render">
+            <div class="progress-text">
+                <p>Extended the renderer to support full color rendering using the same Barycentric coordinates.</p>
+                <div class="caption">Colored triangle render using Barycentric coordinates</div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <img src="images/2025-10-26_23-21-19.png" alt="Tetrahedron Raytracing">
+            <div class="progress-text">
+                <p>Started raytracing simple objects like a tetrahedron.</p>
+                <ul>
+                    <li>Used the <strong>t-component</strong> to determine the closest intersection point.</li>
+                </ul>
+                <div class="caption">Raytraced tetrahedron with closest intersection detection</div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-text">
+                <p>Achieved interactive exploration: can now fly around the scene and take images from multiple angles.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
