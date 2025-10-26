@@ -1,4 +1,4 @@
-﻿// TriangleFace.cs 
+﻿// RayExtension.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
@@ -31,7 +31,7 @@ namespace PhotonLab
             t = Vector3.Dot(sCrossE1, e2) * invDCrossE2TimesS;
             b1 = Vector3.Dot(dCrossE2, s) * invDCrossE2TimesS;
             b2 = Vector3.Dot(sCrossE1, ray.Direction) * invDCrossE2TimesS;
-            b0 = 1 - b1 - b2; 
+            b0 = 1 - b1 - b2;
 
             var intersects = t > 0 && b1 >= 0 && b2 >= 0 && (b1 + b2) <= 1;
             return intersects;

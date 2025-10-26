@@ -5,7 +5,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Extended.Triangulation;
 using MonoKit.Content;
 using MonoKit.Core;
 using MonoKit.Graphics;
@@ -18,12 +17,15 @@ namespace PhotonLab
     public class Game1 : Game
     {
         private bool _windowActive;
+
+        private Sceen _screen;
         private SpriteBatch _spriteBatch;
         private FrameCounter _frameCounter;
+
         private readonly InputHandler _inputHandler;
         private readonly GraphicsDeviceManager _graphics;
         private readonly GraphicsController _graphicsController;
-        private readonly Screen _screen;
+        private readonly PathManager<Paths> _pathManager;
 
         public Game1()
         {
@@ -33,7 +35,8 @@ namespace PhotonLab
 
             _inputHandler = new();
             _graphicsController = new(this, Window, _graphics);
-            _screen = new();
+            _pathManager = new("PhotonLab", System.Environment.SpecialFolder.MyDocuments);
+            _pathManager.RegisterPath(Paths.Images, "images");
 
             Activated += delegate { _windowActive = true; };
             Deactivated += delegate { _windowActive = false; };
@@ -62,7 +65,7 @@ namespace PhotonLab
 
             _spriteBatch = new(GraphicsDevice);
             _frameCounter = new(ContentProvider.Get<SpriteFont>("default_font"));
-            _screen.Initialize(GraphicsDevice);
+            _screen = new(GraphicsDevice);
         }
 
         protected override void LoadContent()
@@ -81,7 +84,7 @@ namespace PhotonLab
                 Exit();
 
             if (_windowActive)
-                _screen.Update(elapsedMilliseconds, _inputHandler);
+                _screen.Update(elapsedMilliseconds, _inputHandler, _pathManager);
 
             base.Update(gameTime);
         }

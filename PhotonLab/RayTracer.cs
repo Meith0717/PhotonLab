@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
 using MonoKit.Core;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -40,8 +39,8 @@ namespace PhotonLab
             for (var i = 0; i < _cameraRays.Length; i++)
             {
                 var intersects = _cameraRays[i].IntersectsFace(face, out var b0, out var b1, out var b2, out var _);
-                var color = b0 * colors.Item1 + b1 * colors.Item2 + b2 * colors.Item3;
-                _colorArray[i] = intersects ? new Color(color) : Color.Black;
+                var surfaceReflectance = b0 * colors.Item1 + b1 * colors.Item2 + b2 * colors.Item3;
+                _colorArray[i] = intersects ? new Color(surfaceReflectance) : Color.Black;
             }
         }
 
