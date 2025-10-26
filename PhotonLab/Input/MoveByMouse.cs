@@ -15,8 +15,15 @@ namespace PhotonLab.Input
         private float _yaw;
         private float _pitch;
 
-        public void Initialize(Camera3D owner) {; }
-
+        public void Initialize(Camera3D owner)
+        {
+            var x = float.Cos(_pitch) * float.Sin(_yaw);
+            var y = float.Sin(_pitch);
+            var z = float.Cos(_pitch) * float.Cos(_yaw);
+            owner.Forward = new(x, y, z);
+            owner.Right = Vector3.Normalize(Vector3.Cross(owner.Forward, Vector3.Up));
+            owner.Up = Vector3.Cross(owner.Right, owner.Forward);
+        }
 
         public void Update(Camera3D owner, InputHandler inputHandler, double elapsedGameTime)
         {

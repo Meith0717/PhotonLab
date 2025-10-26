@@ -38,11 +38,9 @@ namespace PhotonLab
             {
                 _rayTracer.Initialize(_camera3D);
 
-                var vertecies = _3dObject.GetVertecies();
-                _rayTracer.ShadeIntersectedCameraRays(
-                    (vertecies[0].Position, vertecies[1].Position, vertecies[2].Position),
-                    (vertecies[0].Color.ToVector3(), vertecies[1].Color.ToVector3(), vertecies[2].Color.ToVector3()),
-                    Matrix.Invert(_camera3D.View));
+                _3dObject.GetVertecies(out var vertecies, out var indices);
+                _rayTracer.ShadeCameraRays(vertecies, indices, _3dObject.ModelTransform);
+
                 _rayTracer.SaveImageFromColor(pathManager);
             }
         }
@@ -51,6 +49,8 @@ namespace PhotonLab
         {
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.RasterizerState = RasterizerState.CullNone;
+
             _basicEffect.World = Matrix.Identity;
             _basicEffect.View = _camera3D.View;
             _basicEffect.Projection = _camera3D.Projection;

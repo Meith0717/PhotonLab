@@ -15,33 +15,65 @@ namespace PhotonLab
     internal class RayTracer(GraphicsDevice graphicsDevice)
     {
         private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
+        private Viewport _viewport; 
         private Ray[] _cameraRays;
         private Color[] _colorArray;
 
         public void Initialize(Camera3D raytracingCam)
         {
-            var viewport = _graphicsDevice.Viewport;
-            var viewportArea = viewport.Width * viewport.Height;
+            _viewport = _graphicsDevice.Viewport;
+            var viewportArea = _viewport.Width * _viewport.Height;
 
             _cameraRays = new Ray[viewportArea];
             _colorArray = new Color[viewportArea];
 
-            Parallel.For(0, viewport.Height, (y) =>
+            Parallel.For(0, _viewport.Height, (y) =>
             {
-                var dx = y * viewport.Width;
-                for (var x = 0; x < viewport.Width; x++)
-                    _cameraRays[dx + x] = GenerateRayAtZero(raytracingCam, x, y, viewport.Width, viewport.Height);
+                var dx = y * _viewport.Width;
+                for (var x = 0; x < _viewport.Width; x++)
+                    _cameraRays[dx + x] = GenerateRayAtZero(raytracingCam, x, y, _viewport.Width, _viewport.Height);
             });
         }
 
-        public void ShadeIntersectedCameraRays((Vector3, Vector3, Vector3) face, (Vector3, Vector3, Vector3) colors, Matrix cameraWorld)
+        public void ShadeCameraRays(VertexPositionColor[] vertecies, short[] indices, Matrix transform)
         {
-            for (var i = 0; i < _cameraRays.Length; i++)
+            Parallel.For(0, _viewport.Height, (y) =>
             {
-                var intersects = _cameraRays[i].IntersectsFace(face, out var b0, out var b1, out var b2, out var _);
-                var surfaceReflectance = b0 * colors.Item1 + b1 * colors.Item2 + b2 * colors.Item3;
-                _colorArray[i] = intersects ? new Color(surfaceReflectance) : Color.Black;
-            }
+                var dx = y * _viewport.Width;
+                for (var x = 0; x < _viewport.Width; x++)
+                {
+                    var i = dx + x;
+                    var ray = _cameraRays[i];
+                    var minT = float.MaxValue;
+                    var rayColor = Vector3.Zero;
+                    _colorArray[i] = Color.Black;
+
+                    for (var j = 0; j < indices.Length; j += 3)
+                    {
+                        var vertex0 = vertecies[indices[j]];
+                        var vertex1 = vertecies[indices[j + 1]];
+                        var vertex2 = vertecies[indices[j + 2]];
+
+                        var face = (
+                            Vector3.Transform(vertex0.Position, transform),
+                            Vector3.Transform(vertex1.Position, transform),
+                            Vector3.Transform(vertex2.Position, transform)
+                            );
+
+                        var faceColor = (
+                            vertex0.Color.ToVector3(),
+                            vertex1.Color.ToVector3(),
+                            vertex2.Color.ToVector3()
+                            );
+
+                        if (!ray.IntersectsFace(face, out var b0, out var b1, out var b2, out var t) || t >= minT) continue;
+
+                        minT = t;
+                        rayColor = b0 * faceColor.Item1 + b1 * faceColor.Item2 + b2 * faceColor.Item3;
+                    }
+                    _colorArray[i] = new Color(rayColor);
+                }
+            });
         }
 
         public void SaveImageFromColor(PathManager<Paths> pathManager)
