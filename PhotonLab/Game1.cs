@@ -14,11 +14,13 @@ using System.Collections.Generic;
 
 namespace PhotonLab
 {
+    public enum Paths { Images }
+
     public class Game1 : Game
     {
         private bool _windowActive;
 
-        private Sceen _screen;
+        private Scene _scene;
         private SpriteBatch _spriteBatch;
         private FrameCounter _frameCounter;
 
@@ -65,7 +67,7 @@ namespace PhotonLab
 
             _spriteBatch = new(GraphicsDevice);
             _frameCounter = new(ContentProvider.Get<SpriteFont>("default_font"));
-            _screen = new(GraphicsDevice);
+            _scene = new(GraphicsDevice);
         }
 
         protected override void LoadContent()
@@ -84,7 +86,7 @@ namespace PhotonLab
                 Exit();
 
             if (_windowActive)
-                _screen.Update(elapsedMilliseconds, _inputHandler, _pathManager);
+                _scene.Update(elapsedMilliseconds, _inputHandler, _pathManager);
 
             base.Update(gameTime);
         }
@@ -101,7 +103,7 @@ namespace PhotonLab
             _frameCounter.Draw(_spriteBatch, GraphicsDevice.Viewport, 1);
             _spriteBatch.End();
 
-            _screen.Draw(elapsedMilliseconds, GraphicsDevice, _spriteBatch);
+            _scene.Draw(elapsedMilliseconds, GraphicsDevice, _spriteBatch);
 
             base.Draw(gameTime);
         }
