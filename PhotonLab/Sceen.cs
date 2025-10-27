@@ -8,6 +8,8 @@ using MonoKit.Camera;
 using MonoKit.Core;
 using MonoKit.Input;
 using PhotonLab.Input;
+using PhotonLab.RayTracing;
+using System.Threading.Tasks;
 
 namespace PhotonLab
 {
@@ -18,7 +20,8 @@ namespace PhotonLab
         private readonly Camera3D _camera3D;
         private readonly BasicEffect _basicEffect;
         private readonly RayTracer _rayTracer;
-        private readonly Shape3D _3dObject;
+        private readonly Shape3D _3dObject1;
+        private readonly Shape3D _3dObject2;
 
         public Sceen(GraphicsDevice graphicsDevice)
         {
@@ -27,22 +30,21 @@ namespace PhotonLab
             _camera3D.AddBehaviour(new ZoomByMouse(1));
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
-            _3dObject = Shape3D.CreateTetrahedron(graphicsDevice);
+            _3dObject1 = Shape3D.CreateTetrahedron(graphicsDevice);
+            _3dObject1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 0, 0);
+
+            _3dObject2 = Shape3D.CreateQuad(graphicsDevice);
+            _3dObject2.ModelTransform = Matrix.CreateScale(10) * Matrix.CreateRotationX(float.Pi / 2f) * Matrix.CreateTranslation(0, -2, 0);
         }
 
-        public void Update(double elapsedMolloseconds, InputHandler inputHandler, PathManager<Paths> pathManager)
+        public async Task Update(double elapsedMolloseconds, InputHandler inputHandler, PathManager<Paths> pathManager)
         {
-            _3dObject.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 0, 5);
             _camera3D.Update(elapsedMolloseconds, inputHandler);
-            if (inputHandler.HasAction((byte)ActionType.RayTrace))
-            {
-                _rayTracer.Initialize(_camera3D);
 
-                _3dObject.GetVertecies(out var vertecies, out var indices);
-                _rayTracer.ShadeCameraRays(vertecies, indices, _3dObject.ModelTransform);
+            if (!inputHandler.HasAction((byte)ActionType.RayTrace))
+                return;
 
-                _rayTracer.SaveImageFromColor(pathManager);
-            }
+            await _rayTracer.RenderAsync(_camera3D, [_3dObject1, _3dObject2], pathManager);
         }
 
         public void Draw(double elapsedMolloseconds, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
@@ -56,7 +58,8 @@ namespace PhotonLab
             _basicEffect.Projection = _camera3D.Projection;
             _basicEffect.VertexColorEnabled = true;
 
-            _3dObject.Draw(graphicsDevice, _basicEffect);
+            _3dObject1.Draw(graphicsDevice, _basicEffect);
+            _3dObject2.Draw(graphicsDevice, _basicEffect);
         }
     }
 }

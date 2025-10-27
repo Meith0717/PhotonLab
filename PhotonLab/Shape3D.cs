@@ -8,7 +8,6 @@ namespace PhotonLab
     using Microsoft.Xna.Framework.Graphics;
     using System;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
 
     internal class Shape3D
     {
@@ -56,7 +55,7 @@ namespace PhotonLab
             {
                 pass.Apply();
 
-                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _indices.Length / 3 );
+                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _indices.Length / 3);
             }
         }
 
@@ -93,7 +92,7 @@ namespace PhotonLab
             };
 
             var indices = new short[]
-            {       
+            {
                 0, 1, 2,
                 0, 2, 3
             };
