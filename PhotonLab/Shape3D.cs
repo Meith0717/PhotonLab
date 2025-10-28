@@ -12,7 +12,7 @@ namespace PhotonLab
     internal class Shape3D : IShape3D
     {
         private short[] _indices;
-        private VertexPositionColor[] _vertices;
+        private VertexPositionColorNormal[] _vertices;
         private VertexBuffer _vertexBuffer;
         private IndexBuffer _indexBuffer;
 
@@ -20,19 +20,19 @@ namespace PhotonLab
 
         public IMaterial Material => new TestMaterial();
 
-        public void GetVertecies(out VertexPositionColor[] vertecies, out short[] indices)
+        public void GetVertecies(out VertexPositionColorNormal[] vertecies, out short[] indices)
         {
             vertecies = _vertices;
             indices = _indices;
         }
 
-        public void SetVertecies(GraphicsDevice graphicsDevice, VertexPositionColor[] vertices, short[] indices)
+        public void SetVertecies(GraphicsDevice graphicsDevice, VertexPositionColorNormal[] vertices, short[] indices)
         {
             _vertices = vertices;
             _indices = indices;
 
             _vertexBuffer?.Dispose();
-            _vertexBuffer = new(graphicsDevice, typeof(VertexPositionColor), _vertices.Length, BufferUsage.None);
+            _vertexBuffer = new(graphicsDevice, typeof(VertexPositionColorNormal), _vertices.Length, BufferUsage.None);
             _vertexBuffer.SetData(_vertices);
 
             _indexBuffer?.Dispose();
@@ -63,7 +63,9 @@ namespace PhotonLab
 
                 minT = t;
                 anyHit = true;
-                bestNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
+                bestNormal = Vector3.TransformNormal(b0 * v0.Normal + b1 * v1.Normal + b2 * v2.Normal, ModelTransform);
+                // bestNormal = Vector3.Cross(p1 - p0, p2 - p0);
+                bestNormal.Normalize();
                 color = b0 * v0.Color.ToVector3() + b1 * v1.Color.ToVector3() + b2 * v2.Color.ToVector3();
             }
 
@@ -107,40 +109,26 @@ namespace PhotonLab
                 (b, c) = (c, b);
         }
 
-
-        public static Shape3D CreateFace(GraphicsDevice graphicsDevice, float size = 1f, Color? color = null, bool clockwise = true)
-        {
-            var c = color ?? Color.White;
-            float h = size / 2f;
-
-            var vertices = new[]
-            {
-                new VertexPositionColor(new Vector3(0,  h, 0), Color.Red),
-                new VertexPositionColor(new Vector3(-h, -h, 0), Color.Green),
-                new VertexPositionColor(new Vector3( h, -h, 0), Color.Blue)
-            };
-
-            short a = 0, b = 1, cIdx = 2;
-            MaybeFlip(ref a, ref b, ref cIdx, clockwise);
-
-            var indices = new short[] { a, b, cIdx };
-
-            var shape = new Shape3D();
-            shape.SetVertecies(graphicsDevice, vertices, indices);
-            return shape;
-        }
-
         public static Shape3D CreateQuad(GraphicsDevice graphicsDevice, Color? color = null, bool clockwise = true)
         {
             var c = color ?? Color.White;
-            float h = 1 / 2f;
+            float h = 1f / 2f;
 
-            var vertices = new[]
+            var p0 = new Vector3(-h, -h, 0);
+            var p1 = new Vector3(h, -h, 0);
+            var p2 = new Vector3(h, h, 0);
+            var p3 = new Vector3(-h, h, 0);
+            var normal = new Vector3(0, 0, -1);
+
+            if (!clockwise)
+                normal = -normal;
+
+            var vertices = new VertexPositionColorNormal[]
             {
-                new VertexPositionColor(new Vector3(-h, -h, 0), c),
-                new VertexPositionColor(new Vector3( h, -h, 0), c),
-                new VertexPositionColor(new Vector3( h,  h, 0), c),
-                new VertexPositionColor(new Vector3(-h,  h, 0), c)
+                new(p0, c, normal),
+                new(p1, c, normal),
+                new(p2, c, normal),
+                new(p3, c, normal)
             };
 
             short a1 = 0, b1 = 2, c1 = 1;
@@ -155,16 +143,24 @@ namespace PhotonLab
             return shape;
         }
 
-        public static Shape3D CreateTetrahedron(GraphicsDevice graphicsDevice, float size = 1f)
-        {
-            float h = size / (2f * (float)Math.Sqrt(2));
 
-            var vertices = new VertexPositionColor[]
+        public static Shape3D CreateTetrahedron(GraphicsDevice graphicsDevice, Color? color = null)
+        {
+            float h = 1 / (2f * (float)Math.Sqrt(2));
+            var c = color ?? Color.White;
+
+            var center = Vector3.Zero;
+            var v1 = new Vector3(h, h, h);
+            var v2 = new Vector3(-h, -h, h);
+            var v3 = new Vector3(-h, h, -h);
+            var v4 = new Vector3(h, -h, -h);
+
+            var vertices = new VertexPositionColorNormal[]
             {
-                new(new Vector3( h,  h,  h), Color.Red),     // 0
-                new(new Vector3(-h, -h,  h), Color.Green),   // 1
-                new(new Vector3(-h,  h, -h), Color.Blue),    // 2
-                new(new Vector3( h, -h, -h), Color.Yellow)   // 3
+                new(v1, c, Vector3.Normalize(v1 - center)),
+                new(v2, c, Vector3.Normalize(v2 - center)),
+                new(v3, c, Vector3.Normalize(v3 - center)),
+                new(v4, c, Vector3.Normalize(v4 - center)),
             };
 
             var indices = new short[]
@@ -183,8 +179,9 @@ namespace PhotonLab
         public static Shape3D CreateSphere(GraphicsDevice graphicsDevice, float radius = 1f, int segments = 16, int rings = 16, Color? color = null)
         {
             var c = color ?? Color.White;
-            var vertices = new List<VertexPositionColor>();
+            var vertices = new List<VertexPositionColorNormal>();
             var indices = new List<short>();
+            var center = Vector3.Zero;
 
             for (int y = 0; y <= rings; y++)
             {
@@ -206,7 +203,8 @@ namespace PhotonLab
                     float py = radius * cosTheta;
                     float pz = radius * sinTheta * sinPhi;
 
-                    vertices.Add(new(new(px, py, pz), c));
+                    var vx = new Vector3(px, py, pz);
+                    vertices.Add(new(vx, c, Vector3.Normalize(vx - center)));
                 }
             }
 

@@ -4,6 +4,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.Graphics;
 using MonoKit.Camera;
 using MonoKit.Core;
 using MonoKit.Input;
@@ -32,16 +33,18 @@ namespace PhotonLab
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
-            var object1 = Shape3D.CreateSphere(graphicsDevice, 1, 20, 20, Color.MonoGameOrange);
-            object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 0, 0);
+            var object1 = Shape3D.CreateSphere(graphicsDevice, 1, 20, 20, Color.LightGray);
+            object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 1, 0);
 
             var object2 = Shape3D.CreateQuad(graphicsDevice, clockwise: true);
-            object2.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(float.Pi / 2f) * Matrix.CreateTranslation(0, -2, 0);
+            object2.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(float.Pi / 2f);
 
             Shapes.Add(object1);
             Shapes.Add(object2);
 
-            Lights.Add(new PointLight(new(5, 5, 0), Color.White));
+            Lights.Add(new PointLight(new(10, 5, 0), Color.Red));
+            Lights.Add(new PointLight(new(-10, 5, 5), Color.Green));
+            Lights.Add(new PointLight(new(-10, 5, -5), Color.Blue));
         }
 
         public bool Intersect(Ray ray, out RayHit closestHit)
@@ -69,7 +72,8 @@ namespace PhotonLab
             if (!inputHandler.HasAction((byte)ActionType.RayTrace))
                 return;
 
-            await _rayTracer.RenderAsync(_camera3D, this, pathManager);
+            _rayTracer.Trace(_camera3D, this);
+            await _rayTracer.RenderAndSaveAsync(pathManager);
         }
 
         public void Draw(double elapsedMolloseconds, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
