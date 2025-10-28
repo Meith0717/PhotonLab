@@ -10,23 +10,28 @@ using System.Threading.Tasks;
 
 namespace PhotonLab.RayTracing
 {
-    internal class RayTracer(GraphicsDevice device)
+    internal class RayTracer(GraphicsDevice gd)
     {
-        private readonly RayGenerator _rayGenerator = new(device);
-        private readonly ImageWriter _writer = new(device);
+        private readonly RayGenerator _rayGenerator = new(gd);
+        private readonly ImageWriter _writer = new(gd);
+        private readonly Color[] _colorArray = new Color[gd.Viewport.Width * gd.Viewport.Height];
+        public readonly RenderTarget2D RenderTaregt = new(gd, gd.Viewport.Width, gd.Viewport.Height);
 
-        public async Task RenderAsync(Camera3D camera, Scene scene, PathManager<Paths> pathManager)
+        public void Trace(Camera3D camera, Scene scene)
         {
             var rays = _rayGenerator.CreateCameraRays(camera);
-            var colors = new Color[rays.Length];
 
             Parallel.For(0, rays.Length, i =>
             {
                 var rgb = RayShader.Trace(scene, rays[i]);
-                colors[i] = new Color(rgb);
+                _colorArray[i] = new Color(rgb);
             });
+            RenderTaregt.SetData(_colorArray);
+        }
 
-            await _writer.SaveAsync(colors, pathManager);
+        public async Task RenderAndSaveAsync(PathManager<Paths> pathManager)
+        {
+            await _writer.SaveAsync(_colorArray, pathManager);
         }
     }
 
