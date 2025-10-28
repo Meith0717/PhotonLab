@@ -4,7 +4,6 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended.Graphics;
 using MonoKit.Camera;
 using MonoKit.Core;
 using MonoKit.Input;
@@ -20,6 +19,7 @@ namespace PhotonLab
         private readonly Camera3D _camera3D;
         private readonly BasicEffect _basicEffect;
         private readonly RayTracer _rayTracer;
+        private readonly List<IShape3D> LightShapes= new();
 
         public List<IShape3D> Shapes { get; } = new();
 
@@ -33,7 +33,7 @@ namespace PhotonLab
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
-            var object1 = Shape3D.CreateSphere(graphicsDevice, 1, 20, 20, Color.LightGray);
+            var object1 = Shape3D.CreateSphere(graphicsDevice, 15, 15, Color.LightGray);
             object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 1, 0);
 
             var object2 = Shape3D.CreateQuad(graphicsDevice, clockwise: true);
@@ -42,9 +42,19 @@ namespace PhotonLab
             Shapes.Add(object1);
             Shapes.Add(object2);
 
-            Lights.Add(new PointLight(new(10, 5, 0), Color.Red));
-            Lights.Add(new PointLight(new(-10, 5, 5), Color.Green));
-            Lights.Add(new PointLight(new(-10, 5, -5), Color.Blue));
+            float radius = 10f;
+            float height = 5f;
+
+            Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.Red));
+            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.Green));
+            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.Blue));
+
+            foreach (var light in Lights)
+            {
+                var lightMesh = Shape3D.CreateSphere(graphicsDevice, 8, 8, new Color(light.Color));
+                lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(light.Position);
+                LightShapes.Add(lightMesh);
+            }
         }
 
         public bool Intersect(Ray ray, out RayHit closestHit)
@@ -89,8 +99,10 @@ namespace PhotonLab
 
             foreach (var shape in Shapes)
                 shape.Draw(graphicsDevice, _basicEffect);
+
+            foreach (var shape in LightShapes)
+                shape.Draw(graphicsDevice, _basicEffect);
+
         }
-
     }
-
 }

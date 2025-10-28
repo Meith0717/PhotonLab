@@ -16,14 +16,13 @@ namespace PhotonLab
             foreach (var light in scene.Lights)
             {
                 var toLight = Vector3.Normalize(light.Position - hit.Position);
-                var shadowRay = new Ray(hit.Position + hit.Normal * 0.01f, toLight);
+                var shadowRay = new Ray(hit.Position + hit.Normal * 0.00001f, toLight);
 
                 if (scene.Intersect(shadowRay, out var shadowHit))
                     continue;
 
-                float NdotL = MathF.Max(Vector3.Dot(hit.Normal, toLight), 0f);
-
-                color += light.Color * hit.Color * NdotL;
+                float nDotL = MathF.Max(Vector3.Dot(hit.Normal, toLight), 0f);
+                color += light.Color * hit.Color * nDotL;
             }
 
             return color;

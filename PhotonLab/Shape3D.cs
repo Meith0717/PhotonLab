@@ -176,7 +176,7 @@ namespace PhotonLab
             return shape;
         }
 
-        public static Shape3D CreateSphere(GraphicsDevice graphicsDevice, float radius = 1f, int segments = 16, int rings = 16, Color? color = null)
+        public static Shape3D CreateSphere(GraphicsDevice graphicsDevice, int segments = 16, int rings = 16, Color? color = null)
         {
             var c = color ?? Color.White;
             var vertices = new List<VertexPositionColorNormal>();
@@ -199,9 +199,9 @@ namespace PhotonLab
                     float sinPhi = MathF.Sin(phi);
                     float cosPhi = MathF.Cos(phi);
 
-                    float px = radius * sinTheta * cosPhi;
-                    float py = radius * cosTheta;
-                    float pz = radius * sinTheta * sinPhi;
+                    float px = sinTheta * cosPhi;
+                    float py = cosTheta;
+                    float pz = sinTheta * sinPhi;
 
                     var vx = new Vector3(px, py, pz);
                     vertices.Add(new(vx, c, Vector3.Normalize(vx - center)));
