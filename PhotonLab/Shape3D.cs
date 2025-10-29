@@ -241,7 +241,6 @@ namespace PhotonLab
                 }
             }
 
-            // Clockwise winding per quad
             for (int y = 0; y < rings; y++)
             {
                 for (int x = 0; x < segments; x++)
