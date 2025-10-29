@@ -13,7 +13,7 @@ namespace PhotonLab.RayTracing
     {
         private readonly GraphicsDevice _gD = device;
 
-        public Ray[] CreateCameraRays(Camera3D camera)
+        public Ray[] CreateCameraRaysParallel(Camera3D camera)
         {
             var width = _gD.Viewport.Width;
             var height = _gD.Viewport.Height;

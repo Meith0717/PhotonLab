@@ -33,7 +33,7 @@ namespace PhotonLab
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
-            var object1 = Shape3D.CreateTetrahedron(graphicsDevice, color: Color.White);
+            var object1 = Shape3D.CreateSphere(graphicsDevice, color: Color.White);
             object1.ModelTransform = Matrix.CreateScale(10);
             object1.Material = new PhongMaterial() { AmbientStrength = 0, DiffStrength = 1, SpecStrength = 1 };
             Shapes.Add(object1);
