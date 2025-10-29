@@ -35,11 +35,11 @@ namespace PhotonLab
 
             var object1 = Shape3D.CreateSphere(graphicsDevice, 20, 20, Color.LightGray);
             object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 2, 0);
-            object1.Material = new DefaultMaterial();
+            object1.Material = new PhongMaterial();
 
             var object2 = Shape3D.CreateQuad(graphicsDevice, clockwise: true);
             object2.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(float.Pi / 2f);
-            object2.Material = new DefaultMaterial();
+            object2.Material = new PhongMaterial();
 
             Shapes.Add(object1);
             Shapes.Add(object2);
