@@ -33,23 +33,32 @@ namespace PhotonLab
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
-            var object1 = Shape3D.CreateSphere(graphicsDevice, 20, 20, Color.LightGray);
-            object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 1, 0);
-            object1.Material = new PhongMaterial();
+            var object1 = Shape3D.CreateTetrahedron(graphicsDevice, Color.LightGray);
+            object1.ModelTransform = Matrix.CreateScale(2) * Matrix.CreateTranslation(0, -1, 0);
+            object1.Material = new PhongMaterial() 
+            {
+                AmbientStrength = .1f,
+                DiffStrength = 1,
+                SpecStrength = 1
+            };
 
             var object2 = Shape3D.CreateQuad(graphicsDevice, clockwise: true);
-            object2.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(float.Pi / 2f);
-            object2.Material = new PhongMaterial();
+            object2.ModelTransform = Matrix.CreateRotationX(float.Pi / 2) * Matrix.CreateScale(20) * Matrix.CreateTranslation(0, -1, 0);
+            object2.Material = new PhongMaterial()
+            {
+                AmbientStrength = .1f,
+                DiffStrength = 1,
+                SpecStrength = 0
+            };
 
             Shapes.Add(object1);
             Shapes.Add(object2);
 
             float radius = 10f;
             float height = 5f;
-            //Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.Red));
-            //Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.Green));
-            //Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.Blue));
-            Lights.Add(new PointLight(new Vector3(5, height, 0), Color.LightYellow));
+            Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.Red));
+            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.Green));
+            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.Blue));
 
             foreach (var light in Lights)
             {
