@@ -8,12 +8,12 @@ namespace PhotonLab.RayTracing
 {
     internal static class RayShader
     {
-        public static Vector3 Trace(Scene scene, Ray ray, int depth = 0)
+        public static Color Trace(Scene scene, Ray ray, int depth = 0)
         {
-            if (depth > 1 || !scene.Intersect(ray, out var hit))
-                return Vector3.Zero;
+            if (depth > 2 || !scene.Intersect(ray, out var hit))
+                return Color.Black;
 
-            return hit.Material.Shade(scene, ray, hit, depth);
+            return hit.Material.Shade(scene, depth, ray, in hit);
         }
     }
 }

@@ -97,7 +97,7 @@ namespace PhotonLab
             var elapsedSeconds = gameTime.ElapsedGameTime.TotalSeconds;
             _frameCounter.Update(elapsedSeconds, elapsedMilliseconds);
 
-            GraphicsDevice.Clear(new(50, 50, 50));
+            GraphicsDevice.Clear(new(0, 0, 0));
             // Draw fps
             _spriteBatch.Begin();
             _frameCounter.Draw(_spriteBatch, GraphicsDevice.Viewport, 1);

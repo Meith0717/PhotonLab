@@ -18,7 +18,7 @@ namespace PhotonLab
 
         public Matrix ModelTransform { get; set; } = Matrix.Identity;
 
-        public IMaterial Material => new TestMaterial();
+        public IMaterial Material { get; set; }
 
         public void GetVertecies(out VertexPositionColorNormal[] vertecies, out short[] indices)
         {
@@ -40,13 +40,11 @@ namespace PhotonLab
             _indexBuffer.SetData(_indices);
         }
 
-        public bool Intersect(Ray ray, out RayHit hit)
+        public bool Intersect(Ray ray, out HitInfo hit)
         {
             hit = default;
             var anyHit = false;
             var minT = float.MaxValue;
-            var bestNormal = Vector3.Zero;
-            var color = Vector3.Zero;
 
             for (int i = 0; i < _indices.Length; i += 3)
             {
@@ -58,25 +56,16 @@ namespace PhotonLab
                 var p1 = Vector3.Transform(v1.Position, ModelTransform);
                 var p2 = Vector3.Transform(v2.Position, ModelTransform);
 
-                if (!ray.IntersectsFace((p0, p1, p2), out var b0, out var b1, out var b2, out var t) || t >= minT)
+                if (!ray.IntersectsFace((p0, p1, p2), out var coordinates) || coordinates.T >= minT)
                     continue;
 
-                minT = t;
-                anyHit = true;
-                bestNormal = Vector3.TransformNormal(b0 * v0.Normal + b1 * v1.Normal + b2 * v2.Normal, ModelTransform);
-                // bestNormal = Vector3.Cross(p1 - p0, p2 - p0);
-                bestNormal.Normalize();
-                color = b0 * v0.Color.ToVector3() + b1 * v1.Color.ToVector3() + b2 * v2.Color.ToVector3();
-            }
-
-            if (anyHit)
-            {
-                hit.Hit = true;
-                hit.Distance = minT;
-                hit.Color = color;
-                hit.Position = ray.Position + ray.Direction * minT;
-                hit.Normal = bestNormal;
-                hit.Material = Material;
+                minT = coordinates.T; anyHit = true;
+                hit = new(
+                    coordinates.T,
+                    ray.Position + ray.Direction * coordinates.T,
+                    Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(v0.Normal, v1.Normal, v2.Normal), ModelTransform)),
+                    coordinates.InterpolateColor(v0.Color, v1.Color, v2.Color),
+                    Material);
             }
 
             return anyHit;

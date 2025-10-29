@@ -16,7 +16,7 @@ namespace PhotonLab
 {
     internal class Scene
     {
-        private readonly Camera3D _camera3D;
+        public readonly Camera3D Camer3D;
         private readonly BasicEffect _basicEffect;
         private readonly RayTracer _rayTracer;
         private readonly List<IShape3D> LightShapes= new();
@@ -27,17 +27,19 @@ namespace PhotonLab
 
         public Scene(GraphicsDevice graphicsDevice)
         {
-            _camera3D = new(graphicsDevice);
-            _camera3D.AddBehaviour(new MoveByMouse());
-            _camera3D.AddBehaviour(new ZoomByMouse(1));
+            Camer3D = new(graphicsDevice);
+            Camer3D.AddBehaviour(new MoveByMouse());
+            Camer3D.AddBehaviour(new ZoomByMouse(1));
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
             var object1 = Shape3D.CreateSphere(graphicsDevice, 15, 15, Color.LightGray);
-            object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 1, 0);
+            object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 2, 0);
+            object1.Material = new DefaultMaterial();
 
             var object2 = Shape3D.CreateQuad(graphicsDevice, clockwise: true);
             object2.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(float.Pi / 2f);
+            object2.Material = new DefaultMaterial();
 
             Shapes.Add(object1);
             Shapes.Add(object2);
@@ -51,38 +53,35 @@ namespace PhotonLab
 
             foreach (var light in Lights)
             {
-                var lightMesh = Shape3D.CreateSphere(graphicsDevice, 8, 8, new Color(light.Color));
+                var lightMesh = Shape3D.CreateSphere(graphicsDevice, 8, 8, light.Color);
                 lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(light.Position);
                 LightShapes.Add(lightMesh);
             }
         }
 
-        public bool Intersect(Ray ray, out RayHit closestHit)
+        public bool Intersect(Ray ray, out HitInfo closestHit)
         {
-            closestHit = default;
-            closestHit.Distance = float.MaxValue;
+            closestHit = new HitInfo();
             var hitFound = false;
-
             foreach (var shape in Shapes)
             {
-                if (shape.Intersect(ray, out var hit) && hit.Distance < closestHit.Distance)
+                if (shape.Intersect(ray, out var hit) && hit <= closestHit)
                 {
                     closestHit = hit;
                     hitFound = true;
                 }
             }
-
             return hitFound;
         }
 
         public async Task Update(double elapsedMolloseconds, InputHandler inputHandler, PathManager<Paths> pathManager)
         {
-            _camera3D.Update(elapsedMolloseconds, inputHandler);
+            Camer3D.Update(elapsedMolloseconds, inputHandler);
 
             if (!inputHandler.HasAction((byte)ActionType.RayTrace))
                 return;
 
-            _rayTracer.Trace(_camera3D, this);
+            _rayTracer.Trace(Camer3D, this);
             await _rayTracer.RenderAndSaveAsync(pathManager);
         }
 
@@ -93,8 +92,8 @@ namespace PhotonLab
             graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             _basicEffect.World = Matrix.Identity;
-            _basicEffect.View = _camera3D.View;
-            _basicEffect.Projection = _camera3D.Projection;
+            _basicEffect.View = Camer3D.View;
+            _basicEffect.Projection = Camer3D.Projection;
             _basicEffect.VertexColorEnabled = true;
 
             foreach (var shape in Shapes)

@@ -24,7 +24,7 @@ namespace PhotonLab.RayTracing
             Parallel.For(0, rays.Length, i =>
             {
                 var rgb = RayShader.Trace(scene, rays[i]);
-                _colorArray[i] = new Color(rgb);
+                _colorArray[i] = rgb;
             });
             RenderTaregt.SetData(_colorArray);
         }

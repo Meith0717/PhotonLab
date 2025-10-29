@@ -8,6 +8,6 @@ namespace PhotonLab
 {
     internal interface IMaterial
     {
-        public Vector3 Shade(Scene scene, Ray ray, RayHit hit, int depth);
+        public Color Shade(Scene scene, int depth, Ray ray, in HitInfo hit);
     }
 }

@@ -6,10 +6,26 @@ using Microsoft.Xna.Framework;
 
 namespace PhotonLab
 {
+    internal readonly struct BarycentricCoordinates(float b1, float b2, float t)
+    {
+        public readonly float B0 = 1 - b1 - b2;
+        public readonly float B1 = b1;
+        public readonly float B2 = b2;
+        public readonly float T = t;
+
+        public Vector3 InterpolateVector3(Vector3 v0, Vector3 v1, Vector3 v2) => B0 * v0 + B1 * v1 + B2 * v2;
+
+        public Color InterpolateColor(Color c0, Color c1, Color c2) => new(B0 * c0.ToVector3() + B1 * c1.ToVector3() + B2 * c2.ToVector3());
+
+        public bool Inside => T > 0 && B1 >= 0 && B2 >= 0 && (B1 + B2) <= 1;
+    }
+
     internal static class RayExtension
     {
-        public static bool IntersectsFace(this Ray ray, (Vector3, Vector3, Vector3) face, out float b0, out float b1, out float b2, out float t)
+        public static bool IntersectsFace(this Ray ray, (Vector3, Vector3, Vector3) face, out BarycentricCoordinates coordinates)
         {
+            coordinates = default;
+
             var p0 = face.Item1;
             var p1 = face.Item2;
             var p2 = face.Item3;
@@ -18,7 +34,6 @@ namespace PhotonLab
             var e2 = p2 - p0;
             var s = ray.Position - p0;
 
-            b0 = b1 = b2 = t = 0;
             var dCrossE2 = Vector3.Cross(ray.Direction, e2);
             var sCrossE1 = Vector3.Cross(s, e1);
 
@@ -28,13 +43,13 @@ namespace PhotonLab
             if (float.Abs(invDCrossE2TimesS) < 1e-5f)
                 return false;
 
-            t = Vector3.Dot(sCrossE1, e2) * invDCrossE2TimesS;
-            b1 = Vector3.Dot(dCrossE2, s) * invDCrossE2TimesS;
-            b2 = Vector3.Dot(sCrossE1, ray.Direction) * invDCrossE2TimesS;
-            b0 = 1 - b1 - b2;
+            var t = Vector3.Dot(sCrossE1, e2) * invDCrossE2TimesS;
+            var b1 = Vector3.Dot(dCrossE2, s) * invDCrossE2TimesS;
+            var b2 = Vector3.Dot(sCrossE1, ray.Direction) * invDCrossE2TimesS;
 
-            var intersects = t > 0 && b1 >= 0 && b2 >= 0 && (b1 + b2) <= 1;
-            return intersects;
+            coordinates = new(b1, b2, t);
+
+            return coordinates.Inside;
         }
     }
 }

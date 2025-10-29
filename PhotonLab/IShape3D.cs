@@ -13,7 +13,7 @@ namespace PhotonLab
 
         public IMaterial Material { get; }
 
-        public bool Intersect(Ray ray, out RayHit hit);
+        public bool Intersect(Ray ray, out HitInfo hit);
 
         public void Draw(GraphicsDevice graphics, BasicEffect effect);
     }
