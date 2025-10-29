@@ -34,7 +34,7 @@ namespace PhotonLab
             _rayTracer = new(graphicsDevice);
 
             var object1 = Shape3D.CreateSphere(graphicsDevice, 20, 20, Color.LightGray);
-            object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 2, 0);
+            object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 1, 0);
             object1.Material = new PhongMaterial();
 
             var object2 = Shape3D.CreateQuad(graphicsDevice, clockwise: true);

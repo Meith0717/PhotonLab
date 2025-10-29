@@ -13,7 +13,7 @@ namespace PhotonLab.RayTracing
             if (depth > 2 || !scene.Intersect(ray, out var hit))
                 return Color.Black;
 
-            return hit.Material.Shade(scene, depth, ray, in hit);
+            return hit.Object.Material.Shade(scene, depth, ray, in hit);
         }
     }
 }

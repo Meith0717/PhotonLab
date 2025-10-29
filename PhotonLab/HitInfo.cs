@@ -12,7 +12,7 @@ namespace PhotonLab
         public readonly Vector3 Position;
         public readonly Vector3 Normal;
         public readonly Color ReflectanceColor;
-        public readonly IMaterial Material;
+        public readonly Shape3D Object;
 
         public HitInfo()
         {
@@ -22,13 +22,13 @@ namespace PhotonLab
             ReflectanceColor = Color.Black;
         }
 
-        public HitInfo(float distance, Vector3 position, Vector3 normal, Color reflectanceColor, IMaterial material)
+        public HitInfo(float distance, Vector3 position, Vector3 normal, Color reflectanceColor, Shape3D obj)
         {
             Distance = distance;
             Position = position;
             Normal = normal;
             ReflectanceColor = reflectanceColor;
-            Material = material;
+            Object = obj;
         }
 
         public static bool operator <(HitInfo a, HitInfo b) 

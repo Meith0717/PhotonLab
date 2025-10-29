@@ -65,7 +65,7 @@ namespace PhotonLab
                     ray.Position + ray.Direction * coordinates.T,
                     Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(v0.Normal, v1.Normal, v2.Normal), ModelTransform)),
                     coordinates.InterpolateColor(v0.Color, v1.Color, v2.Color),
-                    Material);
+                    this);
             }
 
             return anyHit;
