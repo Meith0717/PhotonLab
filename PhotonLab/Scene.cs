@@ -33,7 +33,7 @@ namespace PhotonLab
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
-            var object1 = Shape3D.CreateSphere(graphicsDevice, 15, 15, Color.LightGray);
+            var object1 = Shape3D.CreateSphere(graphicsDevice, 20, 20, Color.LightGray);
             object1.ModelTransform = Matrix.CreateScale(1) * Matrix.CreateTranslation(0, 2, 0);
             object1.Material = new DefaultMaterial();
 
@@ -46,10 +46,10 @@ namespace PhotonLab
 
             float radius = 10f;
             float height = 5f;
-
-            Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.Red));
-            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.Green));
-            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.Blue));
+            //Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.Red));
+            //Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.Green));
+            //Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.Blue));
+            Lights.Add(new PointLight(new Vector3(5, height, 0), Color.LightYellow));
 
             foreach (var light in Lights)
             {
