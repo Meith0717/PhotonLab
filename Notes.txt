@@ -1,0 +1,8 @@
+- Firts Calculate Face Normals
+- Interpolate Normals for vertecies for adjesent faces
+- Interpolate Normals at intersections 
+
+- Tone mapping
+- Gamma correction
+
+- If normal is negative -> flip it

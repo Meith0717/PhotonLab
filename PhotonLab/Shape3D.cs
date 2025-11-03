@@ -11,25 +11,32 @@ namespace PhotonLab
 
     internal class Shape3D : IShape3D
     {
-        private short[] _indices;
-        private VertexPositionColorNormal[] _vertices;
-        private VertexBuffer _vertexBuffer;
-        private IndexBuffer _indexBuffer;
+        private readonly BoundingBox _boundingBox;
+        private readonly short[] _indices;
+        private readonly VertexPositionColorNormal[] _vertices;
+        private readonly VertexBuffer _vertexBuffer;
+        private readonly IndexBuffer _indexBuffer;
 
         public Matrix ModelTransform { get; set; } = Matrix.Identity;
 
         public IMaterial Material { get; set; }
 
-        public void GetVertecies(out VertexPositionColorNormal[] vertecies, out short[] indices)
-        {
-            vertecies = _vertices;
-            indices = _indices;
-        }
-
-        public void SetVertecies(GraphicsDevice graphicsDevice, VertexPositionColorNormal[] vertices, short[] indices)
+        public Shape3D(GraphicsDevice graphicsDevice, VertexPositionColorNormal[] vertices, short[] indices)
         {
             _vertices = vertices;
             _indices = indices;
+
+            _boundingBox = new()
+            {
+                Min = new Vector3(float.MaxValue),
+                Max = new Vector3(float.MinValue)
+            };
+
+            foreach (var vertex in _vertices)
+            {
+                _boundingBox.Min = Vector3.Min(_boundingBox.Min, vertex.Position);
+                _boundingBox.Max = Vector3.Max(_boundingBox.Max, vertex.Position);
+            }
 
             _vertexBuffer?.Dispose();
             _vertexBuffer = new(graphicsDevice, typeof(VertexPositionColorNormal), _vertices.Length, BufferUsage.None);
@@ -44,6 +51,10 @@ namespace PhotonLab
         {
             hit = default;
             var anyHit = false;
+
+            if (!_boundingBox.IntersectsRay(ref ray, ModelTransform, out var _))
+                return anyHit;
+
             var minT = float.MaxValue;
 
             for (int i = 0; i < _indices.Length; i += 3)
@@ -87,8 +98,38 @@ namespace PhotonLab
             foreach (var pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _indices.Length / 3);
+            }
+
+            DrawBoundingBox(graphicsDevice, basicEffect, Color.Red);
+        }
+
+        public void DrawBoundingBox(GraphicsDevice graphicsDevice, BasicEffect effect, Color color)
+        {
+            var corners = _boundingBox.GetCorners();
+
+            int[] indices =
+            [
+                0, 1, 1, 2, 2, 3, 3, 0, // Bottom
+                4, 5, 5, 6, 6, 7, 7, 4, // Top
+                0, 4, 1, 5, 2, 6, 3, 7  // Vertical
+            ];
+
+            var lines = new VertexPositionColor[8];
+            for (int i = 0; i < 8; i++)
+                lines[i] = new VertexPositionColor(corners[i], color);
+
+            effect.World = ModelTransform; // Apply your model transform
+            effect.VertexColorEnabled = true;
+
+            foreach (var pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                graphicsDevice.DrawUserIndexedPrimitives(
+                    PrimitiveType.LineList,
+                    lines, 0, 8,
+                    indices, 0, 12
+                );
             }
         }
 
@@ -127,9 +168,7 @@ namespace PhotonLab
 
             var indices = new short[] { a1, b1, c1, a2, b2, c2 };
 
-            var shape = new Shape3D();
-            shape.SetVertecies(graphicsDevice, vertices, indices);
-            return shape;
+            return new Shape3D(graphicsDevice, vertices, indices);
         }
 
         public static Shape3D CreateCube(GraphicsDevice graphicsDevice, Color? color = null, bool clockwise = true)
@@ -169,9 +208,7 @@ namespace PhotonLab
                 0, 1, 5,  0, 5, 4
             };
 
-            var shape = new Shape3D();
-            shape.SetVertecies(graphicsDevice, vertices, indices);
-            return shape;
+            return new Shape3D(graphicsDevice, vertices, indices);
         }
 
         public static Shape3D CreateTetrahedron(GraphicsDevice graphicsDevice, Color? color = null)
@@ -203,9 +240,7 @@ namespace PhotonLab
                 1, 2, 3
             };
 
-            var shape = new Shape3D();
-            shape.SetVertecies(graphicsDevice, vertices, indices);
-            return shape;
+            return new Shape3D(graphicsDevice, vertices, indices);
         }
 
 
@@ -258,9 +293,7 @@ namespace PhotonLab
                 }
             }
 
-            var shape = new Shape3D();
-            shape.SetVertecies(graphicsDevice, [.. vertices], [.. indices]);
-            return shape;
+            return new Shape3D(graphicsDevice, [.. vertices], [.. indices]);
         }
     }
 }
