@@ -11,7 +11,7 @@ namespace PhotonLab
     {
         public Matrix ModelTransform { get; }
 
-        public IMaterial Material { get; }
+        public Material Material { get; }
 
         public bool Intersect(Ray ray, out HitInfo hit);
 

@@ -11,6 +11,7 @@ using MonoKit.Graphics;
 using MonoKit.Input;
 using PhotonLab.Input;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PhotonLab
 {
@@ -77,7 +78,7 @@ namespace PhotonLab
             ContentProvider.Container<Model>().LoadContent(Content, "Models");
         }
 
-        protected override void Update(GameTime gameTime)
+        protected override async void Update(GameTime gameTime)
         {
             var elapsedMilliseconds = gameTime.ElapsedGameTime.TotalMilliseconds;
             _inputHandler.Update(elapsedMilliseconds);
@@ -86,7 +87,7 @@ namespace PhotonLab
                 Exit();
 
             if (_windowActive)
-                _scene.Update(elapsedMilliseconds, _inputHandler, _pathManager);
+                await _scene.Update(elapsedMilliseconds, _inputHandler, _pathManager);
 
             base.Update(gameTime);
         }

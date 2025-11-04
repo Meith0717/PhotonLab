@@ -15,9 +15,9 @@ namespace PhotonLab
 
         public Vector3 InterpolateVector3(Vector3 v0, Vector3 v1, Vector3 v2) => B0 * v0 + B1 * v1 + B2 * v2;
 
-        public Color InterpolateColor(Color c0, Color c1, Color c2) => new(B0 * c0.ToVector3() + B1 * c1.ToVector3() + B2 * c2.ToVector3());
+        public Vector2 InterpolateVector2(Vector2 v0, Vector2 v1, Vector2 v2) => B0 * v0 + B1 * v1 + B2 * v2;
 
-        public bool Inside => T > 0 && B1 >= 0 && B2 >= 0 && (B1 + B2) <= 1;
+        public bool Inside => T > 0 && B1 >= 0 && B2 >= 0 && B1 + B2 <= 1;
     }
 
     internal static class RayExtension
@@ -50,6 +50,12 @@ namespace PhotonLab
             coordinates = new(b1, b2, t);
 
             return coordinates.Inside;
+        }
+
+        public static Ray Transform(this Ray ray, Matrix tranform)
+        {
+            return new(Vector3.Transform(ray.Position, tranform),
+                Vector3.TransformNormal(ray.Direction, tranform));
         }
     }
 }

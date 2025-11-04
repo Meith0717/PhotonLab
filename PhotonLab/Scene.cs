@@ -5,6 +5,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
+using MonoKit.Content;
 using MonoKit.Core;
 using MonoKit.Input;
 using PhotonLab.Input;
@@ -33,25 +34,30 @@ namespace PhotonLab
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
-            var object1 = Shape3D.CreateSphere(graphicsDevice, color: Color.White);
-            object1.ModelTransform = Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 3, 0);
-            object1.Material = new PhongMaterial() { AmbientStrength = 0, DiffStrength = 1, SpecStrength = 1 };
-            Shapes.Add(object1);
-
-            var object2 = Shape3D.CreateQuad(graphicsDevice, Color.LightGray, true);
-            object2.ModelTransform = Matrix.CreateRotationX(float.Pi / 2) * Matrix.CreateScale(100);
-            object2.Material = new PhongMaterial() { AmbientStrength = 0, DiffStrength = 1, SpecStrength = 0 };
-            Shapes.Add(object2);
+            var model = ContentProvider.Get<Model>("Imperial");
+            var modelTexture = ContentProvider.Get<Texture2D>("Imperial_Red");
+            foreach (var mesh in model.Meshes)
+            {
+                foreach (var part in mesh.MeshParts)
+                {
+                    var shape = new Shape3D(part)
+                    {
+                        ModelTransform = Matrix.CreateRotationX(-float.Pi / 2) * Matrix.CreateTranslation(0, 10, 0),
+                        Material = new PhongMaterial(modelTexture) { AmbientStrength = .5f, DiffStrength = 1, SpecStrength = 0 }
+                    };
+                    Shapes.Add(shape);
+                }
+            }
 
             float radius = 10f;
             float height = 10;
-            Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.Red));
-            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.Green));
-            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.Blue));
+            Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.White));
+            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.White));
+            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.White));
 
             foreach (var light in Lights)
             {
-                var lightMesh = Shape3D.CreateSphere(graphicsDevice, 8, 8, light.Color);
+                var lightMesh = Shape3D.CreateSphere(graphicsDevice, 8, 8);
                 lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(light.Position);
                 LightShapes.Add(lightMesh);
             }
@@ -63,7 +69,8 @@ namespace PhotonLab
             var hitFound = false;
             foreach (var shape in Shapes)
             {
-                if (shape.Intersect(ray, out var hit) && hit <= closestHit)
+                if (shape.Intersect(ray, out var hit) 
+                    && hit <= closestHit)
                 {
                     closestHit = hit;
                     hitFound = true;
@@ -87,12 +94,11 @@ namespace PhotonLab
         {
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
-            graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+            graphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             _basicEffect.World = Matrix.Identity;
             _basicEffect.View = Camer3D.View;
             _basicEffect.Projection = Camer3D.Projection;
-            _basicEffect.VertexColorEnabled = true;
 
             foreach (var shape in Shapes)
                 shape.Draw(graphicsDevice, _basicEffect);

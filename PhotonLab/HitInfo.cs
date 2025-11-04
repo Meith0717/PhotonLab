@@ -11,23 +11,23 @@ namespace PhotonLab
         public readonly float Distance;
         public readonly Vector3 Position;
         public readonly Vector3 Normal;
-        public readonly Color ReflectanceColor;
         public readonly Shape3D Object;
+        public readonly Vector2 TextureCoordinates;
 
         public HitInfo()
         {
             Distance = float.MaxValue;
             Position = Vector3.Zero;
             Normal = Vector3.Zero;
-            ReflectanceColor = Color.Black;
+            TextureCoordinates = Vector2.Zero;
         }
 
-        public HitInfo(float distance, Vector3 position, Vector3 normal, Color reflectanceColor, Shape3D obj)
+        public HitInfo(float distance, Vector3 position, Vector3 normal, Vector2 textureCoordinates, Shape3D obj)
         {
             Distance = distance;
             Position = position;
             Normal = normal;
-            ReflectanceColor = reflectanceColor;
+            TextureCoordinates = textureCoordinates;
             Object = obj;
         }
 

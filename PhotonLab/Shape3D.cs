@@ -8,43 +8,48 @@ namespace PhotonLab
     using Microsoft.Xna.Framework.Graphics;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     internal class Shape3D : IShape3D
     {
-        private readonly BoundingBox _boundingBox;
-        private readonly short[] _indices;
-        private readonly VertexPositionColorNormal[] _vertices;
+        private readonly ushort[] _indices;
+        private readonly VertexPositionNormalTexture[] _vertices;
         private readonly VertexBuffer _vertexBuffer;
         private readonly IndexBuffer _indexBuffer;
+        private readonly BoundingBox _boundingBox;
 
         public Matrix ModelTransform { get; set; } = Matrix.Identity;
 
-        public IMaterial Material { get; set; }
+        public Material Material { get; set; }
 
-        public Shape3D(GraphicsDevice graphicsDevice, VertexPositionColorNormal[] vertices, short[] indices)
+        public Shape3D(GraphicsDevice graphicsDevice, VertexPositionNormalTexture[] vertices, ushort[] indices)
         {
             _vertices = vertices;
             _indices = indices;
 
-            _boundingBox = new()
-            {
-                Min = new Vector3(float.MaxValue),
-                Max = new Vector3(float.MinValue)
-            };
+            _boundingBox = BoundingBox.CreateFromPoints(_vertices.Select(v => v.Position));
 
-            foreach (var vertex in _vertices)
-            {
-                _boundingBox.Min = Vector3.Min(_boundingBox.Min, vertex.Position);
-                _boundingBox.Max = Vector3.Max(_boundingBox.Max, vertex.Position);
-            }
-
-            _vertexBuffer?.Dispose();
-            _vertexBuffer = new(graphicsDevice, typeof(VertexPositionColorNormal), _vertices.Length, BufferUsage.None);
+            _vertexBuffer = new(graphicsDevice, typeof(VertexPositionNormalTexture), _vertices.Length, BufferUsage.None);
             _vertexBuffer.SetData(_vertices);
 
-            _indexBuffer?.Dispose();
             _indexBuffer = new(graphicsDevice, IndexElementSize.SixteenBits, _indices.Length, BufferUsage.None);
             _indexBuffer.SetData(_indices);
+        }
+
+        public Shape3D(ModelMeshPart part)
+        {
+            var vertexCount = part.NumVertices;
+            var vertices = new VertexPositionNormalTexture[vertexCount];
+            _vertexBuffer = part.VertexBuffer;
+            _vertexBuffer.GetData(vertices);
+
+            var indices = new ushort[part.PrimitiveCount * 3];
+            _indexBuffer = part.IndexBuffer;
+            _indexBuffer.GetData(indices);
+
+            _boundingBox = BoundingBox.CreateFromPoints(vertices.Select(v => v.Position));
+            _vertices = [.. vertices];
+            _indices = [.. indices];
         }
 
         public bool Intersect(Ray ray, out HitInfo hit)
@@ -52,7 +57,8 @@ namespace PhotonLab
             hit = default;
             var anyHit = false;
 
-            if (!_boundingBox.IntersectsRay(ref ray, ModelTransform, out var _))
+            var localRay = ray.Transform(Matrix.Invert(ModelTransform));
+            if (!_boundingBox.IntersectsRay(ref localRay, out var _))
                 return anyHit;
 
             var minT = float.MaxValue;
@@ -75,7 +81,7 @@ namespace PhotonLab
                     coordinates.T,
                     ray.Position + ray.Direction * coordinates.T,
                     Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(v0.Normal, v1.Normal, v2.Normal), ModelTransform)),
-                    coordinates.InterpolateColor(v0.Color, v1.Color, v2.Color),
+                    coordinates.InterpolateVector2(v0.TextureCoordinate, v1.TextureCoordinate, v2.TextureCoordinate),
                     this);
             }
 
@@ -91,6 +97,12 @@ namespace PhotonLab
                 return;
 
             basicEffect.World = ModelTransform;
+            basicEffect.VertexColorEnabled = false;
+            if (Material != null && Material.Texture != null)
+            {
+                basicEffect.Texture = Material.Texture;
+                basicEffect.TextureEnabled = true;
+            }
 
             graphicsDevice.SetVertexBuffer(_vertexBuffer);
             graphicsDevice.Indices = _indexBuffer;
@@ -101,7 +113,7 @@ namespace PhotonLab
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _indices.Length / 3);
             }
 
-            DrawBoundingBox(graphicsDevice, basicEffect, Color.Red);
+            DrawBoundingBox(graphicsDevice, basicEffect, Color.White);
         }
 
         public void DrawBoundingBox(GraphicsDevice graphicsDevice, BasicEffect effect, Color color)
@@ -110,38 +122,33 @@ namespace PhotonLab
 
             int[] indices =
             [
-                0, 1, 1, 2, 2, 3, 3, 0, // Bottom
-                4, 5, 5, 6, 6, 7, 7, 4, // Top
-                0, 4, 1, 5, 2, 6, 3, 7  // Vertical
+                0, 1, 1, 2, 2, 3, 3, 0,
+                4, 5, 5, 6, 6, 7, 7, 4,
+                0, 4, 1, 5, 2, 6, 3, 7
             ];
 
             var lines = new VertexPositionColor[8];
             for (int i = 0; i < 8; i++)
                 lines[i] = new VertexPositionColor(corners[i], color);
 
-            effect.World = ModelTransform; // Apply your model transform
+            effect.World = ModelTransform;
             effect.VertexColorEnabled = true;
 
             foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                graphicsDevice.DrawUserIndexedPrimitives(
-                    PrimitiveType.LineList,
-                    lines, 0, 8,
-                    indices, 0, 12
-                );
+                graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, lines, 0, 8, indices, 0, 12 );
             }
         }
 
-        private static void MaybeFlip(ref short a, ref short b, ref short c, bool clockwise)
+        private static void MaybeFlip(ref ushort a, ref ushort b, ref ushort c, bool clockwise)
         {
             if (!clockwise)
                 (b, c) = (c, b);
         }
 
-        public static Shape3D CreateQuad(GraphicsDevice graphicsDevice, Color? color = null, bool clockwise = true)
+        public static Shape3D CreateQuad(GraphicsDevice graphicsDevice, bool clockwise = true)
         {
-            var c = color ?? Color.White;
             float h = 1f / 2f;
 
             var p0 = new Vector3(-h, -h, 0);
@@ -153,20 +160,20 @@ namespace PhotonLab
             if (!clockwise)
                 normal = -normal;
 
-            var vertices = new VertexPositionColorNormal[]
+            var vertices = new VertexPositionNormalTexture[]
             {
-                new(p0, c, normal),
-                new(p1, c, normal),
-                new(p2, c, normal),
-                new(p3, c, normal)
+                new(p0, normal, Vector2.Zero),
+                new(p1, normal, Vector2.Zero),
+                new(p2, normal, Vector2.Zero),
+                new(p3, normal, Vector2.Zero)
             };
 
-            short a1 = 0, b1 = 2, c1 = 1;
-            short a2 = 0, b2 = 3, c2 = 2;
+            ushort a1 = 0, b1 = 2, c1 = 1;
+            ushort a2 = 0, b2 = 3, c2 = 2;
             MaybeFlip(ref a1, ref b1, ref c1, clockwise);
             MaybeFlip(ref a2, ref b2, ref c2, clockwise);
 
-            var indices = new short[] { a1, b1, c1, a2, b2, c2 };
+            var indices = new ushort[] { a1, b1, c1, a2, b2, c2 };
 
             return new Shape3D(graphicsDevice, vertices, indices);
         }
@@ -186,19 +193,19 @@ namespace PhotonLab
             var v6 = new Vector3( s,  s,  s);
             var v7 = new Vector3(-s,  s,  s);
 
-            var vertices = new VertexPositionColorNormal[]
+            var vertices = new VertexPositionNormalTexture[]
             {
-                new(v0, c, Vector3.Normalize(v0 - center)),
-                new(v1, c, Vector3.Normalize(v1 - center)),
-                new(v2, c, Vector3.Normalize(v2 - center)),
-                new(v3, c, Vector3.Normalize(v3 - center)),
-                new(v4, c, Vector3.Normalize(v4 - center)),
-                new(v5, c, Vector3.Normalize(v5 - center)),
-                new(v6, c, Vector3.Normalize(v6 - center)),
-                new(v7, c, Vector3.Normalize(v7 - center)),
+                new(v0, Vector3.Normalize(v0 - center), Vector2.Zero),
+                new(v1, Vector3.Normalize(v1 - center), Vector2.Zero),
+                new(v2, Vector3.Normalize(v2 - center), Vector2.Zero),
+                new(v3, Vector3.Normalize(v3 - center), Vector2.Zero),
+                new(v4, Vector3.Normalize(v4 - center), Vector2.Zero),
+                new(v5, Vector3.Normalize(v5 - center), Vector2.Zero),
+                new(v6, Vector3.Normalize(v6 - center), Vector2.Zero),
+                new(v7, Vector3.Normalize(v7 - center), Vector2.Zero),
             };
 
-            var indices = new short[]
+            var indices = new ushort[]
             {
                 4, 5, 6,  4, 6, 7,
                 1, 0, 3,  1, 3, 2,
@@ -224,15 +231,15 @@ namespace PhotonLab
             var v3 = new Vector3(size / 2f, 0, -h / 3f);
             var v4 = new Vector3(0, 0, 2f * h / 3f);
 
-            var vertices = new VertexPositionColorNormal[]
+            var vertices = new VertexPositionNormalTexture[]
             {
-                new(v1, c, Vector3.Normalize(v1 - center)),
-                new(v2, c, Vector3.Normalize(v2 - center)),
-                new(v3, c, Vector3.Normalize(v3 - center)),
-                new(v4, c, Vector3.Normalize(v4 - center)),
+                new(v1, Vector3.Normalize(v1 - center), Vector2.Zero),
+                new(v2, Vector3.Normalize(v2 - center), Vector2.Zero),
+                new(v3, Vector3.Normalize(v3 - center), Vector2.Zero),
+                new(v4, Vector3.Normalize(v4 - center), Vector2.Zero),
             };
 
-            var indices = new short[]
+            var indices = new ushort[]
             {
                 0, 2, 1,
                 0, 1, 3,
@@ -243,12 +250,10 @@ namespace PhotonLab
             return new Shape3D(graphicsDevice, vertices, indices);
         }
 
-
-        public static Shape3D CreateSphere(GraphicsDevice graphicsDevice, int segments = 16, int rings = 16, Color? color = null)
+        public static Shape3D CreateSphere(GraphicsDevice graphicsDevice, int segments = 16, int rings = 16)
         {
-            var c = color ?? Color.White;
-            var vertices = new List<VertexPositionColorNormal>();
-            var indices = new List<short>();
+            var vertices = new List<VertexPositionNormalTexture>();
+            var indices = new List<ushort>();
             var center = Vector3.Zero;
 
             for (int y = 0; y <= rings; y++)
@@ -272,7 +277,7 @@ namespace PhotonLab
                     float pz = sinTheta * sinPhi;
 
                     var vx = new Vector3(px, py, pz);
-                    vertices.Add(new(vx, c, Vector3.Normalize(vx - center)));
+                    vertices.Add(new(vx, Vector3.Normalize(vx - center), Vector2.Zero));
                 }
             }
 
@@ -280,16 +285,16 @@ namespace PhotonLab
             {
                 for (int x = 0; x < segments; x++)
                 {
-                    int first = (y * (segments + 1)) + x;
+                    int first = y * (segments + 1) + x;
                     int second = first + segments + 1;
 
-                    indices.Add((short)first);
-                    indices.Add((short)(first + 1));
-                    indices.Add((short)second);
+                    indices.Add((ushort)first);
+                    indices.Add((ushort)(first + 1));
+                    indices.Add((ushort)second);
 
-                    indices.Add((short)(second));
-                    indices.Add((short)(first + 1));
-                    indices.Add((short)(second + 1));
+                    indices.Add((ushort)second);
+                    indices.Add((ushort)(first + 1));
+                    indices.Add((ushort)(second + 1));
                 }
             }
 
