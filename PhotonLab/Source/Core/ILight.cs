@@ -4,7 +4,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace PhotonLab
+namespace PhotonLab.scource.Core
 {
     internal interface ILight
     {

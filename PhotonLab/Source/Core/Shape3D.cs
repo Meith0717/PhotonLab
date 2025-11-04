@@ -2,7 +2,7 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-namespace PhotonLab
+namespace PhotonLab.scource.Core
 {
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -137,7 +137,7 @@ namespace PhotonLab
             foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, lines, 0, 8, indices, 0, 12 );
+                graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, lines, 0, 8, indices, 0, 12);
             }
         }
 
@@ -185,13 +185,13 @@ namespace PhotonLab
 
             var center = Vector3.Zero;
             var v0 = new Vector3(-s, -s, -s);
-            var v1 = new Vector3( s, -s, -s);
-            var v2 = new Vector3( s,  s, -s);
-            var v3 = new Vector3(-s,  s, -s);
-            var v4 = new Vector3(-s, -s,  s);
-            var v5 = new Vector3( s, -s,  s);
-            var v6 = new Vector3( s,  s,  s);
-            var v7 = new Vector3(-s,  s,  s);
+            var v1 = new Vector3(s, -s, -s);
+            var v2 = new Vector3(s, s, -s);
+            var v3 = new Vector3(-s, s, -s);
+            var v4 = new Vector3(-s, -s, s);
+            var v5 = new Vector3(s, -s, s);
+            var v6 = new Vector3(s, s, s);
+            var v7 = new Vector3(-s, s, s);
 
             var vertices = new VertexPositionNormalTexture[]
             {
@@ -243,7 +243,7 @@ namespace PhotonLab
             {
                 0, 2, 1,
                 0, 1, 3,
-                0, 3, 2, 
+                0, 3, 2,
                 1, 2, 3
             };
 

@@ -6,10 +6,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
 using MonoKit.Core;
+using PhotonLab.scource.Core;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace PhotonLab.RayTracing
+namespace PhotonLab.scource.RayTracing
 {
     internal class RayTracer(GraphicsDevice gd)
     {
@@ -26,7 +27,7 @@ namespace PhotonLab.RayTracing
             _stopwatch.Stop(); Debug.WriteLine($"Generate camera rays: {_stopwatch.Elapsed.TotalMilliseconds}ms");
 
             _stopwatch.Restart();
-            Parallel.For(0, rays.Length, i =>_colorArray[i] = RayShader.Trace(scene, rays[i]));
+            Parallel.For(0, rays.Length, i => _colorArray[i] = RayShader.Trace(scene, rays[i]));
             _stopwatch.Stop(); Debug.WriteLine($"Tracing: {_stopwatch.Elapsed.TotalMilliseconds}ms");
 
             RenderTaregt.SetData(_colorArray);

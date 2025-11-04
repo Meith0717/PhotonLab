@@ -8,19 +8,19 @@ using MonoKit.Camera;
 using MonoKit.Content;
 using MonoKit.Core;
 using MonoKit.Input;
-using PhotonLab.Input;
-using PhotonLab.RayTracing;
+using PhotonLab.scource.Input;
+using PhotonLab.scource.RayTracing;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace PhotonLab
+namespace PhotonLab.scource.Core
 {
     internal class Scene
     {
         public readonly Camera3D Camer3D;
         private readonly BasicEffect _basicEffect;
         private readonly RayTracer _rayTracer;
-        private readonly List<IShape3D> LightShapes= new();
+        private readonly List<IShape3D> LightShapes = new();
 
         public List<IShape3D> Shapes { get; } = new();
 
@@ -69,7 +69,7 @@ namespace PhotonLab
             var hitFound = false;
             foreach (var shape in Shapes)
             {
-                if (shape.Intersect(ray, out var hit) 
+                if (shape.Intersect(ray, out var hit)
                     && hit <= closestHit)
                 {
                     closestHit = hit;

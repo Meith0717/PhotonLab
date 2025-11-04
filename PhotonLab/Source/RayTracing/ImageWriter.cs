@@ -9,7 +9,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace PhotonLab.RayTracing
+namespace PhotonLab.scource.RayTracing
 {
     internal sealed class ImageWriter(GraphicsDevice device)
     {

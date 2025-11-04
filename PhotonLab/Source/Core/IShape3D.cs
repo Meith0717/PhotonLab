@@ -5,7 +5,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace PhotonLab
+namespace PhotonLab.scource.Core
 {
     internal interface IShape3D
     {

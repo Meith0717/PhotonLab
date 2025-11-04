@@ -8,7 +8,7 @@ using MonoKit.Camera;
 using MonoKit.Input;
 using System;
 
-namespace PhotonLab.Input
+namespace PhotonLab.scource.Input
 {
     /// <summary>
     /// Smoothly zooms a 3D camera using the mouse scroll wheel by adjusting the field of view (FOV).

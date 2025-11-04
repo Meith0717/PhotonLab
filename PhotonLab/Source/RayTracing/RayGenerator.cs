@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
 using System.Threading.Tasks;
 
-namespace PhotonLab.RayTracing
+namespace PhotonLab.scource.RayTracing
 {
     internal sealed class RayGenerator(GraphicsDevice device)
     {

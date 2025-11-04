@@ -1,4 +1,4 @@
-﻿// TestMaterial.cs 
+﻿// PhongMaterial.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
@@ -6,12 +6,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace PhotonLab
+namespace PhotonLab.scource.Core
 {
     internal class PhongMaterial(Texture2D texture) : Material(texture), IMaterial
     {
-        private const float Epsilon =.1e-4f;
-        private const float OneOverPi = 1  / float.Pi;
+        private const float Epsilon = .1e-4f;
+        private const float OneOverPi = 1 / float.Pi;
 
         public Color AmbientColor = Color.White;
         public float AmbientStrength = 1;

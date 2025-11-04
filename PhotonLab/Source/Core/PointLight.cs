@@ -4,7 +4,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace PhotonLab
+namespace PhotonLab.scource.Core
 {
     internal class PointLight(Vector3 position, Color color) : ILight
     {

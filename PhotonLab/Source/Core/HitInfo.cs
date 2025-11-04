@@ -1,10 +1,10 @@
-﻿// RayHit.cs 
+﻿// HitInfo.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
 using Microsoft.Xna.Framework;
 
-namespace PhotonLab
+namespace PhotonLab.scource.Core
 {
     internal readonly struct HitInfo
     {
@@ -31,16 +31,16 @@ namespace PhotonLab
             Object = obj;
         }
 
-        public static bool operator <(HitInfo a, HitInfo b) 
+        public static bool operator <(HitInfo a, HitInfo b)
             => a.Distance < b.Distance;
 
-        public static bool operator >(HitInfo a, HitInfo b) 
+        public static bool operator >(HitInfo a, HitInfo b)
             => a.Distance > b.Distance;
 
-        public static bool operator <=(HitInfo a, HitInfo b) 
+        public static bool operator <=(HitInfo a, HitInfo b)
             => a.Distance <= b.Distance;
 
-        public static bool operator >=(HitInfo a, HitInfo b) 
+        public static bool operator >=(HitInfo a, HitInfo b)
             => a.Distance >= b.Distance;
 
     }
