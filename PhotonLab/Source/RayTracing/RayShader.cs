@@ -3,9 +3,9 @@
 // All rights reserved.
 
 using Microsoft.Xna.Framework;
-using PhotonLab.scource.Core;
+using PhotonLab.Source.Core;
 
-namespace PhotonLab.scource.RayTracing
+namespace PhotonLab.Source.RayTracing
 {
     internal static class RayShader
     {

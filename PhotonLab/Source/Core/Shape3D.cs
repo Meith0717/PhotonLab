@@ -2,7 +2,7 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-namespace PhotonLab.scource.Core
+namespace PhotonLab.Source.Core
 {
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -56,12 +56,11 @@ namespace PhotonLab.scource.Core
         {
             hit = default;
             var anyHit = false;
+            var minT = float.MaxValue;
 
             var localRay = ray.Transform(Matrix.Invert(ModelTransform));
             if (!_boundingBox.IntersectsRay(ref localRay, out var _))
                 return anyHit;
-
-            var minT = float.MaxValue;
 
             for (int i = 0; i < _indices.Length; i += 3)
             {
@@ -73,16 +72,15 @@ namespace PhotonLab.scource.Core
                 var p1 = Vector3.Transform(v1.Position, ModelTransform);
                 var p2 = Vector3.Transform(v2.Position, ModelTransform);
 
-                if (!ray.IntersectsFace((p0, p1, p2), out var coordinates) || coordinates.T >= minT)
-                    continue;
+                if (ray.IntersectsFace((p0, p1, p2), out var coordinates) && coordinates.T < minT)
+                {
+                    minT = coordinates.T;
+                    var normal = Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(v0.Normal, v1.Normal, v2.Normal), ModelTransform));
+                    var texturePos = coordinates.InterpolateVector2(v0.TextureCoordinate, v1.TextureCoordinate, v2.TextureCoordinate);
 
-                minT = coordinates.T; anyHit = true;
-                hit = new(
-                    coordinates.T,
-                    ray.Position + ray.Direction * coordinates.T,
-                    Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(v0.Normal, v1.Normal, v2.Normal), ModelTransform)),
-                    coordinates.InterpolateVector2(v0.TextureCoordinate, v1.TextureCoordinate, v2.TextureCoordinate),
-                    this);
+                    hit = new(coordinates.T, normal, texturePos, this);
+                    anyHit = true;
+                }
             }
 
             return anyHit;
@@ -113,13 +111,7 @@ namespace PhotonLab.scource.Core
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _indices.Length / 3);
             }
 
-            DrawBoundingBox(graphicsDevice, basicEffect, Color.White);
-        }
-
-        public void DrawBoundingBox(GraphicsDevice graphicsDevice, BasicEffect effect, Color color)
-        {
             var corners = _boundingBox.GetCorners();
-
             int[] indices =
             [
                 0, 1, 1, 2, 2, 3, 3, 0,
@@ -129,12 +121,12 @@ namespace PhotonLab.scource.Core
 
             var lines = new VertexPositionColor[8];
             for (int i = 0; i < 8; i++)
-                lines[i] = new VertexPositionColor(corners[i], color);
+                lines[i] = new VertexPositionColor(corners[i], Color.White);
 
-            effect.World = ModelTransform;
-            effect.VertexColorEnabled = true;
+            basicEffect.VertexColorEnabled = true;
+            basicEffect.TextureEnabled = false;
 
-            foreach (var pass in effect.CurrentTechnique.Passes)
+            foreach (var pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
                 graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, lines, 0, 8, indices, 0, 12);

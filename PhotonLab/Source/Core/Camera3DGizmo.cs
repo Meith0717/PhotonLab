@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
 using System;
 
-namespace PhotonLab.scource.Core
+namespace PhotonLab.Source.Core
 {
     public static class Camera3DGizmo
     {

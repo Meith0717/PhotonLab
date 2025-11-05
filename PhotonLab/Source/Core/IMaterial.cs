@@ -3,8 +3,9 @@
 // All rights reserved.
 
 using Microsoft.Xna.Framework;
+using PhotonLab.Source.Core;
 
-namespace PhotonLab.scource.Core
+namespace PhotonLab.Source.Core
 {
     internal interface IMaterial
     {

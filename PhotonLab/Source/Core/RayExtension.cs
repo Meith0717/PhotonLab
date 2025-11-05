@@ -4,7 +4,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace PhotonLab.scource.Core
+namespace PhotonLab.Source.Core
 {
     internal readonly struct BarycentricCoordinates(float b1, float b2, float t)
     {

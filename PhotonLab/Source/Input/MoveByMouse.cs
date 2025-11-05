@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoKit.Camera;
 using MonoKit.Input;
 
-namespace PhotonLab.scource.Input
+namespace PhotonLab.Source.Input
 {
     public class MoveByMouse() : ICamera3dBehaviour
     {

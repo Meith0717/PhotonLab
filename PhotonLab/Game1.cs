@@ -9,8 +9,8 @@ using MonoKit.Content;
 using MonoKit.Core;
 using MonoKit.Graphics;
 using MonoKit.Input;
-using PhotonLab.scource.Core;
-using PhotonLab.scource.Input;
+using PhotonLab.Source.Core;
+using PhotonLab.Source.Input;
 using System.Collections.Generic;
 
 namespace PhotonLab

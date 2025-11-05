@@ -4,7 +4,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace PhotonLab.scource.Core
+namespace PhotonLab.Source.Core
 {
     internal static class BoundBoxExtension
     {

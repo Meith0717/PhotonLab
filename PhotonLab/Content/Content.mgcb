@@ -20,7 +20,7 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/default_font.spritefont
 
-#begin Models/Cube.fbx
+#begin Models/Fantasy_House.FBX
 /importer:FbxImporter
 /processor:ModelProcessor
 /processorParam:ColorKeyColor=0,0,0,0
@@ -37,7 +37,7 @@
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Compressed
-/build:Models/Cube.fbx
+/build:Models/Fantasy_House.FBX
 
 #begin Models/Imperial.fbx
 /importer:FbxImporter
@@ -58,7 +58,7 @@
 /processorParam:TextureFormat=Compressed
 /build:Models/Imperial.fbx
 
-#begin Textures/camera.png
+#begin Textures/House2_low_03_Default_AlbedoTransparency.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -68,7 +68,19 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Textures/camera.png
+/build:Textures/House2_low_03_Default_AlbedoTransparency.png
+
+#begin Textures/House2_low_03_Default_MetallicSmoothness.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/House2_low_03_Default_MetallicSmoothness.png
 
 #begin Textures/Imperial_Blue.png
 /importer:TextureImporter

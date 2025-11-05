@@ -4,44 +4,36 @@
 
 using Microsoft.Xna.Framework;
 
-namespace PhotonLab.scource.Core
+namespace PhotonLab.Source.Core
 {
     internal readonly struct HitInfo
     {
-        public readonly float Distance;
-        public readonly Vector3 Position;
-        public readonly Vector3 Normal;
-        public readonly Shape3D Object;
-        public readonly Vector2 TextureCoordinates;
+        public readonly float Distance { get; }
+        public readonly Vector3 Normal { get; }
+        public readonly Shape3D Object { get; }
+        public readonly Vector2 TexturePos { get; }
 
         public HitInfo()
         {
             Distance = float.MaxValue;
-            Position = Vector3.Zero;
             Normal = Vector3.Zero;
-            TextureCoordinates = Vector2.Zero;
+            TexturePos = Vector2.Zero;
         }
 
-        public HitInfo(float distance, Vector3 position, Vector3 normal, Vector2 textureCoordinates, Shape3D obj)
+        public HitInfo(float distance, Vector3 normal, Vector2 texturePos, Shape3D obj)
         {
             Distance = distance;
-            Position = position;
             Normal = normal;
-            TextureCoordinates = textureCoordinates;
+            TexturePos = texturePos;
             Object = obj;
         }
 
-        public static bool operator <(HitInfo a, HitInfo b)
-            => a.Distance < b.Distance;
+        public static bool operator <(HitInfo a, HitInfo b) => a.Distance < b.Distance;
 
-        public static bool operator >(HitInfo a, HitInfo b)
-            => a.Distance > b.Distance;
+        public static bool operator >(HitInfo a, HitInfo b) => a.Distance > b.Distance;
 
-        public static bool operator <=(HitInfo a, HitInfo b)
-            => a.Distance <= b.Distance;
+        public static bool operator <=(HitInfo a, HitInfo b) => a.Distance <= b.Distance;
 
-        public static bool operator >=(HitInfo a, HitInfo b)
-            => a.Distance >= b.Distance;
-
+        public static bool operator >=(HitInfo a, HitInfo b) => a.Distance >= b.Distance;
     }
 }

@@ -6,11 +6,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
 using MonoKit.Core;
-using PhotonLab.scource.Core;
+using PhotonLab.Source.Core;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace PhotonLab.scource.RayTracing
+namespace PhotonLab.Source.RayTracing
 {
     internal class RayTracer(GraphicsDevice gd)
     {

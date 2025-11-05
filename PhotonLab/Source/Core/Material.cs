@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 
-namespace PhotonLab.scource.Core
+namespace PhotonLab.Source.Core
 {
     internal abstract class Material : IMaterial
     {
