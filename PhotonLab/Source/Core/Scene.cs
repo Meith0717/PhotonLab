@@ -13,6 +13,7 @@ using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Core;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using PhotonLab.Source.Materials;
 
 namespace PhotonLab.Source.Core
 {
@@ -36,7 +37,9 @@ namespace PhotonLab.Source.Core
             _rayTracer = new(graphicsDevice);
 
             var model = ContentProvider.Get<Model>("Fantasy_House");
-            var modelTexture = ContentProvider.Get<Texture2D>("House2_low_03_Default_AlbedoTransparency");
+            var albedo = ContentProvider.Get<Texture2D>("House_Albedo");
+            var metallic = ContentProvider.Get<Texture2D>("House_MetallicSmoothness");
+            var normal = ContentProvider.Get<Texture2D>("House_Normal");
             foreach (var mesh in model.Meshes)
             {
                 foreach (var part in mesh.MeshParts)
@@ -44,7 +47,7 @@ namespace PhotonLab.Source.Core
                     Shapes.Add(new Shape3D(part)
                     {
                         ModelTransform = Matrix.CreateScale(.05f) * Matrix.CreateRotationX(-float.Pi / 2),
-                        Material = new PhongMaterial(modelTexture) { AmbientStrength = .2f, DiffStrength = 1, SpecStrength = 1 }
+                        Material = new PhongMaterial(albedo, normal, metallic)
                     });
                 }
             }

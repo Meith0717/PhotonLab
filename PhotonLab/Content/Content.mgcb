@@ -58,7 +58,7 @@
 /processorParam:TextureFormat=Compressed
 /build:Models/Imperial.fbx
 
-#begin Textures/House2_low_03_Default_AlbedoTransparency.png
+#begin Textures/House_Albedo.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -68,9 +68,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Textures/House2_low_03_Default_AlbedoTransparency.png
+/build:Textures/House_Albedo.png
 
-#begin Textures/House2_low_03_Default_MetallicSmoothness.png
+#begin Textures/House_MetallicSmoothness.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -80,7 +80,19 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Textures/House2_low_03_Default_MetallicSmoothness.png
+/build:Textures/House_MetallicSmoothness.png
+
+#begin Textures/House_Normal.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/House_Normal.png
 
 #begin Textures/Imperial_Blue.png
 /importer:TextureImporter
