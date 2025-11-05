@@ -12,6 +12,7 @@ using MonoKit.Input;
 using PhotonLab.Source.Core;
 using PhotonLab.Source.Input;
 using System.Collections.Generic;
+using System.IO;
 
 namespace PhotonLab
 {
@@ -75,7 +76,7 @@ namespace PhotonLab
         {
             ContentProvider.Container<SpriteFont>().LoadContent(Content, "Fonts");
             ContentProvider.Container<Texture2D>().LoadContent(Content, "Textures");
-            ContentProvider.Container<Model>().LoadContent(Content, "Models");
+            ContentProvider.Container<Model>().LoadContent(Content, "Models", SearchOption.TopDirectoryOnly);
         }
 
         protected override async void Update(GameTime gameTime)

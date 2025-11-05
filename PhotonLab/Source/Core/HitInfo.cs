@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using Microsoft.Xna.Framework;
+using PhotonLab.Source.RayTracing;
 
 namespace PhotonLab.Source.Core
 {

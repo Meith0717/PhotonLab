@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
 using MonoKit.Core;
 using PhotonLab.Source.Core;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace PhotonLab.Source.RayTracing
@@ -19,7 +18,7 @@ namespace PhotonLab.Source.RayTracing
         private readonly Color[] _colorArray = new Color[gd.Viewport.Width * gd.Viewport.Height];
         public readonly RenderTarget2D RenderTaregt = new(gd, gd.Viewport.Width, gd.Viewport.Height);
 
-        public void Trace(Camera3D camera, Scene scene)
+        public void BeginTrace(Camera3D camera, Scene scene)
         {
             var rays = CreateCameraRaysParallel(camera);
             Parallel.For(0, rays.Length, i => _colorArray[i] = Trace(scene, rays[i]));

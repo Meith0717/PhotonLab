@@ -10,10 +10,10 @@ using MonoKit.Core;
 using MonoKit.Input;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.RayTracing;
-using PhotonLab.Source.Core;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PhotonLab.Source.Materials;
+using Microsoft.VisualBasic;
 
 namespace PhotonLab.Source.Core
 {
@@ -36,23 +36,23 @@ namespace PhotonLab.Source.Core
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
+            //var model = ContentProvider.Get<Model>("Formula");
+            //var albedo = ContentProvider.Get<Texture2D>("formula_Diffuse");
+            //var metallic = ContentProvider.Get<Texture2D>("formula_Glossiness");
+            //var normal = ContentProvider.Get<Texture2D>("formula_Normal");
+
             var model = ContentProvider.Get<Model>("Fantasy_House");
             var albedo = ContentProvider.Get<Texture2D>("House_Albedo");
             var metallic = ContentProvider.Get<Texture2D>("House_MetallicSmoothness");
             var normal = ContentProvider.Get<Texture2D>("House_Normal");
             foreach (var mesh in model.Meshes)
-            {
-                foreach (var part in mesh.MeshParts)
+                Shapes.Add(new Shape3D(mesh)
                 {
-                    Shapes.Add(new Shape3D(part)
-                    {
-                        ModelTransform = Matrix.CreateScale(.05f) * Matrix.CreateRotationX(-float.Pi / 2),
-                        Material = new PhongMaterial(albedo, normal, metallic)
-                    });
-                }
-            }
+                    ModelTransform = Matrix.CreateScale(.05f) * Matrix.CreateRotationX(-float.Pi / 2),
+                    Material = new PhongMaterial(albedo, normal, metallic)
+                });
 
-            Lights.Add(new PointLight(new Vector3(0, 20, -10), Color.White));
+                Lights.Add(new PointLight(new Vector3(0, 20, -10), Color.White));
             foreach (var light in Lights)
             {
                 var lightMesh = Shape3D.CreateSphere(graphicsDevice, 8, 8);
@@ -84,7 +84,7 @@ namespace PhotonLab.Source.Core
             if (!inputHandler.HasAction((byte)ActionType.RayTrace))
                 return;
 
-            _rayTracer.Trace(Camer3D, this);
+            _rayTracer.BeginTrace(Camer3D, this);
             await _rayTracer.RenderAndSaveAsync(pathManager);
         }
 
@@ -103,7 +103,6 @@ namespace PhotonLab.Source.Core
 
             foreach (var shape in LightShapes)
                 shape.Draw(graphicsDevice, _basicEffect);
-
         }
     }
 }

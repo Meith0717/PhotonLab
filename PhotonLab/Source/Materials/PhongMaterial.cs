@@ -14,8 +14,9 @@ namespace PhotonLab.Source.Materials
     {
         private const float Epsilon = .1e-4f;
         private const float OneOverPi = 1 / float.Pi;
+        private readonly CpuTexture2D _albedo = new(albedo);
 
-        public readonly CpuTexture2D Albedo = new(albedo);
+        public CpuTexture2D Albedo => _albedo;
         public readonly CpuTexture2D Normal = new(normal);
         public readonly CpuTexture2D MetallicSmoothness = new(metallicSmoothness);
 

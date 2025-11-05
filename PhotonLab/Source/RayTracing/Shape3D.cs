@@ -2,72 +2,96 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-namespace PhotonLab.Source.Core
+namespace PhotonLab.Source.RayTracing
 {
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using PhotonLab.Source.Core;
     using PhotonLab.Source.Materials;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
 
     internal class Shape3D : IShape3D
     {
-        private readonly ushort[] _indices;
-        private readonly VertexPositionNormalTexture[] _vertices;
-        private readonly VertexBuffer _vertexBuffer;
-        private readonly IndexBuffer _indexBuffer;
+        // CPU stuff (Ray Tracing)
+        private static readonly short[] BoxLineIndices = [0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7];
+        private readonly VertexPositionColor[] _boxVertecies;
         private readonly BoundingBox _boundingBox;
 
-        public Matrix ModelTransform { get; set; } = Matrix.Identity;
+        private readonly ushort[] _primitiveIndices;
+        private readonly VertexPositionNormalTexture[] _vertices;
 
+        // GPU stuff (Rasterisation)
+        private readonly VertexBuffer _vertexBuffer;
+        private readonly IndexBuffer _indexBuffer;
+
+        // Some other Stuff
+        public Matrix ModelTransform { get; set; } = Matrix.Identity;
         public IMaterial Material { get; set; }
 
         public Shape3D(GraphicsDevice graphicsDevice, VertexPositionNormalTexture[] vertices, ushort[] indices)
         {
+            // Do CPU stuff
             _vertices = vertices;
-            _indices = indices;
-
+            _primitiveIndices = indices;
             _boundingBox = BoundingBox.CreateFromPoints(_vertices.Select(v => v.Position));
+            var corners = _boundingBox.GetCorners();
+            _boxVertecies = new VertexPositionColor[8];
+            for (int i = 0; i < 8; i++)
+                _boxVertecies[i] = new VertexPositionColor(corners[i], Color.White);
 
+            // Move CPU stuff to GPU
             _vertexBuffer = new(graphicsDevice, typeof(VertexPositionNormalTexture), _vertices.Length, BufferUsage.None);
             _vertexBuffer.SetData(_vertices);
-
-            _indexBuffer = new(graphicsDevice, IndexElementSize.SixteenBits, _indices.Length, BufferUsage.None);
-            _indexBuffer.SetData(_indices);
+            _indexBuffer = new(graphicsDevice, IndexElementSize.SixteenBits, _primitiveIndices.Length, BufferUsage.None);
+            _indexBuffer.SetData(_primitiveIndices);
         }
 
-        public Shape3D(ModelMeshPart part)
+        public Shape3D(ModelMesh mesh)
         {
-            var vertexCount = part.NumVertices;
+            var buffer = mesh.MeshParts[0].VertexBuffer;
+            foreach (var part in mesh.MeshParts)
+            {
+                if (buffer != part.VertexBuffer)
+                    throw new Exception();
+            }
+
+            var vertexCount = mesh.MeshParts[0].NumVertices;
             var vertices = new VertexPositionNormalTexture[vertexCount];
-            _vertexBuffer = part.VertexBuffer;
+            _vertexBuffer = mesh.MeshParts[0].VertexBuffer;
             _vertexBuffer.GetData(vertices);
 
-            var indices = new ushort[part.PrimitiveCount * 3];
-            _indexBuffer = part.IndexBuffer;
+            var indices = new ushort[mesh.MeshParts[0].PrimitiveCount * 3];
+            _indexBuffer = mesh.MeshParts[0].IndexBuffer;
             _indexBuffer.GetData(indices);
 
             _boundingBox = BoundingBox.CreateFromPoints(vertices.Select(v => v.Position));
             _vertices = [.. vertices];
-            _indices = [.. indices];
+            _primitiveIndices = [.. indices];
+            var corners = _boundingBox.GetCorners();
+            _boxVertecies = new VertexPositionColor[8];
+            for (int i = 0; i < 8; i++)
+                _boxVertecies[i] = new VertexPositionColor(corners[i], Color.White);
         }
 
         public bool Intersect(Ray ray, out HitInfo hit)
         {
             hit = default;
-            var anyHit = false;
-            var minT = float.MaxValue;
 
             var localRay = ray.Transform(Matrix.Invert(ModelTransform));
             if (!_boundingBox.IntersectsRay(ref localRay, out var _))
-                return anyHit;
+                return false;
 
-            for (int i = 0; i < _indices.Length; i += 3)
+            var anyHit = false;
+            var minT = float.MaxValue;
+
+            for (int i = 0; i < _primitiveIndices.Length; i += 3)
             {
-                var v0 = _vertices[_indices[i]];
-                var v1 = _vertices[_indices[i + 1]];
-                var v2 = _vertices[_indices[i + 2]];
+                var v0 = _vertices[_primitiveIndices[i]];
+                var v1 = _vertices[_primitiveIndices[i + 1]];
+                var v2 = _vertices[_primitiveIndices[i + 2]];
 
                 var p0 = Vector3.Transform(v0.Position, ModelTransform);
                 var p1 = Vector3.Transform(v1.Position, ModelTransform);
@@ -89,43 +113,35 @@ namespace PhotonLab.Source.Core
 
         public void Draw(GraphicsDevice graphicsDevice, BasicEffect basicEffect)
         {
-            if (_vertexBuffer == null ||
-                _indexBuffer == null ||
-                _vertices == null || _vertices.Length == 0 ||
-                _indices == null || _indices.Length == 0)
+            if (_vertexBuffer == null || _indexBuffer == null || _vertices == null || _boxVertecies == null ||
+                _vertices.Length == 0 || _primitiveIndices == null || _primitiveIndices.Length == 0 || BoxLineIndices.Length == 0)
                 return;
 
             basicEffect.World = ModelTransform;
+
+            // Draw main mesh
             basicEffect.VertexColorEnabled = false;
+            if (Material is not null)
+            {
+                basicEffect.Texture = Material.Albedo.Texture2D;
+                basicEffect.TextureEnabled = true;
+            }
 
             graphicsDevice.SetVertexBuffer(_vertexBuffer);
             graphicsDevice.Indices = _indexBuffer;
-
             foreach (var pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _indices.Length / 3);
+                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _primitiveIndices.Length / 3);
             }
 
-            var corners = _boundingBox.GetCorners();
-            int[] indices =
-            [
-                0, 1, 1, 2, 2, 3, 3, 0,
-                4, 5, 5, 6, 6, 7, 7, 4,
-                0, 4, 1, 5, 2, 6, 3, 7
-            ];
-
-            var lines = new VertexPositionColor[8];
-            for (int i = 0; i < 8; i++)
-                lines[i] = new VertexPositionColor(corners[i], Color.White);
-
-            basicEffect.VertexColorEnabled = true;
+            // Draw Bound box
             basicEffect.TextureEnabled = false;
-
+            basicEffect.VertexColorEnabled = true;
             foreach (var pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, lines, 0, 8, indices, 0, 12);
+                graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, _boxVertecies, 0, 8, BoxLineIndices, 0, 12);
             }
         }
 
