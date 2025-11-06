@@ -15,10 +15,11 @@ namespace PhotonLab.Source.RayTracing
     {
         private readonly GraphicsDevice _gD = device;
 
-        public async Task SaveAsync(Color[] colors, PathManager<Paths> pathManager)
+        public async Task SaveAsync(Vector3[] lightData, PathManager<Paths> pathManager)
         {
+            var colorData = Array.ConvertAll(lightData, l => new Color(l));
             using var target = new RenderTarget2D(_gD, _gD.Viewport.Width, _gD.Viewport.Height);
-            target.SetData(colors);
+            target.SetData(colorData);
 
             var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
             await using var fs = new FileStream(filePath, FileMode.Create);

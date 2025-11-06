@@ -15,27 +15,25 @@ namespace PhotonLab.Source.RayTracing
     {
         private readonly GraphicsDevice _gD = gd;
         private readonly ImageWriter _writer = new(gd);
-        private readonly Color[] _colorArray = new Color[gd.Viewport.Width * gd.Viewport.Height];
-        public readonly RenderTarget2D RenderTaregt = new(gd, gd.Viewport.Width, gd.Viewport.Height);
+        private readonly Vector3[] _lightData = new Vector3[gd.Viewport.Width * gd.Viewport.Height];
 
         public void BeginTrace(Camera3D camera, Scene scene)
         {
             var rays = CreateCameraRaysParallel(camera);
-            Parallel.For(0, rays.Length, i => _colorArray[i] = Trace(scene, rays[i]));
-            RenderTaregt.SetData(_colorArray);
+            Parallel.For(0, rays.Length, i => _lightData[i] = Trace(scene, rays[i]));
         }
 
-        public static Color Trace(Scene scene, Ray ray, int depth = 0)
+        public static Vector3 Trace(Scene scene, Ray ray, int depth = 0)
         {
             if (depth > 2 || !scene.Intersect(ray, out var hit))
-                return Color.Black;
+                return Vector3.Zero;
 
             return hit.Object.Material.Shade(scene, depth, ray, in hit);
         }
 
         public async Task RenderAndSaveAsync(PathManager<Paths> pathManager)
         {
-            await _writer.SaveAsync(_colorArray, pathManager);
+            await _writer.SaveAsync(_lightData, pathManager);
         }
 
         public Ray[] CreateCameraRaysParallel(Camera3D camera)

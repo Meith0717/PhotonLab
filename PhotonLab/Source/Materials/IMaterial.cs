@@ -14,6 +14,6 @@ namespace PhotonLab.Source.Materials
 
         public Vector3 DiffuseColor { get; }
 
-        public Color Shade(Scene scene, int depth, Ray ray, in HitInfo hit);
+        public Vector3 Shade(Scene scene, int depth, Ray ray, in HitInfo hit);
     }
 }

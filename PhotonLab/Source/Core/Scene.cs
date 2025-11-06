@@ -36,20 +36,24 @@ namespace PhotonLab.Source.Core
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
-            var quad = BasicMeshes.CreateQuad(graphicsDevice);
+            var quad = BasicSolids.CreateQuad(graphicsDevice);
             quad.ModelTransform = Matrix.CreateRotationX(-float.Pi / 2) * Matrix.CreateScale(50);
-            quad.Material = new DiffuseMaterial(Color.White) { AmbientStrength = .1f };
+            quad.Material = new PhongMaterial(Color.Gray) { AmbientStrength = 0 };
             Shapes.Add(quad);
 
-            var sphere = BasicMeshes.CreateSphere(graphicsDevice);
-            sphere.ModelTransform = Matrix.CreateTranslation(0, 10, 0);
-            sphere.Material = new DiffuseMaterial(Color.Red) { AmbientStrength = .1f };
+            var sphere = BasicSolids.CreateSphere(graphicsDevice);
+            sphere.ModelTransform = Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 5, 0);
+            sphere.Material = new PhongMaterial(Color.White) { AmbientStrength = 0 };
             Shapes.Add(sphere);
 
-            Lights.Add(new PointLight(new Vector3(0, 20, 0), Color.LightYellow));
+            float radius = 10f;
+            float height = 10;
+            Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.Red));
+            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.Green));
+            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.Blue));
             foreach (var light in Lights)
             {
-                var lightMesh = BasicMeshes.CreateSphere(graphicsDevice, 4, 4);
+                var lightMesh = BasicSolids.CreateSphere(graphicsDevice, 4, 4);
                 lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(light.Position);
                 LightShapes.Add(lightMesh);
             }
