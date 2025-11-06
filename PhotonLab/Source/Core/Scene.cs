@@ -9,11 +9,10 @@ using MonoKit.Content;
 using MonoKit.Core;
 using MonoKit.Input;
 using PhotonLab.Source.Input;
+using PhotonLab.Source.Materials;
 using PhotonLab.Source.RayTracing;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using PhotonLab.Source.Materials;
-using Microsoft.VisualBasic;
 
 namespace PhotonLab.Source.Core
 {
@@ -36,23 +35,28 @@ namespace PhotonLab.Source.Core
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
-            //var model = ContentProvider.Get<Model>("Formula");
-            //var albedo = ContentProvider.Get<Texture2D>("formula_Diffuse");
-            //var metallic = ContentProvider.Get<Texture2D>("formula_Glossiness");
-            //var normal = ContentProvider.Get<Texture2D>("formula_Normal");
+            var model = ContentProvider.Get<Model>("Formula");
+            var albedo = ContentProvider.Get<Texture2D>("formula_Diffuse");
+            var metallic = ContentProvider.Get<Texture2D>("formula_Glossiness");
+            var normal = ContentProvider.Get<Texture2D>("formula_Normal");
 
-            var model = ContentProvider.Get<Model>("Fantasy_House");
-            var albedo = ContentProvider.Get<Texture2D>("House_Albedo");
-            var metallic = ContentProvider.Get<Texture2D>("House_MetallicSmoothness");
-            var normal = ContentProvider.Get<Texture2D>("House_Normal");
+            //var model = ContentProvider.Get<Model>("Fantasy_House");
+            //var albedo = ContentProvider.Get<Texture2D>("House_Albedo");
+            //var metallic = ContentProvider.Get<Texture2D>("House_MetallicSmoothness");
+            //var normal = ContentProvider.Get<Texture2D>("House_Normal");
             foreach (var mesh in model.Meshes)
                 Shapes.Add(new Shape3D(mesh)
                 {
-                    ModelTransform = Matrix.CreateScale(.05f) * Matrix.CreateRotationX(-float.Pi / 2),
-                    Material = new PhongMaterial(albedo, normal, metallic)
+                    ModelTransform = Matrix.CreateScale(.05f),// * Matrix.CreateRotationX(-float.Pi / 2),
+                    Material = new PhongMaterial(albedo, normal, metallic) { AmbientStrength = .2f }
                 });
 
-                Lights.Add(new PointLight(new Vector3(0, 20, -10), Color.White));
+            var quad = Shape3D.CreateQuad(graphicsDevice);
+            quad.ModelTransform = Matrix.CreateRotationX(float.Pi / 2) * Matrix.CreateScale(50);
+            quad.Material = new DiffuseMaterial(Color.DarkOliveGreen) { AmbientStrength = .2f };
+            Shapes.Add(quad);
+
+            Lights.Add(new PointLight(new Vector3(0, 20, -10), Color.LightYellow));
             foreach (var light in Lights)
             {
                 var lightMesh = Shape3D.CreateSphere(graphicsDevice, 8, 8);

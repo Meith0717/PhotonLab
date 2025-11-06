@@ -121,7 +121,7 @@ namespace PhotonLab.Source.RayTracing
 
             // Draw main mesh
             basicEffect.VertexColorEnabled = false;
-            if (Material is not null)
+            if (Material is not null && Material.Albedo is not null)
             {
                 basicEffect.Texture = Material.Albedo.Texture2D;
                 basicEffect.TextureEnabled = true;
