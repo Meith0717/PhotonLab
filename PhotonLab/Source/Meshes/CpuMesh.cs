@@ -120,10 +120,18 @@ namespace PhotonLab.Source.Meshes
 
             // Draw main mesh
             basicEffect.VertexColorEnabled = false;
-            if (Material is not null && Material.Albedo is not null)
+            basicEffect.DiffuseColor = Vector3.One;
+            if (Material is not null)
             {
-                basicEffect.Texture = Material.Albedo.Texture2D;
-                basicEffect.TextureEnabled = true;
+                if (Material.DiffuseTexture is not null)
+                {
+                    basicEffect.Texture = Material.DiffuseTexture.Texture2D;
+                    basicEffect.TextureEnabled = true;
+                }
+                else
+                {
+                    basicEffect.DiffuseColor = Material.DiffuseColor;
+                }
             }
 
             graphicsDevice.SetVertexBuffer(_vertexBuffer);
@@ -142,12 +150,6 @@ namespace PhotonLab.Source.Meshes
                 pass.Apply();
                 graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, _boxVertecies, 0, 8, BoxLineIndices, 0, 12);
             }
-        }
-
-        private static void MaybeFlip(ref ushort a, ref ushort b, ref ushort c, bool clockwise)
-        {
-            if (!clockwise)
-                (b, c) = (c, b);
         }
     }
 }

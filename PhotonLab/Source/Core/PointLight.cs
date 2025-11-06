@@ -10,6 +10,6 @@ namespace PhotonLab.Source.Core
     {
         public Vector3 Position => position;
 
-        public Color Color => color;
+        public Vector3 Color => color.ToVector3();
     }
 }

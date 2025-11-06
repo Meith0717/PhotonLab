@@ -38,15 +38,15 @@ namespace PhotonLab.Source.Core
 
             var quad = BasicMeshes.CreateQuad(graphicsDevice);
             quad.ModelTransform = Matrix.CreateRotationX(-float.Pi / 2) * Matrix.CreateScale(50);
-            quad.Material = new DiffuseMaterial(Color.White) { AmbientStrength = .2f };
+            quad.Material = new DiffuseMaterial(Color.White) { AmbientStrength = .1f };
             Shapes.Add(quad);
 
             var sphere = BasicMeshes.CreateSphere(graphicsDevice);
             sphere.ModelTransform = Matrix.CreateTranslation(0, 10, 0);
-            sphere.Material = new DiffuseMaterial(Color.Red) { AmbientStrength = .2f };
+            sphere.Material = new DiffuseMaterial(Color.Red) { AmbientStrength = .1f };
             Shapes.Add(sphere);
 
-            Lights.Add(new PointLight(new Vector3(0, 20, -10), Color.LightYellow));
+            Lights.Add(new PointLight(new Vector3(0, 20, 0), Color.LightYellow));
             foreach (var light in Lights)
             {
                 var lightMesh = BasicMeshes.CreateSphere(graphicsDevice, 4, 4);

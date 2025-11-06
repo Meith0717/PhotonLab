@@ -14,22 +14,24 @@ namespace PhotonLab.Source.Materials
     {
         private const float Epsilon = .1e-4f;
         private const float OneOverPi = 1 / float.Pi;
-        private readonly CpuTexture2D _albedo = new(albedo);
 
-        public CpuTexture2D Albedo => _albedo;
-        public readonly CpuTexture2D Normal = new(normal);
-        public readonly CpuTexture2D MetallicSmoothness = new(metallicSmoothness);
+        public CpuTexture2D DiffuseTexture { get; } = new(albedo);
 
-        public Color AmbientColor = Color.White;
+
+        public readonly CpuTexture2D NormalTexture = new(normal);
+        public readonly CpuTexture2D MetallicSmoothnessTexture = new(metallicSmoothness);
+
+        public Vector3 DiffuseColor { get; } = Color.White.ToVector3();
+        public Vector3 AmbientColor = Color.White.ToVector3();
         public float AmbientStrength = 1;
         public float SpecExponent = 40;
 
         public Color Shade(Scene scene, int depth, Ray ray, in HitInfo hit)
         {
-            var textureColor = Albedo.SampleData(hit.TexturePos).ToVector3();
-            var specStrength = MetallicSmoothness.SampleData(hit.TexturePos).R;
+            var textureColor = DiffuseTexture.SampleData(hit.TexturePos).ToVector3();
+            var specStrength = MetallicSmoothnessTexture.SampleData(hit.TexturePos).R;
 
-            var color = OneOverPi * AmbientStrength * AmbientColor.ToVector3() * textureColor;
+            var color = OneOverPi * AmbientStrength * AmbientColor * textureColor;
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
 
             foreach (var light in scene.Lights)
@@ -40,7 +42,7 @@ namespace PhotonLab.Source.Materials
                 var lightDist = Vector3.Distance(light.Position, hitPos);
                 var shadowRay = new Ray(hitPos, toLightDir);
                 if (scene.Intersect(shadowRay, out var shadowHit))
-                    if (shadowHit.Object == hit.Object || shadowHit.Distance < lightDist || shadowHit.Distance > Epsilon)
+                    if (shadowHit.Distance < lightDist && shadowHit.Distance > Epsilon)
                         continue;
 
                 var r = Vector3.Reflect(-toLightDir, hit.Normal);
@@ -48,8 +50,8 @@ namespace PhotonLab.Source.Materials
                 float nDotL = MathF.Max(Vector3.Dot(hit.Normal, toLightDir), 0);
                 float rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), SpecExponent);
 
-                var diffuse = light.Color.ToVector3() * textureColor * nDotL;
-                var specular = light.Color.ToVector3() * Color.White.ToVector3() * rDotV;
+                var diffuse = light.Color * textureColor * nDotL;
+                var specular = light.Color * Color.White.ToVector3() * rDotV;
 
                 color += diffuse + specStrength * specular;
             }
@@ -62,15 +64,15 @@ namespace PhotonLab.Source.Materials
     {
         private const float Epsilon = .1e-4f;
         private const float OneOverPi = 1 / float.Pi;
-        private readonly Vector3 _reflectionColor = color.ToVector3();
 
-        public CpuTexture2D Albedo => null;
-        public Color AmbientColor = Color.White;
+        public Vector3 DiffuseColor { get; } = color.ToVector3();
+        public Vector3 AmbientColor = Color.White.ToVector3();
         public float AmbientStrength = 1;
+        public CpuTexture2D DiffuseTexture => null;
 
         public Color Shade(Scene scene, int depth, Ray ray, in HitInfo hit)
         {
-            var color = OneOverPi * AmbientStrength * AmbientColor.ToVector3() * _reflectionColor;
+            var color = OneOverPi * AmbientStrength * AmbientColor * DiffuseColor;
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
 
             foreach (var light in scene.Lights)
@@ -81,11 +83,11 @@ namespace PhotonLab.Source.Materials
                 var lightDist = Vector3.Distance(light.Position, hitPos);
                 var shadowRay = new Ray(hitPos, toLightDir);
                 if (scene.Intersect(shadowRay, out var shadowHit))
-                    if (shadowHit.Object == hit.Object || shadowHit.Distance < lightDist || shadowHit.Distance > Epsilon)
+                    if (shadowHit.Distance < lightDist && shadowHit.Distance > Epsilon)
                         continue;
 
                 float nDotL = MathF.Max(Vector3.Dot(hit.Normal, toLightDir), 0);
-                var diffuse = light.Color.ToVector3() * _reflectionColor * nDotL;
+                var diffuse = light.Color * DiffuseColor * nDotL;
 
                 color += diffuse;
             }

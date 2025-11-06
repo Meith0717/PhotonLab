@@ -10,7 +10,9 @@ namespace PhotonLab.Source.Materials
 {
     internal interface IMaterial
     {
-        public CpuTexture2D Albedo { get; }
+        public CpuTexture2D DiffuseTexture { get; }
+
+        public Vector3 DiffuseColor { get; }
 
         public Color Shade(Scene scene, int depth, Ray ray, in HitInfo hit);
     }
