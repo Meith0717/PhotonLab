@@ -98,7 +98,7 @@ namespace PhotonLab.Source.Meshes
                 new VertexPositionNormalTexture(new(-h,h,0), n, Vector2.Zero)
             };
 
-            return new CpuMesh(device, verts, new ushort[] { 0, 2, 1, 0, 3, 2 });
+            return new CpuMesh(device, verts, new ushort[] { 1, 2, 0, 2, 3, 0 });
         }
     }
 }

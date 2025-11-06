@@ -8,6 +8,8 @@ using PhotonLab.Source.RayTracing;
 
 namespace PhotonLab.Source.Materials
 {
+    public enum NormalMode { Face, Interpolated }
+
     internal interface IMaterial
     {
         public CpuTexture2D DiffuseTexture { get; }

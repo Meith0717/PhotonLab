@@ -5,10 +5,10 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
-using MonoKit.Content;
 using MonoKit.Core;
 using MonoKit.Input;
 using PhotonLab.Source.Input;
+using PhotonLab.Source.Lights;
 using PhotonLab.Source.Materials;
 using PhotonLab.Source.Meshes;
 using PhotonLab.Source.RayTracing;
@@ -26,7 +26,7 @@ namespace PhotonLab.Source.Core
 
         public List<CpuMesh> Shapes { get; } = new();
 
-        public List<ILight> Lights { get; } = new();
+        public List<ILightSource> LightSources { get; } = new();
 
         public Scene(GraphicsDevice graphicsDevice)
         {
@@ -60,7 +60,7 @@ namespace PhotonLab.Source.Core
             quad.ModelTransform =
                 Matrix.CreateScale(scale) *
                 Matrix.CreateTranslation(0, scale/2, -scale/2);
-            quad.Material = new PhongMaterial(Color.Gray) { AmbientStrength = .1f, SpecularStrength = 0 };
+            quad.Material = new PhongMaterial(Color.Yellow) { AmbientStrength = .1f, SpecularStrength = 0 };
             Shapes.Add(quad);
 
             // Front wall
@@ -69,7 +69,7 @@ namespace PhotonLab.Source.Core
                 Matrix.CreateScale(scale) *
                 Matrix.CreateRotationX(MathHelper.Pi) *
                 Matrix.CreateTranslation(0, scale/2, scale / 2);
-            quad.Material = new PhongMaterial(Color.Gray) { AmbientStrength = .1f, SpecularStrength = 0 };
+            quad.Material = new PhongMaterial(Color.Red) { AmbientStrength = .1f, SpecularStrength = 0 };
             Shapes.Add(quad);
 
             // Left wall
@@ -78,7 +78,7 @@ namespace PhotonLab.Source.Core
                 Matrix.CreateScale(scale) *
                 Matrix.CreateRotationY(MathHelper.Pi / 2) *
                 Matrix.CreateTranslation(-scale/2, scale / 2, 0);
-            quad.Material = new PhongMaterial(Color.LightBlue) { AmbientStrength = .1f, SpecularStrength = 0 };
+            quad.Material = new PhongMaterial(Color.Green) { AmbientStrength = .1f, SpecularStrength = 0 };
             Shapes.Add(quad);
 
             // Right wall
@@ -87,19 +87,29 @@ namespace PhotonLab.Source.Core
                 Matrix.CreateScale(scale) *
                 Matrix.CreateRotationY(-MathHelper.Pi / 2) *
                 Matrix.CreateTranslation(scale / 2, scale / 2, 0);
-            quad.Material = new PhongMaterial(Color.Orange) { AmbientStrength = .1f, SpecularStrength = 0 };
+            quad.Material = new PhongMaterial(Color.Blue) { AmbientStrength = .1f, SpecularStrength = 0 };
             Shapes.Add(quad);
 
-            var sphere = BasicSolids.CreateSphere(graphicsDevice);
+            var sphere = BasicSolids.CreateSphere(graphicsDevice, 20, 20);
             sphere.ModelTransform = Matrix.CreateScale(3) * Matrix.CreateTranslation(6, 3, 6);
-            sphere.Material = new PhongMaterial(Color.White) { AmbientStrength = .1f };
+            sphere.Material = new MirrorMaterial(Color.White, .75f);
             Shapes.Add(sphere);
 
-            Lights.Add(new PointLight(new Vector3(0, 18f, 0), Color.LightYellow));
-            foreach (var light in Lights)
+            var cube = BasicSolids.CreateCube(graphicsDevice);
+            cube.ModelTransform = Matrix.CreateScale(6) * Matrix.CreateTranslation(-6, 3, 6);
+            cube.Material = new PhongMaterial(Color.White, NormalMode.Face) { AmbientStrength = .1f };
+            Shapes.Add(cube);
+
+            var tetrahedron = BasicSolids.CreateTetrahedron(graphicsDevice);
+            tetrahedron.ModelTransform = Matrix.CreateScale(6) * Matrix.CreateTranslation(-6, 0, -6);
+            tetrahedron.Material = new PhongMaterial(Color.White, NormalMode.Face) { AmbientStrength = .1f };
+            Shapes.Add(tetrahedron);
+
+            LightSources.Add(new LightSources.SpotLight(new Vector3(0, 18f, 0), new(0, -1, 0), 45, Color.LightYellow));
+            foreach (var lightScource in LightSources)
             {
                 var lightMesh = BasicSolids.CreateSphere(graphicsDevice, 4, 4);
-                lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(light.Position);
+                lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(lightScource.Position);
                 LightShapes.Add(lightMesh);
             }
         }
@@ -127,7 +137,7 @@ namespace PhotonLab.Source.Core
             if (!inputHandler.HasAction((byte)ActionType.RayTrace))
                 return;
 
-            _rayTracer.BeginTrace(Camer3D, this);
+            _rayTracer.BeginTrace(Camer3D, this, 6);
             await _rayTracer.RenderAndSaveAsync(pathManager);
         }
 

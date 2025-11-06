@@ -11,21 +11,23 @@ namespace PhotonLab.Source.Core
     internal readonly struct HitInfo
     {
         public readonly float Distance { get; }
-        public readonly Vector3 Normal { get; }
+        public readonly Vector3 InterpolatedNormal { get; }
+        public readonly Vector3 FaceNormal { get; }
         public readonly IMaterial Material { get; }
         public readonly Vector2 TexturePos { get; }
 
         public HitInfo()
         {
             Distance = float.MaxValue;
-            Normal = Vector3.Zero;
+            InterpolatedNormal = Vector3.Zero;
             TexturePos = Vector2.Zero;
         }
 
-        public HitInfo(float distance, Vector3 normal, Vector2 texturePos, IMaterial material)
+        public HitInfo(float distance, Vector3 interpolatedNormal, Vector3 faceNormal, Vector2 texturePos, IMaterial material)
         {
             Distance = distance;
-            Normal = normal;
+            InterpolatedNormal = interpolatedNormal;
+            FaceNormal = faceNormal;
             TexturePos = texturePos;
             Material = material;
         }

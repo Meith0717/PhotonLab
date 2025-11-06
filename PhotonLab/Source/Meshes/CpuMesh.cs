@@ -100,9 +100,10 @@ namespace PhotonLab.Source.Meshes
                 {
                     minT = coordinates.T;
                     var normal = Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(v0.Normal, v1.Normal, v2.Normal), ModelTransform));
+                    var faceNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
                     var texturePos = coordinates.InterpolateVector2(v0.TextureCoordinate, v1.TextureCoordinate, v2.TextureCoordinate);
 
-                    hit = new(coordinates.T, normal, texturePos, Material);
+                    hit = new(coordinates.T, normal, faceNormal, texturePos, Material);
                     anyHit = true;
                 }
             }

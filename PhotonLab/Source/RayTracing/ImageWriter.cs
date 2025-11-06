@@ -4,6 +4,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using MonoKit.Core;
 using System;
 using System.IO;
@@ -29,10 +30,10 @@ namespace PhotonLab.Source.RayTracing
             );
         }
 
-        public async Task SaveAsync(Vector3[] lightData, PathManager<Paths> pathManager)
+        public async Task SaveAsync(Vector3[] lightData, PathManager<Paths> pathManager, Size targetResolution)
         {
-            var colorData = Array.ConvertAll(lightData, l => new Color(GammaCorrect(l)));
-            using var target = new RenderTarget2D(_gD, _gD.Viewport.Width, _gD.Viewport.Height);
+            var colorData = Array.ConvertAll(lightData, l => new Color(ReinhardToneMapping(GammaCorrect(l))));
+            using var target = new RenderTarget2D(_gD, targetResolution.Width, targetResolution.Height);
             target.SetData(colorData);
 
             var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
