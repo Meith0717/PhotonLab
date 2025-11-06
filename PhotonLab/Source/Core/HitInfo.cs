@@ -3,7 +3,7 @@
 // All rights reserved.
 
 using Microsoft.Xna.Framework;
-using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.Meshes;
 
 namespace PhotonLab.Source.Core
 {
@@ -11,7 +11,7 @@ namespace PhotonLab.Source.Core
     {
         public readonly float Distance { get; }
         public readonly Vector3 Normal { get; }
-        public readonly Shape3D Object { get; }
+        public readonly CpuMesh Object { get; }
         public readonly Vector2 TexturePos { get; }
 
         public HitInfo()
@@ -21,7 +21,7 @@ namespace PhotonLab.Source.Core
             TexturePos = Vector2.Zero;
         }
 
-        public HitInfo(float distance, Vector3 normal, Vector2 texturePos, Shape3D obj)
+        public HitInfo(float distance, Vector3 normal, Vector2 texturePos, CpuMesh obj)
         {
             Distance = distance;
             Normal = normal;
