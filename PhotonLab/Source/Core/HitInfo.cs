@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using Microsoft.Xna.Framework;
+using PhotonLab.Source.Materials;
 using PhotonLab.Source.Meshes;
 
 namespace PhotonLab.Source.Core
@@ -11,7 +12,7 @@ namespace PhotonLab.Source.Core
     {
         public readonly float Distance { get; }
         public readonly Vector3 Normal { get; }
-        public readonly CpuMesh Object { get; }
+        public readonly IMaterial Material { get; }
         public readonly Vector2 TexturePos { get; }
 
         public HitInfo()
@@ -21,12 +22,12 @@ namespace PhotonLab.Source.Core
             TexturePos = Vector2.Zero;
         }
 
-        public HitInfo(float distance, Vector3 normal, Vector2 texturePos, CpuMesh obj)
+        public HitInfo(float distance, Vector3 normal, Vector2 texturePos, IMaterial material)
         {
             Distance = distance;
             Normal = normal;
             TexturePos = texturePos;
-            Object = obj;
+            Material = material;
         }
 
         public static bool operator <(HitInfo a, HitInfo b) => a.Distance < b.Distance;

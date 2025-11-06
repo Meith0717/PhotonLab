@@ -102,7 +102,7 @@ namespace PhotonLab.Source.Meshes
                     var normal = Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(v0.Normal, v1.Normal, v2.Normal), ModelTransform));
                     var texturePos = coordinates.InterpolateVector2(v0.TextureCoordinate, v1.TextureCoordinate, v2.TextureCoordinate);
 
-                    hit = new(coordinates.T, normal, texturePos, this);
+                    hit = new(coordinates.T, normal, texturePos, Material);
                     anyHit = true;
                 }
             }

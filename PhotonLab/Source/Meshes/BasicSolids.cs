@@ -29,7 +29,8 @@ namespace PhotonLab.Source.Meshes
                     float sinPhi = MathF.Sin(phi), cosPhi = MathF.Cos(phi);
 
                     var pos = new Vector3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi);
-                    vertices.Add(new(pos, Vector3.Normalize(pos), Vector2.Zero));
+                    var n = Vector3.Normalize(pos);
+                    vertices.Add(new(pos, n, Vector2.Zero));
                 }
             }
 

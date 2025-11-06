@@ -15,9 +15,23 @@ namespace PhotonLab.Source.RayTracing
     {
         private readonly GraphicsDevice _gD = device;
 
+        private static Vector3 ReinhardToneMapping(Vector3 data)
+        {
+            return data / (Vector3.One + data);
+        }
+
+        private static Vector3 GammaCorrect(Vector3 data, float gamma = 1f / 2.2f)
+        {
+            return new Vector3(
+                MathF.Pow(data.X, gamma),
+                MathF.Pow(data.Y, gamma),
+                MathF.Pow(data.Z, gamma)
+            );
+        }
+
         public async Task SaveAsync(Vector3[] lightData, PathManager<Paths> pathManager)
         {
-            var colorData = Array.ConvertAll(lightData, l => new Color(l));
+            var colorData = Array.ConvertAll(lightData, l => new Color(GammaCorrect(l)));
             using var target = new RenderTarget2D(_gD, _gD.Viewport.Width, _gD.Viewport.Height);
             target.SetData(colorData);
 

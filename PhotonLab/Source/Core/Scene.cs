@@ -36,21 +36,66 @@ namespace PhotonLab.Source.Core
             _basicEffect = new(graphicsDevice);
             _rayTracer = new(graphicsDevice);
 
+            float scale = 20f;
+
+            // Floor
             var quad = BasicSolids.CreateQuad(graphicsDevice);
-            quad.ModelTransform = Matrix.CreateRotationX(-float.Pi / 2) * Matrix.CreateScale(50);
-            quad.Material = new PhongMaterial(Color.Gray) { AmbientStrength = 0 };
+            quad.ModelTransform =
+                Matrix.CreateScale(scale) *
+                Matrix.CreateRotationX(-MathHelper.Pi / 2); // floor rotation
+            quad.Material = new PhongMaterial(Color.Gray) { AmbientStrength = .1f, SpecularStrength = 0 };
+            Shapes.Add(quad);
+
+            // Ceiling
+            quad = BasicSolids.CreateQuad(graphicsDevice);
+            quad.ModelTransform =
+                Matrix.CreateScale(scale) *
+                Matrix.CreateRotationX(MathHelper.Pi / 2) *
+                Matrix.CreateTranslation(0, scale, 0);
+            quad.Material = new PhongMaterial(Color.Black) { AmbientStrength = .1f, SpecularStrength = 0 };
+            Shapes.Add(quad);
+
+            // Back wall
+            quad = BasicSolids.CreateQuad(graphicsDevice);
+            quad.ModelTransform =
+                Matrix.CreateScale(scale) *
+                Matrix.CreateTranslation(0, scale/2, -scale/2);
+            quad.Material = new PhongMaterial(Color.Gray) { AmbientStrength = .1f, SpecularStrength = 0 };
+            Shapes.Add(quad);
+
+            // Front wall
+            quad = BasicSolids.CreateQuad(graphicsDevice);
+            quad.ModelTransform =
+                Matrix.CreateScale(scale) *
+                Matrix.CreateRotationX(MathHelper.Pi) *
+                Matrix.CreateTranslation(0, scale/2, scale / 2);
+            quad.Material = new PhongMaterial(Color.Gray) { AmbientStrength = .1f, SpecularStrength = 0 };
+            Shapes.Add(quad);
+
+            // Left wall
+            quad = BasicSolids.CreateQuad(graphicsDevice);
+            quad.ModelTransform =
+                Matrix.CreateScale(scale) *
+                Matrix.CreateRotationY(MathHelper.Pi / 2) *
+                Matrix.CreateTranslation(-scale/2, scale / 2, 0);
+            quad.Material = new PhongMaterial(Color.LightBlue) { AmbientStrength = .1f, SpecularStrength = 0 };
+            Shapes.Add(quad);
+
+            // Right wall
+            quad = BasicSolids.CreateQuad(graphicsDevice);
+            quad.ModelTransform =
+                Matrix.CreateScale(scale) *
+                Matrix.CreateRotationY(-MathHelper.Pi / 2) *
+                Matrix.CreateTranslation(scale / 2, scale / 2, 0);
+            quad.Material = new PhongMaterial(Color.Orange) { AmbientStrength = .1f, SpecularStrength = 0 };
             Shapes.Add(quad);
 
             var sphere = BasicSolids.CreateSphere(graphicsDevice);
-            sphere.ModelTransform = Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 5, 0);
-            sphere.Material = new PhongMaterial(Color.White) { AmbientStrength = 0 };
+            sphere.ModelTransform = Matrix.CreateScale(3) * Matrix.CreateTranslation(6, 3, 6);
+            sphere.Material = new PhongMaterial(Color.White) { AmbientStrength = .1f };
             Shapes.Add(sphere);
 
-            float radius = 10f;
-            float height = 10;
-            Lights.Add(new PointLight(new Vector3(radius, height, 0f), Color.Red));
-            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, radius * 0.866f), Color.Green));
-            Lights.Add(new PointLight(new Vector3(-radius / 2f, height, -radius * 0.866f), Color.Blue));
+            Lights.Add(new PointLight(new Vector3(0, 18f, 0), Color.LightYellow));
             foreach (var light in Lights)
             {
                 var lightMesh = BasicSolids.CreateSphere(graphicsDevice, 4, 4);

@@ -12,7 +12,7 @@ namespace PhotonLab.Source.Materials
 {
     internal class PhongMaterial : IMaterial
     {
-        private const float Epsilon = .1e-4f;
+        private const float Epsilon = .1e-1f;
         private const float OneOverPi = 1 / float.Pi;
 
         public CpuTexture2D DiffuseTexture { get; }
@@ -23,7 +23,7 @@ namespace PhotonLab.Source.Materials
         public float DiffuseStrength = 1;
         public float SpecularStrength = 1;
         public float AmbientStrength = 1;
-        public float SpecExponent = 50;
+        public float SpecExponent = 10;
 
         public PhongMaterial(Texture2D albedo)
         {
@@ -38,24 +38,27 @@ namespace PhotonLab.Source.Materials
         public Vector3 Shade(Scene scene, int depth, Ray ray, in HitInfo hit)
         {
             var textureColor = DiffuseTexture is null ? DiffuseColor : DiffuseTexture.SampleData(hit.TexturePos).ToVector3();
-
             var color = OneOverPi * AmbientStrength * AmbientColor * textureColor;
+
+            var hitNormal = hit.Normal;
+            //if (Vector3.Dot(hitNormal, -ray.Direction) < -1)
+            //    hitNormal = -hitNormal;
+
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
+            hitPosition += hitNormal * Epsilon;
+            var v = Vector3.Normalize(scene.Camer3D.Position - hitPosition);
 
             foreach (var light in scene.Lights)
             {
                 var toLightDir = Vector3.Normalize(light.Position - hitPosition);
-                var hitPos = hitPosition + hit.Normal * Epsilon;
-
-                var lightDist = Vector3.Distance(light.Position, hitPos);
-                var shadowRay = new Ray(hitPos, toLightDir);
+                var lightDist = Vector3.Distance(light.Position, hitPosition);
+                var shadowRay = new Ray(hitPosition, toLightDir);
                 if (scene.Intersect(shadowRay, out var shadowHit))
                     if (shadowHit.Distance < lightDist && shadowHit.Distance > Epsilon)
                         continue;
 
-                var r = Vector3.Reflect(-toLightDir, hit.Normal);
-                var v = Vector3.Normalize(scene.Camer3D.Position - hitPosition);
-                float nDotL = MathF.Max(Vector3.Dot(hit.Normal, toLightDir), 0);
+                var r = Vector3.Reflect(-toLightDir, hitNormal);
+                float nDotL = MathF.Max(Vector3.Dot(hitNormal, toLightDir), 0);
                 float rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), SpecExponent);
 
                 var diffuse = light.Color * textureColor * nDotL;
