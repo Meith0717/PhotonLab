@@ -5,15 +5,12 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
-using MonoKit.Core;
 using MonoKit.Input;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.Lights;
 using PhotonLab.Source.Materials;
 using PhotonLab.Source.Meshes;
-using PhotonLab.Source.RayTracing;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace PhotonLab.Source.Core
 {
@@ -21,13 +18,9 @@ namespace PhotonLab.Source.Core
     {
         public readonly Camera3D Camer3D;
         private readonly BasicEffect _basicEffect;
-        private readonly RayTracer _rayTracer;
-        private readonly List<CpuMesh> LightShapes = new();
-        private readonly CpuMesh _tetrahedron;
-        private float _rotation;
-        private bool _play;
 
         public List<CpuMesh> Shapes { get; } = new();
+        private readonly List<CpuMesh> LightShapes = new();
 
         public List<ILightSource> LightSources { get; } = new();
 
@@ -37,7 +30,6 @@ namespace PhotonLab.Source.Core
             Camer3D.AddBehaviour(new MoveByMouse());
             Camer3D.AddBehaviour(new ZoomByMouse(1));
             _basicEffect = new(graphicsDevice);
-            _rayTracer = new(graphicsDevice);
 
             float scale = 20f;
 
@@ -103,9 +95,10 @@ namespace PhotonLab.Source.Core
             cube.Material = new PhongMaterial(Color.White, NormalMode.Face) { AmbientStrength = .1f };
             Shapes.Add(cube);
 
-            _tetrahedron = BasicSolids.CreateTetrahedron(graphicsDevice);
-            _tetrahedron.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Face);
-            Shapes.Add(_tetrahedron);
+            var tetrahedron = BasicSolids.CreateTetrahedron(graphicsDevice);
+            tetrahedron.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Face);
+            tetrahedron.ModelTransform = Matrix.CreateScale(8) * Matrix.CreateRotationY(0) * Matrix.CreateTranslation(-5, 0, 5);
+            Shapes.Add(tetrahedron);
 
             LightSources.Add(new LightSources.SpotLight(new Vector3(0, 18f, 0), new(0, -1, 0), 45, Color.LightYellow));
             foreach (var lightSource in LightSources)
@@ -132,22 +125,9 @@ namespace PhotonLab.Source.Core
             return hitFound;
         }
 
-        public async Task Update(double elapsedMilliseconds, InputHandler inputHandler, PathManager<Paths> pathManager)
+        public void Update(double elapsedMilliseconds, InputHandler inputHandler)
         {
             Camer3D.Update(elapsedMilliseconds, inputHandler);
-            _tetrahedron.ModelTransform = Matrix.CreateScale(8) * Matrix.CreateRotationY(_rotation) * Matrix.CreateTranslation(-5, 0, 5);
-
-            if (inputHandler.HasAction((byte)ActionType.RayTrace))_play = !_play;
-
-            if (!_play) return;
-
-            if (_rotation >= (float.Pi / 3) - .01f) 
-                _play = false;
-
-            _rotation += .01f;
-
-            _rayTracer.BeginTrace(Camer3D, this, 1f);
-            await _rayTracer.RenderAndSaveAsync(pathManager);
         }
 
         public void Draw(double elapsedMilliseconds, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)

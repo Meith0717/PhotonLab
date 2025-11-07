@@ -6,7 +6,6 @@ namespace PhotonLab.Source.Input
 {
     public enum ActionType : byte
     {
-        Exit,
         MoveCameraByMouse,
         RayTrace
     }

@@ -11,7 +11,10 @@ using MonoKit.Graphics;
 using MonoKit.Input;
 using PhotonLab.Source.Core;
 using PhotonLab.Source.Input;
+using PhotonLab.Source.RayTracing;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace PhotonLab
@@ -23,9 +26,11 @@ namespace PhotonLab
         private bool _windowActive;
 
         private Scene _scene;
+        private RayTracer _rayTracer;
         private SpriteBatch _spriteBatch;
         private FrameCounter _frameCounter;
 
+        private readonly Stopwatch _stopwatch = new();
         private readonly InputHandler _inputHandler;
         private readonly GraphicsDeviceManager _graphics;
         private readonly GraphicsController _graphicsController;
@@ -44,13 +49,14 @@ namespace PhotonLab
 
             Activated += delegate { _windowActive = true; };
             Deactivated += delegate { _windowActive = false; };
+
+            ConsoleManager.Show();
         }
 
         protected override void Initialize()
         {
             var keyBindings = new Dictionary<(Keys, InputEventType), byte>()
             {
-                {(Keys.Escape, InputEventType.Released), (byte)ActionType.Exit },
                 {(Keys.F1, InputEventType.Released), (byte)ActionType.RayTrace },
             };
             _inputHandler.RegisterDevice(new KeyboardListener(keyBindings));
@@ -67,9 +73,10 @@ namespace PhotonLab
 
             base.Initialize();
 
+            _rayTracer = new(GraphicsDevice);
+            _scene = new(GraphicsDevice);
             _spriteBatch = new(GraphicsDevice);
             _frameCounter = new(ContentProvider.Get<SpriteFont>("default_font"));
-            _scene = new(GraphicsDevice);
         }
 
         protected override void LoadContent()
@@ -79,16 +86,25 @@ namespace PhotonLab
             ContentProvider.Container<Model>().LoadContent(Content, "Models", SearchOption.TopDirectoryOnly);
         }
 
-        protected override async void Update(GameTime gameTime)
+        protected override void Update(GameTime gameTime)
         {
             var elapsedMilliseconds = gameTime.ElapsedGameTime.TotalMilliseconds;
             _inputHandler.Update(elapsedMilliseconds);
 
-            if (_inputHandler.HasAction((byte)ActionType.Exit))
-                Exit();
-
             if (_windowActive)
-                await _scene.Update(elapsedMilliseconds, _inputHandler, _pathManager);
+            {
+                _scene.Update(elapsedMilliseconds, _inputHandler);
+
+                if (_inputHandler.HasAction((byte)ActionType.RayTrace))
+                {
+                    _stopwatch.Restart();
+                    _rayTracer.BeginTrace(_scene, 1);
+                    _rayTracer.RenderAndSaveAsync(_pathManager);
+                    _stopwatch.Stop();
+
+                    Console.WriteLine($"RayTracing: {_stopwatch.Elapsed.TotalMilliseconds}ms");
+                }
+            }
 
             base.Update(gameTime);
         }

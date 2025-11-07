@@ -30,14 +30,14 @@ namespace PhotonLab.Source.RayTracing
             );
         }
 
-        public async Task SaveAsync(Vector3[] lightData, PathManager<Paths> pathManager, Size targetResolution)
+        public void SaveAsync(Vector3[] lightData, PathManager<Paths> pathManager, Size targetResolution)
         {
             var colorData = Array.ConvertAll(lightData, l => new Color(ReinhardToneMapping(GammaCorrect(l))));
             using var target = new RenderTarget2D(_gD, targetResolution.Width, targetResolution.Height);
             target.SetData(colorData);
 
             var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
-            await using var fs = new FileStream(filePath, FileMode.Create);
+            using var fs = new FileStream(filePath, FileMode.Create);
             target.SaveAsPng(fs, target.Width, target.Height);
         }
     }

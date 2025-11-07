@@ -20,13 +20,13 @@ namespace PhotonLab.Source.RayTracing
         private Vector3[] _lightData;
         private Ray[] _cameraRays;
 
-        public void BeginTrace(Camera3D camera, Scene scene, float resolutionScale = 1)
+        public void BeginTrace(Scene scene, float resolutionScale = 1)
         {
             var width = (int)(_gD.Viewport.Width * resolutionScale);
             var height = (int)(_gD.Viewport.Height * resolutionScale);
             _targetResolution = new(width, height);
 
-            CreateCameraRaysParallel(camera);
+            CreateCameraRaysParallel(scene.Camer3D);
             Parallel.For(0, _cameraRays.Length, i => _lightData[i] = Trace(scene, _cameraRays[i]));
         }
 
@@ -38,9 +38,9 @@ namespace PhotonLab.Source.RayTracing
             return hit.Material.Shade(scene, depth, ray, in hit);
         }
 
-        public async Task RenderAndSaveAsync(PathManager<Paths> pathManager)
+        public void RenderAndSaveAsync(PathManager<Paths> pathManager)
         {
-            await _writer.SaveAsync(_lightData, pathManager, _targetResolution);
+            _writer.SaveAsync(_lightData, pathManager, _targetResolution);
         }
 
         private void CreateCameraRaysParallel(Camera3D camera)
