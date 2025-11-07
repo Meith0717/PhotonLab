@@ -2,9 +2,9 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
 using PhotonLab.Source.Core;
 using PhotonLab.Source.RayTracing;
+using System.Numerics;
 
 namespace PhotonLab.Source.Materials
 {
@@ -16,6 +16,6 @@ namespace PhotonLab.Source.Materials
 
         public Vector3 DiffuseColor { get; }
 
-        public Vector3 Shade(Scene scene, int depth, Ray ray, in HitInfo hit);
+        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit);
     }
 }

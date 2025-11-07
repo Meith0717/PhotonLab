@@ -2,26 +2,22 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
 using PhotonLab.Source.Core;
 using PhotonLab.Source.RayTracing;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Numerics;
 
 namespace PhotonLab.Source.Materials
 {
-    internal class MirrorMaterial(Color color, float reflectivity = 1f, NormalMode normalMode = NormalMode.Interpolated) : IMaterial
+    internal class MirrorMaterial(Microsoft.Xna.Framework.Color color, float reflectivity = 1f, NormalMode normalMode = NormalMode.Interpolated) : IMaterial
     {
         private const float Epsilon = 1e-2f;
         public CpuTexture2D DiffuseTexture { get; } = null!;
-        public Vector3 DiffuseColor { get; } = color.ToVector3();
+        public Vector3 DiffuseColor { get; } = color.ToVector3().ToNumerics();
         private readonly NormalMode _normalMode = normalMode;
         public float Reflectivity { get; } = Math.Clamp(reflectivity, 0f, 1f);
 
-        public Vector3 Shade(Scene scene, int depth, Ray ray, in HitInfo hit)
+        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
         {
             var n = _normalMode switch
             {
@@ -34,7 +30,7 @@ namespace PhotonLab.Source.Materials
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
             hitPosition += n * Epsilon;
 
-            var reflectedRay = new Ray(hitPosition, reflectDir);
+            var reflectedRay = new RaySIMD(hitPosition, reflectDir);
 
             var reflectedColor = RayTracer.Trace(scene, reflectedRay, depth + 1);
 

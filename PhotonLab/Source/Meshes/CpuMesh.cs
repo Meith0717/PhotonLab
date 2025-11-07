@@ -4,82 +4,101 @@
 
 namespace PhotonLab.Source.Meshes
 {
-    using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using PhotonLab.Source.Core;
     using PhotonLab.Source.Materials;
+    using PhotonLab.Source.RayTracing;
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    using System.Numerics;
+    using System.Threading.Tasks;
 
     internal class CpuMesh
     {
         // CPU stuff (Ray Tracing)
-        private static readonly short[] BoxLineIndices = [0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7];
-        private readonly VertexPositionColor[] _boxVertecies;
-        private readonly BoundingBox _boundingBox;
+        private readonly BoundingBoxSIMD _boundingBox;
 
         private readonly ushort[] _primitiveIndices;
-        private readonly VertexPositionNormalTexture[] _vertices;
+        private readonly Vector3[] _vertexPositions;
+        private readonly Vector3[] _vertexNormals;
+        private readonly Vector2[] _vertexTextures;
+        private Matrix4x4 _transform;
+        private Matrix4x4 _invTransform;
 
         // GPU stuff (Rasterisation)
         private readonly VertexBuffer _vertexBuffer;
         private readonly IndexBuffer _indexBuffer;
 
         // Some other Stuff
-        public Matrix ModelTransform { get; set; } = Matrix.Identity;
         public IMaterial Material { get; set; }
+        public Microsoft.Xna.Framework.Matrix ModelTransform 
+        {
+            set { 
+                _transform = value.ToNumerics(); 
+                Matrix4x4.Invert(_transform, out _invTransform);
+            }
+        }
 
         public CpuMesh(GraphicsDevice graphicsDevice, VertexPositionNormalTexture[] vertices, ushort[] indices)
         {
-            // Do CPU stuff
-            _vertices = vertices;
-            _primitiveIndices = indices;
-            _boundingBox = BoundingBox.CreateFromPoints(_vertices.Select(v => v.Position));
-            var corners = _boundingBox.GetCorners();
-            _boxVertecies = new VertexPositionColor[8];
-            for (int i = 0; i < 8; i++)
-                _boxVertecies[i] = new VertexPositionColor(corners[i], Color.White);
+            var vertexCount = vertices.Length;
+            _vertexPositions = new Vector3[vertexCount];
+            _vertexNormals = new Vector3[vertexCount];
+            _vertexTextures = new Vector2[vertexCount];
+            Parallel.For(0, vertexCount, i =>
+            {
+                _vertexPositions[i] = vertices[i].Position.ToNumerics();
+                _vertexNormals[i] = vertices[i].Normal.ToNumerics();
+                _vertexTextures[i] = vertices[i].TextureCoordinate.ToNumerics();
+            });
 
-            // Move CPU stuff to GPU
-            _vertexBuffer = new(graphicsDevice, typeof(VertexPositionNormalTexture), _vertices.Length, BufferUsage.None);
-            _vertexBuffer.SetData(_vertices);
+            _primitiveIndices = indices;
+            _boundingBox = BoundingBoxSIMD.CreateFromPoints(_vertexPositions);
+
+            _vertexBuffer = new(graphicsDevice, typeof(VertexPositionNormalTexture), vertices.Length, BufferUsage.None);
+            _vertexBuffer.SetData(vertices);
             _indexBuffer = new(graphicsDevice, IndexElementSize.SixteenBits, _primitiveIndices.Length, BufferUsage.None);
             _indexBuffer.SetData(_primitiveIndices);
         }
 
         public CpuMesh(ModelMesh mesh)
         {
-            var buffer = mesh.MeshParts[0].VertexBuffer;
+            var mainMesh = mesh.MeshParts[0];
+
             foreach (var part in mesh.MeshParts)
-            {
-                if (buffer != part.VertexBuffer)
+                if (mainMesh.VertexBuffer != part.VertexBuffer)
                     throw new Exception();
-            }
 
-            var vertexCount = mesh.MeshParts[0].NumVertices;
-            var vertices = new VertexPositionNormalTexture[vertexCount];
-            _vertexBuffer = mesh.MeshParts[0].VertexBuffer;
-            _vertexBuffer.GetData(vertices);
+            var vertexCount = mainMesh.NumVertices;
+            var primitiveCount = mainMesh.PrimitiveCount;
 
-            var indices = new ushort[mesh.MeshParts[0].PrimitiveCount * 3];
-            _indexBuffer = mesh.MeshParts[0].IndexBuffer;
-            _indexBuffer.GetData(indices);
+            // Load iindex data from GPU
+            _primitiveIndices = new ushort[primitiveCount * 3];
+            _indexBuffer.GetData(_primitiveIndices);
 
-            _boundingBox = BoundingBox.CreateFromPoints(vertices.Select(v => v.Position));
-            _vertices = [.. vertices];
-            _primitiveIndices = [.. indices];
-            var corners = _boundingBox.GetCorners();
-            _boxVertecies = new VertexPositionColor[8];
-            for (int i = 0; i < 8; i++)
-                _boxVertecies[i] = new VertexPositionColor(corners[i], Color.White);
+            // Load vertex data from GPU
+            _vertexPositions = new Vector3[vertexCount];
+            _vertexNormals = new Vector3[vertexCount];
+            _vertexTextures = new Vector2[vertexCount];
+            var vertexBufferData = new VertexPositionNormalTexture[vertexCount];
+            _vertexBuffer.GetData(vertexBufferData);
+            Parallel.For(0, vertexCount, i =>
+            {
+                _vertexPositions[i] = vertexBufferData[i].Position.ToNumerics();
+                _vertexNormals[i] = vertexBufferData[i].Normal.ToNumerics();
+                _vertexTextures[i] = vertexBufferData[i].TextureCoordinate.ToNumerics();
+            });
+
+            _boundingBox = BoundingBoxSIMD.CreateFromPoints(_vertexNormals);
+
+            _indexBuffer = mainMesh.IndexBuffer;
+            _vertexBuffer = mainMesh.VertexBuffer;
         }
 
-        public bool Intersect(Ray ray, out HitInfo hit)
+        public bool Intersect(in RaySIMD ray, out HitInfo hit)
         {
             hit = default;
 
-            var localRay = ray.Transform(Matrix.Invert(ModelTransform));
+            var localRay = ray.Transform(_invTransform);
             if (!_boundingBox.IntersectsRay(ref localRay, out var _))
                 return false;
 
@@ -88,20 +107,28 @@ namespace PhotonLab.Source.Meshes
 
             for (int i = 0; i < _primitiveIndices.Length; i += 3)
             {
-                var v0 = _vertices[_primitiveIndices[i]];
-                var v1 = _vertices[_primitiveIndices[i + 1]];
-                var v2 = _vertices[_primitiveIndices[i + 2]];
+                var i0 = _primitiveIndices[i];
+                var i1 = _primitiveIndices[i + 1];
+                var i2 = _primitiveIndices[i + 2];
 
-                var p0 = Vector3.Transform(v0.Position, ModelTransform);
-                var p1 = Vector3.Transform(v1.Position, ModelTransform);
-                var p2 = Vector3.Transform(v2.Position, ModelTransform);
+                var p0 = Vector3.Transform(_vertexPositions[i0], _transform);
+                var p1 = Vector3.Transform(_vertexPositions[i1], _transform);
+                var p2 = Vector3.Transform(_vertexPositions[i2], _transform);
+
+                var n0 = _vertexNormals[i0];
+                var n1 = _vertexNormals[i1];
+                var n2 = _vertexNormals[i2];
+
+                var t0 = _vertexTextures[i0];
+                var t1 = _vertexTextures[i1];
+                var t2 = _vertexTextures[i2];
 
                 if (ray.IntersectsFace((p0, p1, p2), out var coordinates) && coordinates.T < minT)
                 {
                     minT = coordinates.T;
-                    var normal = Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(v0.Normal, v1.Normal, v2.Normal), ModelTransform));
+                    var normal = Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(n0, n1, n2), _transform));
                     var faceNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
-                    var texturePos = coordinates.InterpolateVector2(v0.TextureCoordinate, v1.TextureCoordinate, v2.TextureCoordinate);
+                    var texturePos = coordinates.InterpolateVector2(t0, t1, t2);
 
                     hit = new(coordinates.T, normal, faceNormal, texturePos, Material);
                     anyHit = true;
@@ -113,11 +140,10 @@ namespace PhotonLab.Source.Meshes
 
         public void Draw(GraphicsDevice graphicsDevice, BasicEffect basicEffect)
         {
-            if (_vertexBuffer == null || _indexBuffer == null || _vertices == null || _boxVertecies == null ||
-                _vertices.Length == 0 || _primitiveIndices == null || _primitiveIndices.Length == 0 || BoxLineIndices.Length == 0)
+            if (_vertexBuffer == null || _indexBuffer == null || _primitiveIndices == null || _primitiveIndices.Length == 0)
                 return;
 
-            basicEffect.World = ModelTransform;
+            basicEffect.World = _transform;
 
             // Draw main mesh
             basicEffect.VertexColorEnabled = false;
@@ -141,15 +167,6 @@ namespace PhotonLab.Source.Meshes
             {
                 pass.Apply();
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _primitiveIndices.Length / 3);
-            }
-
-            // Draw Bound box
-            basicEffect.TextureEnabled = false;
-            basicEffect.VertexColorEnabled = true;
-            foreach (var pass in basicEffect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, _boxVertecies, 0, 8, BoxLineIndices, 0, 12);
             }
         }
     }

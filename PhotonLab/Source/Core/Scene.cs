@@ -10,6 +10,7 @@ using PhotonLab.Source.Input;
 using PhotonLab.Source.Lights;
 using PhotonLab.Source.Materials;
 using PhotonLab.Source.Meshes;
+using PhotonLab.Source.RayTracing;
 using System.Collections.Generic;
 
 namespace PhotonLab.Source.Core
@@ -109,7 +110,7 @@ namespace PhotonLab.Source.Core
             }
         }
 
-        public bool Intersect(Ray ray, out HitInfo closestHit)
+        public bool Intersect(RaySIMD ray, out HitInfo closestHit)
         {
             closestHit = new HitInfo();
             var hitFound = false;

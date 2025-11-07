@@ -2,12 +2,12 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoKit.Camera;
 using MonoKit.Core;
 using PhotonLab.Source.Core;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace PhotonLab.Source.RayTracing
@@ -18,7 +18,7 @@ namespace PhotonLab.Source.RayTracing
         private readonly GraphicsDevice _gD = gd;
         private Size _targetResolution;
         private Vector3[] _lightData;
-        private Ray[] _cameraRays;
+        private RaySIMD[] _cameraRays;
 
         public void BeginTrace(Scene scene, float resolutionScale = 1)
         {
@@ -30,7 +30,7 @@ namespace PhotonLab.Source.RayTracing
             Parallel.For(0, _cameraRays.Length, i => _lightData[i] = Trace(scene, _cameraRays[i]));
         }
 
-        public static Vector3 Trace(Scene scene, Ray ray, int depth = 0)
+        public static Vector3 Trace(Scene scene, RaySIMD ray, int depth = 0)
         {
             if (depth > 2 || !scene.Intersect(ray, out var hit))
                 return Vector3.Zero;
@@ -50,22 +50,29 @@ namespace PhotonLab.Source.RayTracing
 
             if (_cameraRays is null || _cameraRays.Length != width * height) 
             { 
-                _cameraRays = new Ray[width * height];
+                _cameraRays = new RaySIMD[width * height];
                 _lightData = new Vector3[width * height];
             }
+
+            var position = camera.Position.ToNumerics();
+            var fw = camera.Forward.ToNumerics();
+            var right = camera.Right.ToNumerics();
+            var up = camera.Up.ToNumerics();
+            var fov = camera.Fov;
+            var aspectRatio = camera.AspectRatio;
 
             Parallel.For(0, height, y =>
             {
                 int rowOffset = y * width;
                 for (int x = 0; x < width; x++)
-                    _cameraRays[rowOffset + x] = GeneratePixelRay(camera, x, y, width, height);
+                    _cameraRays[rowOffset + x] = GeneratePixelRay(position, fov, aspectRatio, fw, right, up, x, y, width, height);
             });
         }
 
-        private static Ray GeneratePixelRay(Camera3D camera, int x, int y, int w, int h)
+        private static RaySIMD GeneratePixelRay(Vector3 positoin, float fov, float aspectRatio, Vector3 forward, Vector3 right, Vector3 up, int x, int y, int w, int h)
         {
-            float imagePlaneHeight = 2f * float.Tan(camera.Fov / 2f);
-            float imagePlaneWidth = imagePlaneHeight * camera.AspectRatio;
+            float imagePlaneHeight = 2f * float.Tan(fov / 2f);
+            float imagePlaneWidth = imagePlaneHeight * aspectRatio;
 
             float u = (x + 0.5f) / w - 0.5f;
             float v = 0.5f - (y + 0.5f) / h;
@@ -73,8 +80,8 @@ namespace PhotonLab.Source.RayTracing
             var px = u * imagePlaneWidth;
             var py = v * imagePlaneHeight;
 
-            var dir = Vector3.Normalize(camera.Forward + px * camera.Right + py * camera.Up);
-            return new(camera.Position, dir);
+            var dir = Vector3.Normalize(forward + px * right + py * up);
+            return new(positoin, dir);
         }
     }
 

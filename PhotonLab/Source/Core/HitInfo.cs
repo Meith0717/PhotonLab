@@ -2,9 +2,9 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
+
 using PhotonLab.Source.Materials;
-using PhotonLab.Source.Meshes;
+using System.Numerics;
 
 namespace PhotonLab.Source.Core
 {

@@ -2,7 +2,7 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using Microsoft.Xna.Framework.Graphics;
 using PhotonLab.Source.Core;
 using PhotonLab.Source.RayTracing;
@@ -18,8 +18,8 @@ namespace PhotonLab.Source.Materials
 
         public CpuTexture2D DiffuseTexture { get; }
 
-        public Vector3 DiffuseColor { get; } = Color.White.ToVector3();
-        public Vector3 AmbientColor = Color.White.ToVector3();
+        public Vector3 DiffuseColor { get; } = Vector3.One;
+        public Vector3 AmbientColor = Vector3.One;
 
         public float DiffuseStrength = 1;
         public float SpecularStrength = 1;
@@ -32,15 +32,15 @@ namespace PhotonLab.Source.Materials
             _normalMode = normalMode;
         }
 
-        public PhongMaterial(Color diffuseColor, NormalMode normalMode = NormalMode.Interpolated)
+        public PhongMaterial(Microsoft.Xna.Framework.Color diffuseColor, NormalMode normalMode = NormalMode.Interpolated)
         {
-            DiffuseColor = diffuseColor.ToVector3();
+            DiffuseColor = diffuseColor.ToVector3().ToNumerics();
             _normalMode = normalMode;
         }
 
-        public Vector3 Shade(Scene scene, int depth, Ray ray, in HitInfo hit)
+        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
         {
-            var textureColor = DiffuseTexture is null ? DiffuseColor : DiffuseTexture.SampleData(hit.TexturePos).ToVector3();
+            var textureColor = DiffuseTexture is null ? DiffuseColor : DiffuseTexture.SampleData3(hit.TexturePos);
             var color = OneOverPi * AmbientStrength * AmbientColor * textureColor;
 
             var n = _normalMode switch
@@ -52,7 +52,7 @@ namespace PhotonLab.Source.Materials
 
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
             hitPosition += n * Epsilon;
-            var v = Vector3.Normalize(scene.Camer3D.Position - hitPosition);
+            var v = Vector3.Normalize(scene.Camer3D.Position.ToNumerics() - hitPosition);
 
             foreach (var lightSource in scene.LightSources)
             {
@@ -64,7 +64,7 @@ namespace PhotonLab.Source.Materials
                     float rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), SpecExponent);
 
                     var diffuse = lightInfo.Color * textureColor * nDotL;
-                    var specular = lightInfo.Color * Color.White.ToVector3() * rDotV;
+                    var specular = lightInfo.Color * Vector3.One * rDotV;
 
                     color += DiffuseStrength * diffuse + SpecularStrength * specular;
                 }

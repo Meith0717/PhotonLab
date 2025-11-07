@@ -2,13 +2,12 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoKit.Core;
 using System;
 using System.IO;
-using System.Threading.Tasks;
+using System.Numerics;
 
 namespace PhotonLab.Source.RayTracing
 {
@@ -32,7 +31,7 @@ namespace PhotonLab.Source.RayTracing
 
         public void SaveAsync(Vector3[] lightData, PathManager<Paths> pathManager, Size targetResolution)
         {
-            var colorData = Array.ConvertAll(lightData, l => new Color(ReinhardToneMapping(GammaCorrect(l))));
+            var colorData = Array.ConvertAll(lightData, l => new Microsoft.Xna.Framework.Color(ReinhardToneMapping(GammaCorrect(l))));
             using var target = new RenderTarget2D(_gD, targetResolution.Width, targetResolution.Height);
             target.SetData(colorData);
 
