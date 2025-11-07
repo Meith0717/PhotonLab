@@ -23,6 +23,9 @@ namespace PhotonLab.Source.Core
         private readonly BasicEffect _basicEffect;
         private readonly RayTracer _rayTracer;
         private readonly List<CpuMesh> LightShapes = new();
+        private readonly CpuMesh _tetrahedron;
+        private float _rotation;
+        private bool _play;
 
         public List<CpuMesh> Shapes { get; } = new();
 
@@ -96,20 +99,19 @@ namespace PhotonLab.Source.Core
             Shapes.Add(sphere);
 
             var cube = BasicSolids.CreateCube(graphicsDevice);
-            cube.ModelTransform = Matrix.CreateScale(6) * Matrix.CreateTranslation(-6, 3, 6);
+            cube.ModelTransform = Matrix.CreateScale(5) * Matrix.CreateTranslation(-6, 2, -6);
             cube.Material = new PhongMaterial(Color.White, NormalMode.Face) { AmbientStrength = .1f };
             Shapes.Add(cube);
 
-            var tetrahedron = BasicSolids.CreateTetrahedron(graphicsDevice);
-            tetrahedron.ModelTransform = Matrix.CreateScale(6) * Matrix.CreateTranslation(-6, 0, -6);
-            tetrahedron.Material = new PhongMaterial(Color.White, NormalMode.Face) { AmbientStrength = .1f };
-            Shapes.Add(tetrahedron);
+            _tetrahedron = BasicSolids.CreateTetrahedron(graphicsDevice);
+            _tetrahedron.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Face);
+            Shapes.Add(_tetrahedron);
 
             LightSources.Add(new LightSources.SpotLight(new Vector3(0, 18f, 0), new(0, -1, 0), 45, Color.LightYellow));
-            foreach (var lightScource in LightSources)
+            foreach (var lightSource in LightSources)
             {
                 var lightMesh = BasicSolids.CreateSphere(graphicsDevice, 4, 4);
-                lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(lightScource.Position);
+                lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(lightSource.Position);
                 LightShapes.Add(lightMesh);
             }
         }
@@ -130,18 +132,25 @@ namespace PhotonLab.Source.Core
             return hitFound;
         }
 
-        public async Task Update(double elapsedMolloseconds, InputHandler inputHandler, PathManager<Paths> pathManager)
+        public async Task Update(double elapsedMilliseconds, InputHandler inputHandler, PathManager<Paths> pathManager)
         {
-            Camer3D.Update(elapsedMolloseconds, inputHandler);
+            Camer3D.Update(elapsedMilliseconds, inputHandler);
+            _tetrahedron.ModelTransform = Matrix.CreateScale(8) * Matrix.CreateRotationY(_rotation) * Matrix.CreateTranslation(-5, 0, 5);
 
-            if (!inputHandler.HasAction((byte)ActionType.RayTrace))
-                return;
+            if (inputHandler.HasAction((byte)ActionType.RayTrace))_play = !_play;
 
-            _rayTracer.BeginTrace(Camer3D, this, 6);
+            if (!_play) return;
+
+            if (_rotation >= (float.Pi / 3) - .01f) 
+                _play = false;
+
+            _rotation += .01f;
+
+            _rayTracer.BeginTrace(Camer3D, this, 1f);
             await _rayTracer.RenderAndSaveAsync(pathManager);
         }
 
-        public void Draw(double elapsedMolloseconds, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+        public void Draw(double elapsedMilliseconds, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
         {
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

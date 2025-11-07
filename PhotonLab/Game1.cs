@@ -63,7 +63,7 @@ namespace PhotonLab
 
             _graphics.PreferredBackBufferHeight = 900;
             _graphics.PreferredBackBufferWidth = 1600;
-            _graphicsController.ApplyRefreshRate(60, true);
+            _graphicsController.ApplyRefreshRate(60, false);
 
             base.Initialize();
 
