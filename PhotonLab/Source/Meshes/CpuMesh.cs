@@ -29,6 +29,7 @@ namespace PhotonLab.Source.Meshes
         private readonly IndexBuffer _indexBuffer;
 
         // Some other Stuff
+        public int FaseCount => _primitiveIndices.Length / 3;
         public IMaterial Material { get; set; }
         public Microsoft.Xna.Framework.Matrix ModelTransform 
         {

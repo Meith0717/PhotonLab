@@ -49,15 +49,14 @@ namespace PhotonLab
 
             Activated += delegate { _windowActive = true; };
             Deactivated += delegate { _windowActive = false; };
-
-            ConsoleManager.Show();
         }
 
         protected override void Initialize()
         {
             var keyBindings = new Dictionary<(Keys, InputEventType), byte>()
             {
-                {(Keys.F1, InputEventType.Released), (byte)ActionType.RayTrace },
+                {(Keys.F2, InputEventType.Released), (byte)ActionType.RayTracImage },
+                {(Keys.F4, InputEventType.Released), (byte)ActionType.RayTraceSequence },
             };
             _inputHandler.RegisterDevice(new KeyboardListener(keyBindings));
 
@@ -77,6 +76,13 @@ namespace PhotonLab
             _scene = new(GraphicsDevice);
             _spriteBatch = new(GraphicsDevice);
             _frameCounter = new(ContentProvider.Get<SpriteFont>("default_font"));
+
+            ConsoleManager.Show(
+                "=== PhotonLap RayTracer ===\n" +
+                "Version: 1.0\n" +
+                "Author: Thierry Meiers\n\n" +
+                $"Output folder: {_pathManager.RootPath}\n"
+            );
         }
 
         protected override void LoadContent()
@@ -94,16 +100,8 @@ namespace PhotonLab
             if (_windowActive)
             {
                 _scene.Update(elapsedMilliseconds, _inputHandler);
-
-                if (_inputHandler.HasAction((byte)ActionType.RayTrace))
-                {
-                    _stopwatch.Restart();
-                    _rayTracer.BeginTrace(_scene, 1);
-                    _rayTracer.RenderAndSaveAsync(_pathManager);
-                    _stopwatch.Stop();
-
-                    Console.WriteLine($"RayTracing: {_stopwatch.Elapsed.TotalMilliseconds}ms");
-                }
+                RenderSingleImage();
+                RenderSequence();
             }
 
             base.Update(gameTime);
@@ -125,5 +123,49 @@ namespace PhotonLab
 
             base.Draw(gameTime);
         }
+
+        private void RenderSingleImage()
+        {
+            if (!_inputHandler.HasAction((byte)ActionType.RayTracImage))
+                return;
+
+            Console.WriteLine($"Rendering single image...");
+            _rayTracer.Begin(_scene, 5);
+            _rayTracer.PerformTrace();
+            _rayTracer.RenderAndSaveResult(_pathManager);
+            _rayTracer.End();
+        }
+
+        private bool _takeSequences;
+        private int _sequenceCount;
+        private readonly int _sequenceAmount = 10;
+        private void RenderSequence()
+        {
+            if (!_takeSequences && _inputHandler.HasAction((byte)ActionType.RayTraceSequence))
+            {
+                _takeSequences = true;
+                _sequenceCount = 0;
+
+                Console.WriteLine($"Starting sequence: {_sequenceAmount} images...");
+                _rayTracer.Begin(_scene, 1);
+            }
+
+            if (_takeSequences)
+            {
+                if (_sequenceCount >= _sequenceAmount)
+                {
+                    _takeSequences = false;
+                    _rayTracer.End();
+                    return;
+                }
+
+                Console.WriteLine($"({_sequenceCount + 1}/{_sequenceAmount})");
+                _rayTracer.PerformTrace();
+                _rayTracer.RenderAndSaveResult(_pathManager);
+
+                _sequenceCount++;
+            }
+        }
+
     }
 }

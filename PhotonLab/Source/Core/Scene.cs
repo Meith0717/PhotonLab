@@ -12,6 +12,7 @@ using PhotonLab.Source.Materials;
 using PhotonLab.Source.Meshes;
 using PhotonLab.Source.RayTracing;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PhotonLab.Source.Core
 {
@@ -24,6 +25,8 @@ namespace PhotonLab.Source.Core
         private readonly List<CpuMesh> LightShapes = new();
 
         public List<ILightSource> LightSources { get; } = new();
+
+        public int FaceCount => Shapes.Sum(s => s.FaseCount);
 
         public Scene(GraphicsDevice graphicsDevice)
         {
