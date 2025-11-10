@@ -2,7 +2,6 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using PhotonLab.Source.Core;
 using PhotonLab.Source.RayTracing;
 using System.Numerics;
 

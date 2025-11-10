@@ -4,7 +4,6 @@
 
 using System.Numerics;
 using Microsoft.Xna.Framework.Graphics;
-using PhotonLab.Source.Core;
 using PhotonLab.Source.RayTracing;
 using System;
 
@@ -63,7 +62,7 @@ namespace PhotonLab.Source.Materials
                     float nDotL = MathF.Max(Vector3.Dot(n, lightInfo.Direction), 0);
                     float rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), SpecExponent);
 
-                    var diffuse = lightInfo.Color * textureColor * nDotL;
+                    var diffuse = OneOverPi * lightInfo.Color * textureColor * nDotL;
                     var specular = lightInfo.Color * Vector3.One * rDotV;
 
                     color += DiffuseStrength * diffuse + SpecularStrength * specular;

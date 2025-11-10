@@ -10,7 +10,7 @@ using MonoKit.Core;
 using MonoKit.Debug;
 using MonoKit.Graphics;
 using MonoKit.Input;
-using PhotonLab.Source.Core;
+using PhotonLab.Source;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.RayTracing;
 using System;

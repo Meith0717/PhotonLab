@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PhotonLab.Source.Core
+namespace PhotonLab.Source
 {
     internal class SceneManager(GraphicsDevice graphicsDevice)
     {

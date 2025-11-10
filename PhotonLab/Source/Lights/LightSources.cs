@@ -3,7 +3,6 @@
 // All rights reserved.
 
 using System.Numerics;
-using PhotonLab.Source.Core;
 using System;
 using PhotonLab.Source.RayTracing;
 using System.Collections.Generic;

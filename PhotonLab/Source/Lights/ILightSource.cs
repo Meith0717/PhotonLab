@@ -3,7 +3,6 @@
 // All rights reserved.
 
 using System.Numerics;
-using PhotonLab.Source.Core;
 
 namespace PhotonLab.Source.Lights
 {
