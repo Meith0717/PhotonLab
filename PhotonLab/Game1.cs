@@ -2,6 +2,7 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
+using FlowLab.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -19,7 +20,7 @@ using System.IO;
 
 namespace PhotonLab
 {
-    public enum Paths { Images }
+    public enum Paths { Images, Videos }
 
     public class Game1 : Game
     {
@@ -32,7 +33,7 @@ namespace PhotonLab
         private FrameCounter _frameCounter;
         private SceneManager _sceneManager;
 
-        //private readonly ConsoleListerner _consoleListerner;
+        private readonly ConsoleListerner _consoleListerner;
         private readonly InputHandler _inputHandler;
         private readonly GraphicsDeviceManager _graphics;
         private readonly GraphicsController _graphicsController;
@@ -49,11 +50,12 @@ namespace PhotonLab
             consoleCommands.Register(new("render_sequence", "", _ => _renderMultipleImages = true));
             consoleCommands.Register(new("scenes", "", _ => Console.WriteLine(_sceneManager.ToString())));
 
-            //_consoleListerner = new(consoleCommands);
+            _consoleListerner = new(consoleCommands);
             _inputHandler = new();
             _graphicsController = new(this, Window, _graphics);
             _pathManager = new("PhotonLab", Environment.SpecialFolder.MyDocuments);
             _pathManager.RegisterPath(Paths.Images, "images");
+            _pathManager.RegisterPath(Paths.Videos, "videos");
 
             Activated += delegate { _windowActive = true; };
             Deactivated += delegate { _windowActive = false; };
@@ -75,7 +77,7 @@ namespace PhotonLab
             _inputHandler.RegisterDevice(new MouseListener(mouseBindings));
 
             _graphics.PreferredBackBufferHeight = 900;
-            _graphics.PreferredBackBufferWidth = 1600;
+            _graphics.PreferredBackBufferWidth = 900;
             _graphicsController.ApplyRefreshRate(60, false);
 
             base.Initialize();
@@ -86,13 +88,13 @@ namespace PhotonLab
             _sceneManager = new(GraphicsDevice);
             _sceneManager.AddScene("default", new(GraphicsDevice));
 
-            //ConsoleManager.Show(
-            //    "=== PhotonLap RayTracer ===\n" +
-            //    "Version: 1.0\n" +
-            //    "Author: Thierry Meiers\n\n" +
-            //    $"Output folder: {_pathManager.RootPath}\n"
-            //);
-            //_consoleListerner.Start();
+            ConsoleManager.Show(
+                "=== PhotonLap RayTracer ===\n" +
+                "Version: 1.0\n" +
+                "Author: Thierry Meiers\n\n" +
+                $"Output folder: {_pathManager.RootPath}\n"
+            );
+            _consoleListerner.Start();
         }
 
         protected override void LoadContent()
@@ -107,7 +109,7 @@ namespace PhotonLab
             var elapsedMilliseconds = gameTime.ElapsedGameTime.TotalMilliseconds;
             _inputHandler.Update(elapsedMilliseconds);
 
-            if (_windowActive)
+            if (true)
             {
                 _sceneManager.Update(elapsedMilliseconds, _inputHandler);
                 _inputHandler.DoAction((byte)ActionType.RayTracImage, () => _renderSingleImage = true);
@@ -142,7 +144,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 1);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 7);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager);
                 _rayTracer.End();
@@ -152,7 +154,8 @@ namespace PhotonLab
 
         private bool _renderMultipleImageActive;
         private int _sequenceCount;
-        private readonly int _sequenceAmount = 10;
+        private readonly int _sequenceAmount = 90;
+        private FFmpeg _fFmpeg;
         private void RenderSequence()
         {
             if (!_renderMultipleImageActive && _renderMultipleImages)
@@ -161,8 +164,12 @@ namespace PhotonLab
                 _renderMultipleImages = false;
                 _sequenceCount = 0;
 
+                _fFmpeg?.Dispose(); 
                 Console.WriteLine($"Starting sequence: {_sequenceAmount} images...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 1);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 1f);
+
+                var filePath = _pathManager.GetFilePath(Paths.Videos, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
+                _fFmpeg = new(_rayTracer.TargetRes.Width, _rayTracer.TargetRes.Height, 30, filePath);
             }
 
             if (_renderMultipleImageActive)
@@ -171,13 +178,13 @@ namespace PhotonLab
                 {
                     _renderMultipleImageActive = false;
                     _rayTracer.End();
+                    _fFmpeg.Finish();
                     return;
                 }
 
                 Console.WriteLine($"({_sequenceCount + 1}/{_sequenceAmount})");
                 _rayTracer.PerformTrace();
-                _rayTracer.RenderAndSaveResult(_pathManager);
-
+                _fFmpeg.WriteFrame(_rayTracer.GetColorData());
                 _sequenceCount++;
             }
         }

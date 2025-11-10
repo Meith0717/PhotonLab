@@ -11,7 +11,6 @@ namespace PhotonLab.Source.Materials
 {
     internal class PhongMaterial : IMaterial
     {
-        private const float Epsilon = .1e-1f;
         private const float OneOverPi = 1 / float.Pi;
         private readonly NormalMode _normalMode;
 
@@ -50,12 +49,12 @@ namespace PhotonLab.Source.Materials
             };
 
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
-            hitPosition += n * Epsilon;
+            hitPosition += n * IMaterial.Epsilon;
             var v = Vector3.Normalize(scene.Camer3D.Position.ToNumerics() - hitPosition);
 
             foreach (var lightSource in scene.LightSources)
             {
-                var lightInfos = lightSource.GetLightInfos(scene, hitPosition, Epsilon);
+                var lightInfos = lightSource.GetLightInfos(scene, hitPosition, IMaterial.Epsilon);
                 foreach (var lightInfo in lightInfos)
                 {
                     var r = Vector3.Reflect(-lightInfo.Direction, n);

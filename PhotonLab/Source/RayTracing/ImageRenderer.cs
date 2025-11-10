@@ -4,9 +4,7 @@
 
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using MonoKit.Core;
 using System;
-using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
 
@@ -16,10 +14,9 @@ namespace PhotonLab.Source.RayTracing
     /// Converts raw Vector3 light data into a Texture2D and optionally saves it as PNG.
     /// Applies gamma correction and tone mapping for display.
     /// </summary>
-    internal sealed class ImageRenderer(GraphicsDevice device)
+    internal sealed class ImageRenderer()
     {
-        private readonly GraphicsDevice _gD = device;
-        private Microsoft.Xna.Framework.Color[] _colorData;
+        private byte[] _colorData;
         private Size _targetRes;
 
         /// <summary>
@@ -31,62 +28,60 @@ namespace PhotonLab.Source.RayTracing
             var height = targetResolution.Height;
             _targetRes = targetResolution;
 
-            if (_colorData is null || _colorData.Length != width * height)
-                _colorData = new Microsoft.Xna.Framework.Color[width * height];
+            if (_colorData is null || _colorData.Length != width * height * 3)
+                _colorData = new byte[width * height * 3];
         }
 
         /// <summary>
         /// Converts Vector3 light data into a Texture2D with gamma correction and Reinhard tone mapping.
         /// </summary>
-        public Texture2D Render(Vector3[] lightData)
+        public byte[] Render(Vector3[] lightData, bool toneMapping = true, bool gammaCorrection = true)
         {
-            if (lightData.Length != _colorData.Length)
+            if (lightData.Length * 3 != _colorData.Length)
                 throw new Exception();
 
-            Parallel.For(0, lightData.Length, i =>
+            var width = _targetRes.Width;
+            var height = _targetRes.Height;
+
+            Parallel.For(0, height, y =>
             {
-                var l = lightData[i];
-                l = ReinhardToneMapping(l);
-                l = GammaCorrect(l);
-                _colorData[i] = new Microsoft.Xna.Framework.Color(l);
+                var uy = y * width;
+                for (var x = 0; x < width; x++)
+                {
+                    var i = uy + x;
+                    var l = lightData[i];
+
+                    if (toneMapping) 
+                        l = ReinhardToneMapping(l);
+
+                    if (gammaCorrection) 
+                        l = GammaCorrect(l);
+
+                    _colorData[i * 3 + 0] = (byte)(byte.MaxValue * l.X);
+                    _colorData[i * 3 + 1] = (byte)(byte.MaxValue * l.Y);
+                    _colorData[i * 3 + 2] = (byte)(byte.MaxValue * l.Z);
+                }
             });
 
-            var solution = new Texture2D(_gD, _targetRes.Width, _targetRes.Height);
-            solution.SetData(_colorData);
-
-            return solution;
-        }
-
-        /// <summary>
-        /// Renders the light data and saves the result as a PNG file via PathManager.
-        /// </summary>
-        public void RenderAndSave(Vector3[] lightData, PathManager<Paths> pathManager)
-        {
-            var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}");
-            HdrSaver.SaveHDR(filePath + ".exr", lightData, _targetRes.Width, _targetRes.Height);
-
-            using var target = Render(lightData);
-            using var fs = new FileStream(filePath + ".png", FileMode.Create);
-            target.SaveAsPng(fs, target.Width, target.Height);
-        }
+            return _colorData;
+        } 
 
         /// <summary>
         /// Simple Reinhard tone mapping to compress high dynamic range values into [0,1].
         /// </summary>
-        private static Vector3 ReinhardToneMapping(Vector3 data)
-        {
-            return data / (Vector3.One + data);
-        }
+        private static Vector3 ReinhardToneMapping(Vector3 data) 
+            => data / (Vector3.One + data);
 
         /// <summary>
         /// Gamma correction (default gamma 2.2) for sRGB display.
         /// </summary>
-        private static Vector3 GammaCorrect(Vector3 data, float gamma = 1f / 2.2f)
+        private static Vector3 GammaCorrect(Vector3 data)
         {
+            var gamma = 1f / 2.2f;
             return new Vector3(
-                MathF.Pow(data.X, gamma),
-                MathF.Pow(data.Y, gamma),
-                MathF.Pow(data.Z, gamma)
+                float.Pow(data.X, gamma),
+                float.Pow(data.Y, gamma),
+                float.Pow(data.Z, gamma)
             );
         }
     }

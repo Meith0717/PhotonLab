@@ -123,6 +123,9 @@ namespace PhotonLab.Source.Bodies
                     var faceNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
                     var texturePos = coordinates.InterpolateVector2(t0, t1, t2);
 
+                    if (Vector3.Dot(faceNormal, ray.Direction) > 0)
+                        continue;
+
                     hit = new(coordinates.T, normal, faceNormal, texturePos, Material);
                     anyHit = true;
                 }

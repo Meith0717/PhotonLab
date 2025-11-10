@@ -10,7 +10,6 @@ namespace PhotonLab.Source.Materials
 {
     internal class MirrorMaterial(Microsoft.Xna.Framework.Color color, float reflectivity = 1f, NormalMode normalMode = NormalMode.Interpolated) : IMaterial
     {
-        private const float Epsilon = 1e-2f;
         public CpuTexture2D DiffuseTexture { get; } = null!;
         public Vector3 DiffuseColor { get; } = color.ToVector3().ToNumerics();
         private readonly NormalMode _normalMode = normalMode;
@@ -27,7 +26,7 @@ namespace PhotonLab.Source.Materials
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
 
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
-            hitPosition += n * Epsilon;
+            hitPosition += n * IMaterial.Epsilon;
 
             var reflectedRay = new RaySIMD(hitPosition, reflectDir);
 

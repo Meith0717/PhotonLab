@@ -11,6 +11,8 @@ namespace PhotonLab.Source.Materials
 
     internal interface IMaterial
     {
+        public const float Epsilon = 1e-1f;
+
         public CpuTexture2D DiffuseTexture { get; }
 
         public Vector3 DiffuseColor { get; }

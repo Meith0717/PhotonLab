@@ -22,85 +22,34 @@ namespace PhotonLab.Source
         public readonly List<MeshBody> Shapes = [];
         public readonly List<ILightSource> LightSources = [];
         private readonly List<MeshBody> LightShapes = [];
+        private readonly MeshBody _mashBody;
+        private float _bodyRotation;
 
         public int FaceCount => Shapes.Sum(s => s.FaseCount);
 
         public Scene(GraphicsDevice graphicsDevice)
         {
-            Camer3D = new(graphicsDevice);
+            Camer3D = new(new(0, 10, -30), new(-1, 0, 0),  graphicsDevice);
             Camer3D.AddBehaviour(new MoveByMouse());
             Camer3D.AddBehaviour(new ZoomByMouse(1));
 
-            float scale = 20f;
+            CornellBox.Build(graphicsDevice, Shapes, LightSources, 20);
 
-            // Floor
-            var quad = BasicBodies.CreateQuad(graphicsDevice);
-            quad.ModelTransform =
-                Matrix.CreateScale(scale) *
-                Matrix.CreateRotationX(-float.Pi / 2); // floor rotation
-            quad.Material = new PhongMaterial(Color.Gray) { AmbientStrength = .1f, SpecularStrength = 0 };
-            Shapes.Add(quad);
+            var model = BasicBodies.CreateCube(graphicsDevice, 1, 1.5f, 1);
+            model.Material = new PhongMaterial(Color.White, NormalMode.Face);
+            model.ModelTransform = Matrix.CreateScale(7)
+               * Matrix.CreateTranslation(-5, 5, 5);
+            Shapes.Add(model);
 
-            // Ceiling
-            quad = BasicBodies.CreateQuad(graphicsDevice);
-            quad.ModelTransform =
-                Matrix.CreateScale(scale) *
-                Matrix.CreateRotationX(float.Pi / 2) *
-                Matrix.CreateTranslation(0, scale, 0);
-            quad.Material = new PhongMaterial(Color.Black) { AmbientStrength = .1f, SpecularStrength = 0 };
-            Shapes.Add(quad);
+            model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
+            model.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Interpolated);
+            model.ModelTransform = Matrix.CreateScale(4)
+                * Matrix.CreateTranslation(5, 5, 5);
+            Shapes.Add(model);
 
-            // Back wall
-            quad = BasicBodies.CreateQuad(graphicsDevice);
-            quad.ModelTransform =
-                Matrix.CreateScale(scale) *
-                Matrix.CreateTranslation(0, scale/2, -scale/2);
-            quad.Material = new PhongMaterial(Color.Yellow) { AmbientStrength = .1f, SpecularStrength = 0 };
-            Shapes.Add(quad);
+            _mashBody = BasicBodies.CreateTetrahedron(graphicsDevice);
+            _mashBody.Material = new PhongMaterial(Color.LightYellow, NormalMode.Face);
 
-            // Front wall
-            quad = BasicBodies.CreateQuad(graphicsDevice);
-            quad.ModelTransform =
-                Matrix.CreateScale(scale) *
-                Matrix.CreateRotationX(float.Pi) *
-                Matrix.CreateTranslation(0, scale/2, scale / 2);
-            quad.Material = new PhongMaterial(Color.Red) { AmbientStrength = .1f, SpecularStrength = 0 };
-            Shapes.Add(quad);
-
-            // Left wall
-            quad = BasicBodies.CreateQuad(graphicsDevice);
-            quad.ModelTransform =
-                Matrix.CreateScale(scale) *
-                Matrix.CreateRotationY(float.Pi / 2) *
-                Matrix.CreateTranslation(-scale/2, scale / 2, 0);
-            quad.Material = new PhongMaterial(Color.Green) { AmbientStrength = .1f, SpecularStrength = 0 };
-            Shapes.Add(quad);
-
-            // Right wall
-            quad = BasicBodies.CreateQuad(graphicsDevice);
-            quad.ModelTransform =
-                Matrix.CreateScale(scale) *
-                Matrix.CreateRotationY(-float.Pi / 2) *
-                Matrix.CreateTranslation(scale / 2, scale / 2, 0);
-            quad.Material = new PhongMaterial(Color.Blue) { AmbientStrength = .1f, SpecularStrength = 0 };
-            Shapes.Add(quad);
-
-            var sphere = BasicBodies.CreateSphere(graphicsDevice, 20, 20);
-            sphere.ModelTransform = Matrix.CreateScale(3) * Matrix.CreateTranslation(6, 3, 6);
-            sphere.Material = new MirrorMaterial(Color.White, .75f);
-            Shapes.Add(sphere);
-
-            var cube = BasicBodies.CreateCube(graphicsDevice);
-            cube.ModelTransform = Matrix.CreateScale(5) * Matrix.CreateTranslation(-6, 2, -6);
-            cube.Material = new PhongMaterial(Color.White, NormalMode.Face) { AmbientStrength = .1f };
-            Shapes.Add(cube);
-
-            var tetrahedron = BasicBodies.CreateTetrahedron(graphicsDevice);
-            tetrahedron.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Face);
-            tetrahedron.ModelTransform = Matrix.CreateScale(8) * Matrix.CreateRotationY(0) * Matrix.CreateTranslation(-5, 0, 5);
-            Shapes.Add(tetrahedron);
-
-            LightSources.Add(new LightSources.SpotLight(new Vector3(0, 18f, 0), new(0, -1, 0), 45, Color.LightYellow));
             foreach (var lightSource in LightSources)
             {
                 var lightMesh = BasicBodies.CreateSphere(graphicsDevice, 4, 4);
@@ -109,7 +58,7 @@ namespace PhotonLab.Source
             }
         }
 
-        public bool Intersect(RaySIMD ray, out HitInfo closestHit)
+        public bool Intersect(in RaySIMD ray, out HitInfo closestHit)
         {
             closestHit = new HitInfo();
             var hitFound = false;
@@ -127,6 +76,8 @@ namespace PhotonLab.Source
 
         public void Update(double elapsedMilliseconds, InputHandler inputHandler)
         {
+            _bodyRotation += .05f;
+            _mashBody.ModelTransform = Matrix.CreateScale(7) * Matrix.CreateRotationY(_bodyRotation) * Matrix.CreateTranslation(0, 0, -5);
             Camer3D.Update(elapsedMilliseconds, inputHandler);
         }
 
@@ -134,7 +85,7 @@ namespace PhotonLab.Source
         {
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
-            graphicsDevice.RasterizerState = RasterizerState.CullNone;
+            graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             basicEffect.World = Matrix.Identity;
             basicEffect.View = Camer3D.View;

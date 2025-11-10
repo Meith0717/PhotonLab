@@ -5,10 +5,11 @@
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoKit.Camera;
-using MonoKit.Debug;
 using MonoKit.Core;
+using MonoKit.Debug;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,11 +25,11 @@ namespace PhotonLab.Source.RayTracing
     {
         private readonly Stopwatch _totalWatch = new();
         private readonly Stopwatch _tracingWatch = new();
-        private readonly ImageRenderer _imageRenderer = new(gd);
+        private readonly ImageRenderer _imageRenderer = new();
         private readonly GraphicsDevice _gD = gd;
 
+        public Size TargetRes { get; private set; }
         private bool _setUpFlag = false;
-        private Size _targetResolution;
         private Scene _scene;
         private Vector3[] _lightData;
         private RaySIMD[] _cameraRays;
@@ -46,8 +47,8 @@ namespace PhotonLab.Source.RayTracing
             var height = (int)(_gD.Viewport.Height * resolutionScale);
 
             _scene = scene;
-            _targetResolution = new(width, height);
-            _imageRenderer.ApplyScale(_targetResolution);
+            TargetRes = new(width, height);
+            _imageRenderer.ApplyScale(TargetRes);
 
             int totalRays = width * height;
             Console.WriteLine($"\n=== RayTracer START ===");
@@ -58,7 +59,6 @@ namespace PhotonLab.Source.RayTracing
             CreateCameraRaysParallel(scene.Camer3D);
             _setUpFlag = true;
         }
-
 
         /// <summary>
         /// Performs the actual ray tracing pass for all camera rays in parallel.
@@ -95,32 +95,32 @@ namespace PhotonLab.Source.RayTracing
         /// </summary>
         public static Vector3 Trace(Scene scene, RaySIMD ray, int depth = 0)
         {
-            if (depth > 2 || !scene.Intersect(ray, out var hit))
+            if (depth > 2 || !scene.Intersect(in ray, out var hit))
                 return Vector3.Zero;
 
-            return hit.Material.Shade(scene, depth, ray, in hit);
-        }
-
-        /// <summary>
-        /// Renders the accumulated light data into a MonoGame Texture2D.
-        /// </summary>
-        public Texture2D RenderResult()
-        {
-            if (!_setUpFlag)
-                throw new Exception();
-
-            return _imageRenderer.Render(_lightData);
+            return hit.Material.Shade(scene, depth, in ray, in hit);
         }
 
         /// <summary>
         /// Renders and saves the result to disk via the PathManager.
         /// </summary>
-        public void RenderAndSaveResult(PathManager<Paths> pathManager)
+        public void RenderAndSaveResult(PathManager<Paths> pathManager, bool doExr = true)
         {
             if (!_setUpFlag)
                 throw new Exception();
 
-            _imageRenderer.RenderAndSave(_lightData, pathManager);
+            var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}");
+
+            if (doExr)
+                ImageSaver.SaveEXR(filePath + ".exr", _lightData, TargetRes.Width, TargetRes.Height);
+
+            var colorData = _imageRenderer.Render(_lightData);
+            ImageSaver.SavePNG(filePath + ".png", colorData, TargetRes.Width, TargetRes.Height);
+        }
+
+        public byte[] GetColorData()
+        {
+            return _imageRenderer.Render(_lightData);
         }
 
         /// <summary>
@@ -141,15 +141,14 @@ namespace PhotonLab.Source.RayTracing
             _setUpFlag = false;
         }
 
-
         /// <summary>
         /// Generates camera rays for all pixels in parallel.
         /// Each ray is stored in _cameraRays for later tracing.
         /// </summary>
         private void CreateCameraRaysParallel(Camera3D camera)
         {
-            var width = _targetResolution.Width;
-            var height = _targetResolution.Height;
+            var width = TargetRes.Width;
+            var height = TargetRes.Height;
 
             if (_cameraRays is null || _cameraRays.Length != width * height)
             {

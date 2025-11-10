@@ -66,24 +66,33 @@ namespace PhotonLab.Source.Bodies
             return new MeshBody(device, verts, inds);
         }
 
-        public static MeshBody CreateCube(GraphicsDevice device)
+        public static MeshBody CreateCube(GraphicsDevice device, float width = 1f, float height = 1f, float depth = 1f)
         {
-            float s = 0.5f;
+            float hw = width / 2f;
+            float hh = height / 2f;
+            float hd = depth / 2f;
+
             var v = new[]
             {
-                new Vector3(-s,-s,-s), new(s,-s,-s), new(s,s,-s), new(-s,s,-s),
-                new(-s,-s,s), new(s,-s,s), new(s,s,s), new(-s,s,s)
+                new Vector3(-hw, -hh, -hd), new(hw, -hh, -hd), new(hw, hh, -hd), new(-hw, hh, -hd),
+                new Vector3(-hw, -hh, hd),  new(hw, -hh, hd),  new(hw, hh, hd),  new(-hw, hh, hd)
             };
 
             var verts = Array.ConvertAll(v, p => new VertexPositionNormalTexture(p, Vector3.Normalize(p), Vector2.Zero));
+
             var inds = new ushort[]
             {
-                4,5,6,4,6,7, 1,0,3,1,3,2, 0,4,7,0,7,3,
-                5,1,2,5,2,6, 3,7,6,3,6,2, 0,1,5,0,5,4
+                4,5,6, 4,6,7,     // front
+                1,0,3, 1,3,2,     // back
+                0,4,7, 0,7,3,     // left
+                5,1,2, 5,2,6,     // right
+                3,7,6, 3,6,2,     // top
+                0,1,5, 0,5,4      // bottom
             };
 
             return new MeshBody(device, verts, inds);
         }
+
 
         public static MeshBody CreateQuad(GraphicsDevice device)
         {

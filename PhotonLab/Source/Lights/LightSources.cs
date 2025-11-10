@@ -11,20 +11,30 @@ namespace PhotonLab.Source.Lights
 {
     internal static class LightSources
     {
+        public static LightEmissionPoint[] EmissionPoints => [
+            new(Vector3.Zero),
+
+            new(new Vector3( 0.1f, 0f,  0.0f)),
+            new(new Vector3( 0.05f, 0f,  0.0866f)),
+            new(new Vector3(-0.05f, 0f,  0.0866f)),
+            new(new Vector3(-0.1f, 0f, 0.0f)),
+            new(new Vector3(-0.05f, 0f, -0.0866f)),
+            new(new Vector3( 0.05f, 0f, -0.0066f)),
+
+            new(new Vector3( 0.2f, 0f,  0.0f)),
+            new(new Vector3( 0.1f, 0f,  0.1732f)),
+            new(new Vector3(-0.1f, 0f,  0.1732f)),
+            new(new Vector3(-0.2f, 0f, 0.0f)),
+            new(new Vector3(-0.1f, 0f, -0.1732f)),
+            new(new Vector3( 0.1f, 0f, -0.1732f))
+        ];
+
         internal class PointLight(Microsoft.Xna.Framework.Vector3 position, Microsoft.Xna.Framework.Color color) : ILightSource
         {
             public Vector3 Position => position.ToNumerics();
             public Vector3 Color => color.ToVector3().ToNumerics();
 
-            public LightEmissionPoint[] Lights => [
-                new(Vector3.Zero),
-                new(new Vector3( 0.5f, 0f,  0.0f)),
-                new(new Vector3( 0.25f, 0f,  0.433f)),
-                new(new Vector3(-0.25f, 0f,  0.433f)),
-                new(new Vector3(-0.5f, 0f,  0.0f)),
-                new(new Vector3(-0.25f, 0f, -0.433f)),
-                new(new Vector3( 0.25f, 0f, -0.433f))
-            ];
+            public LightEmissionPoint[] Lights => EmissionPoints;
 
             public LightInfo[] GetLightInfos(Scene scene, Vector3 hitPosition, float epsilon)
             {
@@ -52,15 +62,7 @@ namespace PhotonLab.Source.Lights
             public Vector3 Direction => Vector3.Normalize(direction.ToNumerics());
             public float AngleThresholdRad => float.DegreesToRadians(angleThresholdDeg);
 
-            public LightEmissionPoint[] Lights => [
-                new(Vector3.Zero),
-                new(new Vector3( 0.5f, 0f,  0.0f)),
-                new(new Vector3( 0.25f, 0f,  0.433f)),
-                new(new Vector3(-0.25f, 0f,  0.433f)),
-                new(new Vector3(-0.5f, 0f,  0.0f)),
-                new(new Vector3(-0.25f, 0f, -0.433f)),
-                new(new Vector3( 0.25f, 0f, -0.433f))
-            ];
+            public LightEmissionPoint[] Lights => EmissionPoints;
 
             public LightInfo[] GetLightInfos(Scene scene, Vector3 hitPosition, float epsilon)
             {
