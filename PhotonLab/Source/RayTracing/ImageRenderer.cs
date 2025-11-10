@@ -46,8 +46,8 @@ namespace PhotonLab.Source.RayTracing
             Parallel.For(0, lightData.Length, i =>
             {
                 var l = lightData[i];
-                l = GammaCorrect(l);
                 l = ReinhardToneMapping(l);
+                l = GammaCorrect(l);
                 _colorData[i] = new Microsoft.Xna.Framework.Color(l);
             });
 
@@ -62,9 +62,11 @@ namespace PhotonLab.Source.RayTracing
         /// </summary>
         public void RenderAndSave(Vector3[] lightData, PathManager<Paths> pathManager)
         {
-            var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
+            var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}");
+            HdrSaver.SaveHDR(filePath + ".exr", lightData, _targetRes.Width, _targetRes.Height);
+
             using var target = Render(lightData);
-            using var fs = new FileStream(filePath, FileMode.Create);
+            using var fs = new FileStream(filePath + ".png", FileMode.Create);
             target.SaveAsPng(fs, target.Width, target.Height);
         }
 
