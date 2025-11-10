@@ -7,11 +7,11 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 
-namespace PhotonLab.Source.Meshes
+namespace PhotonLab.Source.Bodies
 {
-    internal static class BasicSolids
+    internal static class BasicBodies
     {
-        public static CpuMesh CreateSphere(GraphicsDevice device, int segments = 16, int rings = 16)
+        public static MeshBody CreateSphere(GraphicsDevice device, int segments = 16, int rings = 16)
         {
             var vertices = new List<VertexPositionNormalTexture>();
             var indices = new List<ushort>();
@@ -46,10 +46,10 @@ namespace PhotonLab.Source.Meshes
                     });
                 }
 
-            return new CpuMesh(device, [.. vertices], [.. indices]);
+            return new MeshBody(device, [.. vertices], [.. indices]);
         }
 
-        public static CpuMesh CreateTetrahedron(GraphicsDevice device)
+        public static MeshBody CreateTetrahedron(GraphicsDevice device)
         {
             float s = 1f, h = (float)(Math.Sqrt(3) / 2f * s);
             var v = new[]
@@ -63,10 +63,10 @@ namespace PhotonLab.Source.Meshes
             var verts = Array.ConvertAll(v, p => new VertexPositionNormalTexture(p, Vector3.Normalize(p), Vector2.Zero));
             var inds = new ushort[] { 0, 2, 1, 0, 1, 3, 0, 3, 2, 1, 2, 3 };
 
-            return new CpuMesh(device, verts, inds);
+            return new MeshBody(device, verts, inds);
         }
 
-        public static CpuMesh CreateCube(GraphicsDevice device)
+        public static MeshBody CreateCube(GraphicsDevice device)
         {
             float s = 0.5f;
             var v = new[]
@@ -82,10 +82,10 @@ namespace PhotonLab.Source.Meshes
                 5,1,2,5,2,6, 3,7,6,3,6,2, 0,1,5,0,5,4
             };
 
-            return new CpuMesh(device, verts, inds);
+            return new MeshBody(device, verts, inds);
         }
 
-        public static CpuMesh CreateQuad(GraphicsDevice device)
+        public static MeshBody CreateQuad(GraphicsDevice device)
         {
             float h = 0.5f;
             var n = new Vector3(0, 0, 1);
@@ -98,7 +98,7 @@ namespace PhotonLab.Source.Meshes
                 new VertexPositionNormalTexture(new(-h,h,0), n, Vector2.Zero)
             };
 
-            return new CpuMesh(device, verts, new ushort[] { 1, 2, 0, 2, 3, 0 });
+            return new MeshBody(device, verts, new ushort[] { 1, 2, 0, 2, 3, 0 });
         }
     }
 }

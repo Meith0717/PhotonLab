@@ -6,7 +6,7 @@
 using PhotonLab.Source.Materials;
 using System.Numerics;
 
-namespace PhotonLab.Source.Core
+namespace PhotonLab.Source.RayTracing
 {
     internal readonly struct HitInfo
     {

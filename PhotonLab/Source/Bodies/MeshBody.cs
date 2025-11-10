@@ -2,21 +2,19 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-namespace PhotonLab.Source.Meshes
+namespace PhotonLab.Source.Bodies
 {
     using Microsoft.Xna.Framework.Graphics;
-    using PhotonLab.Source.Core;
     using PhotonLab.Source.Materials;
     using PhotonLab.Source.RayTracing;
     using System;
     using System.Numerics;
     using System.Threading.Tasks;
 
-    internal class CpuMesh
+    internal class MeshBody : IBody3D
     {
         // CPU stuff (Ray Tracing)
         private readonly BoundingBoxSIMD _boundingBox;
-
         private readonly ushort[] _primitiveIndices;
         private readonly Vector3[] _vertexPositions;
         private readonly Vector3[] _vertexNormals;
@@ -31,15 +29,9 @@ namespace PhotonLab.Source.Meshes
         // Some other Stuff
         public int FaseCount => _primitiveIndices.Length / 3;
         public IMaterial Material { get; set; }
-        public Microsoft.Xna.Framework.Matrix ModelTransform 
-        {
-            set { 
-                _transform = value.ToNumerics(); 
-                Matrix4x4.Invert(_transform, out _invTransform);
-            }
-        }
+        public Microsoft.Xna.Framework.Matrix ModelTransform  { set { _transform = value.ToNumerics();  Matrix4x4.Invert(_transform, out _invTransform); } }
 
-        public CpuMesh(GraphicsDevice graphicsDevice, VertexPositionNormalTexture[] vertices, ushort[] indices)
+        public MeshBody(GraphicsDevice graphicsDevice, VertexPositionNormalTexture[] vertices, ushort[] indices)
         {
             var vertexCount = vertices.Length;
             _vertexPositions = new Vector3[vertexCount];
@@ -61,7 +53,7 @@ namespace PhotonLab.Source.Meshes
             _indexBuffer.SetData(_primitiveIndices);
         }
 
-        public CpuMesh(ModelMesh mesh)
+        public MeshBody(ModelMesh mesh)
         {
             var mainMesh = mesh.MeshParts[0];
 
