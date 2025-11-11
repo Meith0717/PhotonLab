@@ -27,7 +27,7 @@ namespace PhotonLab.Source
             else
                 throw new InvalidOperationException("The Scene already exists!");
 
-            _currentScene ??= scene; 
+            _currentScene ??= scene;
         }
 
         public void RemoveScene(string name)
@@ -56,8 +56,8 @@ namespace PhotonLab.Source
         public override string ToString()
         {
             var str = string.Empty;
-            
-            for(var i = 0; i < _scenes.Count; i++)
+
+            for (var i = 0; i < _scenes.Count; i++)
             {
                 var kvp = _scenes.ElementAt(i);
                 str += $"{i}: {kvp.Key}\n";

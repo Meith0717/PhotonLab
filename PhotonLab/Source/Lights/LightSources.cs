@@ -1,11 +1,11 @@
-﻿// PointLight.cs 
+﻿// LightSources.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using System.Numerics;
-using System;
 using PhotonLab.Source.RayTracing;
+using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace PhotonLab.Source.Lights
 {

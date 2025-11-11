@@ -1,4 +1,4 @@
-﻿// Shape3D.cs 
+﻿// MeshBody.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
@@ -29,7 +29,7 @@ namespace PhotonLab.Source.Bodies
         // Some other Stuff
         public int FaseCount => _primitiveIndices.Length / 3;
         public IMaterial Material { get; set; }
-        public Microsoft.Xna.Framework.Matrix ModelTransform  { set { _transform = value.ToNumerics();  Matrix4x4.Invert(_transform, out _invTransform); } }
+        public Microsoft.Xna.Framework.Matrix ModelTransform { set { _transform = value.ToNumerics(); Matrix4x4.Invert(_transform, out _invTransform); } }
 
         public MeshBody(GraphicsDevice graphicsDevice, VertexPositionNormalTexture[] vertices, ushort[] indices)
         {

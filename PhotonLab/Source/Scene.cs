@@ -13,7 +13,6 @@ using PhotonLab.Source.Materials;
 using PhotonLab.Source.RayTracing;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace PhotonLab.Source
 {
@@ -30,20 +29,22 @@ namespace PhotonLab.Source
 
         public Scene(GraphicsDevice graphicsDevice)
         {
-            Camer3D = new(new(0, 10, -30), new(-1, 0, 0),  graphicsDevice);
+            Camer3D = new(new(0, 12.5f, -30), new(-1, 0, 0), graphicsDevice);
             Camer3D.AddBehaviour(new MoveByMouse());
             Camer3D.AddBehaviour(new ZoomByMouse(1));
 
-            CornellBox.Build(graphicsDevice, Shapes, LightSources, 20);
+            CornellBox.Build(graphicsDevice, Shapes, LightSources, 25);
 
-            var model = BasicBodies.CreateCube(graphicsDevice, 1, 1f, 1);
-            model.Material = new PhongMaterial(Color.Orange);
+            var model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
+            model.Material = new MirrorMaterial(Color.White, .75f);
+            model.ModelTransform = Matrix.CreateScale(4)
+                * Matrix.CreateTranslation(5f, 5f, 5f);
             Shapes.Add(_rotatingBody = model);
 
             model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
             model.Material = new TransparentMaterial();
             model.ModelTransform = Matrix.CreateScale(4)
-                * Matrix.CreateTranslation(0, 10, -5);
+                * Matrix.CreateTranslation(-7f, 5f, -7f);
             Shapes.Add(model);
 
             foreach (var lightSource in LightSources)
@@ -73,9 +74,6 @@ namespace PhotonLab.Source
         public void Update(double elapsedMilliseconds, InputHandler inputHandler)
         {
             _rotaton += .05f;
-            _rotatingBody.ModelTransform = Matrix.CreateScale(2)
-                * Matrix.CreateRotationY(_rotaton)
-                * Matrix.CreateTranslation(2, 10, 5);
 
             Camer3D.Update(elapsedMilliseconds, inputHandler);
         }

@@ -1,4 +1,4 @@
-﻿// I3DBody.cs 
+﻿// IBody3D.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
@@ -9,10 +9,10 @@ namespace PhotonLab.Source.Bodies
 {
     internal interface IBody3D
     {
-        public IMaterial Material { get; set; }
+        IMaterial Material { get; set; }
 
-        public Microsoft.Xna.Framework.Matrix ModelTransform { set; }
+        Microsoft.Xna.Framework.Matrix ModelTransform { set; }
 
-        public bool Intersect(in RaySIMD ray, out HitInfo hit);
+        bool Intersect(in RaySIMD ray, out HitInfo hit);
     }
 }

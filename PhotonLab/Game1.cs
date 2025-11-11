@@ -33,7 +33,7 @@ namespace PhotonLab
         private FrameCounter _frameCounter;
         private SceneManager _sceneManager;
 
-        private readonly ConsoleListerner _consoleListerner;
+        private readonly ConsoleListener _consoleListerner;
         private readonly InputHandler _inputHandler;
         private readonly GraphicsDeviceManager _graphics;
         private readonly GraphicsController _graphicsController;
@@ -63,7 +63,7 @@ namespace PhotonLab
 
         protected override void Initialize()
         {
-            var keyBindings = new Dictionary<(Keys, InputEventType), byte>() 
+            var keyBindings = new Dictionary<(Keys, InputEventType), byte>()
             {
                 {(Keys.F2, InputEventType.Released), (byte)ActionType.RayTracImage },
                 {(Keys.F3, InputEventType.Released), (byte)ActionType.RayTraceSequence },
@@ -144,7 +144,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 1);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 5);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager);
                 _rayTracer.End();
@@ -164,7 +164,7 @@ namespace PhotonLab
                 _renderMultipleImages = false;
                 _sequenceCount = 0;
 
-                _fFmpeg?.Dispose(); 
+                _fFmpeg?.Dispose();
                 Console.WriteLine($"Starting sequence: {_sequenceAmount} images...");
                 _rayTracer.Begin(_sceneManager.CurrentScene, 1f);
 

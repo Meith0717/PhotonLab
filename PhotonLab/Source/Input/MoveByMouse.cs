@@ -9,7 +9,7 @@ using MonoKit.Input;
 
 namespace PhotonLab.Source.Input
 {
-    public class MoveByMouse() : ICamera3dBehaviour
+    public class MoveByMouse() : ICamera3dBehavior
     {
         private MouseState _prevMouseState;
         private float _yaw;

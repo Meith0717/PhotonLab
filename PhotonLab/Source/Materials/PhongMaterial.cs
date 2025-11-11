@@ -2,10 +2,10 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using System.Numerics;
 using Microsoft.Xna.Framework.Graphics;
 using PhotonLab.Source.RayTracing;
 using System;
+using System.Numerics;
 
 namespace PhotonLab.Source.Materials
 {

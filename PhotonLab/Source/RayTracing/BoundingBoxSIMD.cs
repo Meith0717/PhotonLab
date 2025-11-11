@@ -1,4 +1,4 @@
-﻿// NumericsBoundingBox.cs 
+﻿// BoundingBoxSIMD.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
@@ -76,7 +76,7 @@ namespace PhotonLab.Source.RayTracing
 
             var flag = true;
             Vector3 maxVector = new(float.MaxValue);
-            Vector3 minVector = new(float.MinValue); 
+            Vector3 minVector = new(float.MinValue);
             foreach (Vector3 point in points)
             {
                 maxVector.X = ((maxVector.X < point.X) ? maxVector.X : point.X);

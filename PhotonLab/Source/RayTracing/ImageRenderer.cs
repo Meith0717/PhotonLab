@@ -1,8 +1,7 @@
-﻿// ImageWriter.cs 
+﻿// ImageRenderer.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using System;
 using System.Numerics;
@@ -51,10 +50,10 @@ namespace PhotonLab.Source.RayTracing
                     var i = uy + x;
                     var l = lightData[i];
 
-                    if (toneMapping) 
+                    if (toneMapping)
                         l = ReinhardToneMapping(l);
 
-                    if (gammaCorrection) 
+                    if (gammaCorrection)
                         l = GammaCorrect(l);
 
                     _colorData[i * 3 + 0] = (byte)(byte.MaxValue * l.X);
@@ -64,12 +63,12 @@ namespace PhotonLab.Source.RayTracing
             });
 
             return _colorData;
-        } 
+        }
 
         /// <summary>
         /// Simple Reinhard tone mapping to compress high dynamic range values into [0,1].
         /// </summary>
-        private static Vector3 ReinhardToneMapping(Vector3 data) 
+        private static Vector3 ReinhardToneMapping(Vector3 data)
             => data / (Vector3.One + data);
 
         /// <summary>

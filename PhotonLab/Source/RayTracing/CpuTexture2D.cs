@@ -1,4 +1,4 @@
-﻿// CpuTexture.cs 
+﻿// CpuTexture2D.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
@@ -48,7 +48,7 @@ namespace PhotonLab.Source.RayTracing
             return SampleData(x, y);
         }
 
-        public System.Numerics.Vector4 SampleData(Point point) 
+        public System.Numerics.Vector4 SampleData(Point point)
             => SampleData(point.X, point.Y);
 
         public System.Numerics.Vector4 SampleData(int x, int y)

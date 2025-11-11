@@ -13,7 +13,7 @@ namespace PhotonLab.Source.Input
     /// <summary>
     /// Smoothly zooms a 3D camera using the mouse scroll wheel by adjusting the field of view (FOV).
     /// </summary>
-    public class ZoomByMouse(float smooth) : ICamera3dBehaviour
+    public class ZoomByMouse(float smooth) : ICamera3dBehavior
     {
         private readonly float _smooth = smooth;
         private float _zoomTarget;

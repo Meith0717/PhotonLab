@@ -2,9 +2,9 @@
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using PhotonLab.Source.RayTracing;
 using System;
 using System.Numerics;
-using PhotonLab.Source.RayTracing;
 
 namespace PhotonLab.Source.Materials
 {
@@ -14,7 +14,8 @@ namespace PhotonLab.Source.Materials
 
         public CpuTexture2D DiffuseTexture { get; } = null!;
         public Vector3 DiffuseColor { get; } = Vector3.One;
-        public float RefractiveIndex { get; } = 1.3f;
+        public float RefractiveIndex { get; } = 1.5f;
+        public float ReflectetStrength { get; } = 1.5f;
 
         public TransparentMaterial(NormalMode normalMode = NormalMode.Interpolated)
         {
@@ -42,7 +43,7 @@ namespace PhotonLab.Source.Materials
             // Compute reflection direction
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
             var reflectedRay = new RaySIMD(hitPosition, reflectDir);
-            var reflectedColor = RayTracer.Trace(scene, reflectedRay, depth + 1);
+            var reflectedColor = ReflectetStrength * RayTracer.Trace(scene, reflectedRay, depth + 1);
 
             // Determine if we’re entering or exiting the medium
             float cosi = float.Clamp(Vector3.Dot(ray.Direction, n), -1, 1);
@@ -69,7 +70,7 @@ namespace PhotonLab.Source.Materials
             float fresnel = R0 + (1 - R0) * MathF.Pow(1 - MathF.Abs(cosi), 5);
 
             // Combine reflection + refraction
-            var color = refractedColor;
+            var color = fresnel * reflectedColor + (1 - fresnel) * refractedColor;
             return DiffuseColor * color;
         }
     }

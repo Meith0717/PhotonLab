@@ -1,8 +1,7 @@
-﻿// HdrSaver.cs 
+﻿// ImageSaver.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;

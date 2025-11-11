@@ -12,20 +12,20 @@ namespace PhotonLab.Source.Bodies
 {
     internal static class CornellBox
     {
-        private static readonly float AmbientStrength = .2f;
-        private static readonly float SpecularStrength = .5f;
+        private static readonly float AmbientStrength = .1f;
+        private static readonly float SpecularStrength = .75f;
 
         public static void Build(GraphicsDevice graphicsDevice, List<MeshBody> bodys, List<ILightSource> lights, float scale)
-        { 
+        {
             // Floor
             var quad = BasicBodies.CreateQuad(graphicsDevice);
             quad.ModelTransform =
                 Matrix.CreateScale(scale) *
                 Matrix.CreateRotationX(-float.Pi / 2); // floor rotation
-            quad.Material = new PhongMaterial(Color.LightGray) 
-            { 
-                AmbientStrength = AmbientStrength, 
-                SpecularStrength = SpecularStrength 
+            quad.Material = new PhongMaterial(Color.Gray)
+            {
+                AmbientStrength = AmbientStrength,
+                SpecularStrength = SpecularStrength
             };
             bodys.Add(quad);
 
@@ -35,7 +35,7 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale) *
                 Matrix.CreateRotationX(float.Pi / 2) *
                 Matrix.CreateTranslation(0, scale, 0);
-            quad.Material = new PhongMaterial(Color.LightGray)
+            quad.Material = new PhongMaterial(Color.Gray)
             {
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength
@@ -48,7 +48,7 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale) *
                 Matrix.CreateRotationX(float.Pi) *
                 Matrix.CreateTranslation(0, scale / 2, scale / 2);
-            quad.Material = new PhongMaterial(Color.LightGray)
+            quad.Material = new PhongMaterial(Color.Gray)
             {
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength
