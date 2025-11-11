@@ -69,7 +69,7 @@ namespace PhotonLab.Source.Materials
             float fresnel = R0 + (1 - R0) * MathF.Pow(1 - MathF.Abs(cosi), 5);
 
             // Combine reflection + refraction
-            var color = fresnel * reflectedColor + (1 - fresnel) * refractedColor;
+            var color = refractedColor;
             return DiffuseColor * color;
         }
     }

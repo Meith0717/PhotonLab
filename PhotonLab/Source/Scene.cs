@@ -6,13 +6,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Camera;
 using MonoKit.Input;
+using PhotonLab.Source.Bodies;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.Lights;
 using PhotonLab.Source.Materials;
-using PhotonLab.Source.Bodies;
 using PhotonLab.Source.RayTracing;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace PhotonLab.Source
 {
@@ -22,8 +23,8 @@ namespace PhotonLab.Source
         public readonly List<MeshBody> Shapes = [];
         public readonly List<ILightSource> LightSources = [];
         private readonly List<MeshBody> LightShapes = [];
-        private readonly MeshBody _mashBody;
-        private float _bodyRotation;
+        private readonly MeshBody _rotatingBody;
+        private float _rotaton;
 
         public int FaceCount => Shapes.Sum(s => s.FaseCount);
 
@@ -35,20 +36,15 @@ namespace PhotonLab.Source
 
             CornellBox.Build(graphicsDevice, Shapes, LightSources, 20);
 
-            var model = BasicBodies.CreateCube(graphicsDevice, 1, 1.5f, 1);
-            model.Material = new PhongMaterial(Color.White, NormalMode.Face);
-            model.ModelTransform = Matrix.CreateScale(7)
-               * Matrix.CreateTranslation(-5, 5, 5);
-            Shapes.Add(model);
+            var model = BasicBodies.CreateCube(graphicsDevice, 1, 1f, 1);
+            model.Material = new PhongMaterial(Color.Orange);
+            Shapes.Add(_rotatingBody = model);
 
             model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
-            model.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Interpolated);
+            model.Material = new TransparentMaterial();
             model.ModelTransform = Matrix.CreateScale(4)
-                * Matrix.CreateTranslation(5, 5, 5);
+                * Matrix.CreateTranslation(0, 10, -5);
             Shapes.Add(model);
-
-            _mashBody = BasicBodies.CreateTetrahedron(graphicsDevice);
-            _mashBody.Material = new PhongMaterial(Color.LightYellow, NormalMode.Face);
 
             foreach (var lightSource in LightSources)
             {
@@ -60,7 +56,7 @@ namespace PhotonLab.Source
 
         public bool Intersect(in RaySIMD ray, out HitInfo closestHit)
         {
-            closestHit = new HitInfo();
+            closestHit = new();
             var hitFound = false;
             foreach (var shape in Shapes)
             {
@@ -76,8 +72,11 @@ namespace PhotonLab.Source
 
         public void Update(double elapsedMilliseconds, InputHandler inputHandler)
         {
-            _bodyRotation += .05f;
-            _mashBody.ModelTransform = Matrix.CreateScale(7) * Matrix.CreateRotationY(_bodyRotation) * Matrix.CreateTranslation(0, 0, -5);
+            _rotaton += .05f;
+            _rotatingBody.ModelTransform = Matrix.CreateScale(2)
+                * Matrix.CreateRotationY(_rotaton)
+                * Matrix.CreateTranslation(2, 10, 5);
+
             Camer3D.Update(elapsedMilliseconds, inputHandler);
         }
 

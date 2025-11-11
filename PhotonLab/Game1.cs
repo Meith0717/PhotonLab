@@ -144,7 +144,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 7);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 1);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager);
                 _rayTracer.End();
