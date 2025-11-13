@@ -11,47 +11,37 @@ namespace PhotonLab.Source.Lights
 {
     internal static class LightSources
     {
-        public static LightEmissionPoint[] EmissionPoints => [
-            new(Vector3.Zero),
+        public static Vector3[] EmissionPoints => [
+            Vector3.Zero,
 
-            new(new Vector3( 0.1f, 0f,  0.0f)),
-            new(new Vector3( 0.05f, 0f,  0.0866f)),
-            new(new Vector3(-0.05f, 0f,  0.0866f)),
-            new(new Vector3(-0.1f, 0f, 0.0f)),
-            new(new Vector3(-0.05f, 0f, -0.0866f)),
-            new(new Vector3( 0.05f, 0f, -0.0066f)),
+            new Vector3( 0.1f, 0f,  0.0f),
+            new Vector3( 0.05f, 0f,  0.0866f),
+            new Vector3(-0.05f, 0f,  0.0866f),
+            new Vector3(-0.1f, 0f, 0.0f),
+            new Vector3(-0.05f, 0f, -0.0866f),
+            new Vector3( 0.05f, 0f, -0.0066f),
 
-            new(new Vector3( 0.2f, 0f,  0.0f)),
-            new(new Vector3( 0.1f, 0f,  0.1732f)),
-            new(new Vector3(-0.1f, 0f,  0.1732f)),
-            new(new Vector3(-0.2f, 0f, 0.0f)),
-            new(new Vector3(-0.1f, 0f, -0.1732f)),
-            new(new Vector3( 0.1f, 0f, -0.1732f))
+            new Vector3( 0.2f, 0f,  0.0f),
+            new Vector3( 0.1f, 0f,  0.1732f),
+            new Vector3(-0.1f, 0f,  0.1732f),
+            new Vector3(-0.2f, 0f, 0.0f),
+            new Vector3(-0.1f, 0f, -0.1732f),
+            new Vector3( 0.1f, 0f, -0.1732f)
         ];
 
         internal class PointLight(Microsoft.Xna.Framework.Vector3 position, Microsoft.Xna.Framework.Color color) : ILightSource
         {
             public Vector3 Position => position.ToNumerics();
             public Vector3 Color => color.ToVector3().ToNumerics();
+            public Vector3[] Lights => EmissionPoints;
 
-            public LightEmissionPoint[] Lights => EmissionPoints;
-
-            public LightInfo[] GetLightInfos(Scene scene, Vector3 hitPosition, float epsilon)
+            public void GetLightInfo(Vector3 light, Vector3 hitPosition, out LightInfo lightInfo)
             {
-                var infos = new List<LightInfo>();
-                foreach (var light in Lights)
-                {
-                    var lightPosition = light.RelativePosition + Position;
-                    var toLight = lightPosition - hitPosition;
-                    var distance = toLight.Length();
-                    var toLightDir = Vector3.Normalize(toLight);
-                    var shadowRay = new RaySIMD(hitPosition, toLightDir);
-                    if (scene.Intersect(shadowRay, out var shadowHit))
-                        if (shadowHit.Distance < distance && shadowHit.Distance > epsilon)
-                            continue;
-                    infos.Add(new(Color, toLightDir, distance));
-                }
-                return [.. infos];
+                var lightPosition = light + Position;
+                var toLight = lightPosition - hitPosition;
+                var distance = toLight.Length();
+                var toLightDir = Vector3.Normalize(toLight);
+                lightInfo = new(Color, toLightDir, distance);
             }
         }
 
@@ -61,36 +51,18 @@ namespace PhotonLab.Source.Lights
             public Vector3 Color => color.ToVector3().ToNumerics();
             public Vector3 Direction => Vector3.Normalize(direction.ToNumerics());
             public float AngleThresholdRad => float.DegreesToRadians(angleThresholdDeg);
+            public Vector3[] Lights => EmissionPoints;
 
-            public LightEmissionPoint[] Lights => EmissionPoints;
-
-            public LightInfo[] GetLightInfos(Scene scene, Vector3 hitPosition, float epsilon)
+            public void GetLightInfo(Vector3 light, Vector3 hitPosition, out LightInfo lightInfo)
             {
-                var infos = new List<LightInfo>();
-
-                foreach (var light in Lights)
-                {
-                    var lightPosition = light.RelativePosition + Position;
-                    var toLight = lightPosition - hitPosition;
-                    var distance = toLight.Length();
-                    var toLightDir = Vector3.Normalize(toLight);
-                    var shadowRay = new RaySIMD(hitPosition, toLightDir);
-                    if (scene.Intersect(shadowRay, out var shadowHit))
-                        if (shadowHit.Distance < distance && shadowHit.Distance > epsilon)
-                            continue;
-
-                    float angle = MathF.Acos(Vector3.Dot(-toLightDir, Direction));
-
-                    // Optional: soft edge falloff
-                    float intensity = MathF.Pow(MathF.Cos(angle) / MathF.Cos(AngleThresholdRad), 5f);
-
-                    // Apply falloff to color
-                    var attenuatedColor = Color * intensity;
-
-                    infos.Add(new(attenuatedColor, toLightDir, distance));
-                }
-
-                return [.. infos];
+                var lightPosition = light + Position;
+                var toLight = lightPosition - hitPosition;
+                var distance = toLight.Length();
+                var toLightDir = Vector3.Normalize(toLight);
+                var angle = MathF.Acos(Vector3.Dot(-toLightDir, Direction));
+                var intensity = MathF.Pow(MathF.Cos(angle) / MathF.Cos(AngleThresholdRad), 5f);
+                var attenuatedColor = Color * intensity;
+                lightInfo = new(attenuatedColor, toLightDir, distance);
             }
         }
 

@@ -7,6 +7,7 @@ using MonoGame.Extended;
 using MonoKit.Camera;
 using MonoKit.Core;
 using MonoKit.Debug;
+using PhotonLab.Source.Scenes;
 using System;
 using System.Diagnostics;
 using System.Numerics;

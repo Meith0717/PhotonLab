@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.Scenes;
 using System;
 using System.Numerics;
 
@@ -14,8 +15,8 @@ namespace PhotonLab.Source.Materials
 
         public CpuTexture2D DiffuseTexture { get; } = null!;
         public Vector3 DiffuseColor { get; } = Vector3.One;
-        public float RefractiveIndex { get; } = 1.5f;
-        public float ReflectetStrength { get; } = 1.5f;
+        public float RefractiveIndex { get; } = 1.2f;
+        public float ReflectetStrength { get; } = 1f;
 
         public TransparentMaterial(NormalMode normalMode = NormalMode.Interpolated)
         {

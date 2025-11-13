@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.Scenes;
 using System.Numerics;
 
 namespace PhotonLab.Source.Materials

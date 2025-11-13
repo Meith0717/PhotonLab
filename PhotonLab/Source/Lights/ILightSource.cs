@@ -2,6 +2,7 @@
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
+using System;
 using System.Numerics;
 
 namespace PhotonLab.Source.Lights
@@ -12,8 +13,8 @@ namespace PhotonLab.Source.Lights
 
         Vector3 Color { get; }
 
-        LightEmissionPoint[] Lights { get; }
+        Vector3[] Lights { get; }
 
-        LightInfo[] GetLightInfos(Scene scene, Vector3 hitPosition, float epsilon);
+        void GetLightInfo(Vector3 light, Vector3 hitPosition, out LightInfo lightInfo);
     }
 }

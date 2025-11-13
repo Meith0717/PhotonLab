@@ -101,13 +101,13 @@ namespace PhotonLab.Source.Bodies
 
             var verts = new[]
             {
-                new VertexPositionNormalTexture(new(-h,-h,0), n, Vector2.Zero),
-                new VertexPositionNormalTexture(new(h,-h,0), n, Vector2.Zero),
-                new VertexPositionNormalTexture(new(h,h,0), n, Vector2.Zero),
-                new VertexPositionNormalTexture(new(-h,h,0), n, Vector2.Zero)
+                new VertexPositionNormalTexture(new(-h, -h, 0), n, new Vector2(0, 1)),
+                new VertexPositionNormalTexture(new( h, -h, 0), n, new Vector2(1, 1)),
+                new VertexPositionNormalTexture(new( h,  h, 0), n, new Vector2(1, 0)),
+                new VertexPositionNormalTexture(new(-h,  h, 0), n, new Vector2(0, 0)),
             };
 
-            return new MeshBody(device, verts, new ushort[] { 1, 2, 0, 2, 3, 0 });
+            return new MeshBody(device, verts, [1, 2, 0, 2, 3, 0]);
         }
     }
 }

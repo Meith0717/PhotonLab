@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.Scenes;
 using System;
 using System.Numerics;
 
@@ -24,7 +25,7 @@ namespace PhotonLab.Source.Materials
                 _ => throw new NotImplementedException()
             };
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
-
+             
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
             hitPosition += n * IMaterial.Epsilon;
 

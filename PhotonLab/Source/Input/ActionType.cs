@@ -8,6 +8,10 @@ namespace PhotonLab.Source.Input
     {
         MoveCameraByMouse,
         RayTracImage,
-        RayTraceSequence
+        RayTraceSequence,
+        NextCam,
+        PrevCam,
+        LookAtOg,
+        ResetCam
     }
 }

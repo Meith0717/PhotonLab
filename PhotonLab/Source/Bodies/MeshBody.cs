@@ -142,7 +142,7 @@ namespace PhotonLab.Source.Bodies
             basicEffect.World = _transform;
 
             // Draw main mesh
-            basicEffect.VertexColorEnabled = false;
+            basicEffect.VertexColorEnabled = basicEffect.TextureEnabled = false;
             basicEffect.DiffuseColor = Vector3.One;
             if (Material is not null)
             {

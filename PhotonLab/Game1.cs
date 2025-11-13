@@ -11,9 +11,9 @@ using MonoKit.Core;
 using MonoKit.Debug;
 using MonoKit.Graphics;
 using MonoKit.Input;
-using PhotonLab.Source;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.Scenes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -67,6 +67,8 @@ namespace PhotonLab
             {
                 {(Keys.F2, InputEventType.Released), (byte)ActionType.RayTracImage },
                 {(Keys.F3, InputEventType.Released), (byte)ActionType.RayTraceSequence },
+                {(Keys.Right, InputEventType.Released), (byte)ActionType.NextCam },
+                {(Keys.Down, InputEventType.Released), (byte)ActionType.ResetCam },
             };
             _inputHandler.RegisterDevice(new KeyboardListener(keyBindings));
 
@@ -86,7 +88,9 @@ namespace PhotonLab
             _spriteBatch = new(GraphicsDevice);
             _frameCounter = new(ContentProvider.Get<SpriteFont>("default_font"));
             _sceneManager = new(GraphicsDevice);
-            _sceneManager.AddScene("default", new(GraphicsDevice));
+            _sceneManager.AddScene("cornellBox", new CornellBoxScene(GraphicsDevice));
+            _sceneManager.AddScene("plane", new PlaneScene(GraphicsDevice));
+            _sceneManager.Set("cornellBox"); // <--------------------------------------------------------------------------
 
             ConsoleManager.Show(
                 "=== PhotonLap RayTracer ===\n" +

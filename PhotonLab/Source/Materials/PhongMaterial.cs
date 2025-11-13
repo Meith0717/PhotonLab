@@ -4,6 +4,7 @@
 
 using Microsoft.Xna.Framework.Graphics;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.Scenes;
 using System;
 using System.Numerics;
 
@@ -54,9 +55,15 @@ namespace PhotonLab.Source.Materials
 
             foreach (var lightSource in scene.LightSources)
             {
-                var lightInfos = lightSource.GetLightInfos(scene, hitPosition, IMaterial.Epsilon);
-                foreach (var lightInfo in lightInfos)
+                foreach (var lightPosition in lightSource.Lights)
                 {
+                    lightSource.GetLightInfo(lightPosition, hitPosition, out var lightInfo);
+                    var shadowRay = new RaySIMD(hitPosition, lightInfo.Direction);
+                    if (scene.Intersect(shadowRay, out var shadowHit) && shadowHit.Distance < lightInfo.Distance && shadowHit.Distance > IMaterial.Epsilon)
+                    {
+                        continue;
+                    }
+
                     var r = Vector3.Reflect(-lightInfo.Direction, n);
                     float nDotL = MathF.Max(Vector3.Dot(n, lightInfo.Direction), 0);
                     float rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), SpecExponent);
