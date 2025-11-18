@@ -105,7 +105,6 @@ namespace PhotonLab
         {
             ContentProvider.Container<SpriteFont>().LoadContent(Content, "Fonts");
             ContentProvider.Container<Texture2D>().LoadContent(Content, "Textures");
-            ContentProvider.Container<Model>().LoadContent(Content, "Models", null, SearchOption.TopDirectoryOnly);
         }
 
         protected override void Update(GameTime gameTime)
