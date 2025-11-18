@@ -7,8 +7,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoKit.Content;
-using MonoKit.Core;
-using MonoKit.Debug;
+using MonoKit.Core.Diagnostics;
+using MonoKit.Core.IO;
 using MonoKit.Graphics;
 using MonoKit.Input;
 using PhotonLab.Source.Input;
@@ -37,7 +37,7 @@ namespace PhotonLab
         private readonly InputHandler _inputHandler;
         private readonly GraphicsDeviceManager _graphics;
         private readonly GraphicsController _graphicsController;
-        private readonly PathManager<Paths> _pathManager;
+        private readonly PathService<Paths> _pathManager;
 
         public Game1()
         {
@@ -148,7 +148,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 5);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 1);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager);
                 _rayTracer.End();

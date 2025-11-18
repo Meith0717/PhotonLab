@@ -8,7 +8,6 @@ using MonoKit.Content;
 using PhotonLab.Source.Lights;
 using PhotonLab.Source.Materials;
 using PhotonLab.Source.Scenes;
-using System.Collections.Generic;
 
 namespace PhotonLab.Source.Bodies
 {

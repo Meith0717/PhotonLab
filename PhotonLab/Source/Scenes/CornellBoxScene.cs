@@ -1,4 +1,4 @@
-﻿// Scene.cs 
+﻿// CornellBoxScene.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
@@ -73,7 +73,7 @@ namespace PhotonLab.Source.Scenes
                 Camer3D.Target = _lookAtPos;
             });
 
-            base.Update(elapsedMilliseconds, inputHandler );
+            base.Update(elapsedMilliseconds, inputHandler);
         }
     }
 }

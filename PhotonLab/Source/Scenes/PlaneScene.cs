@@ -14,7 +14,7 @@ namespace PhotonLab.Source.Scenes
 {
     internal class PlaneScene : Scene
     {
-        public PlaneScene(GraphicsDevice graphicsDevice) 
+        public PlaneScene(GraphicsDevice graphicsDevice)
             : base(graphicsDevice)
         {
             Camer3D.AddBehaviour(new MoveByMouse());

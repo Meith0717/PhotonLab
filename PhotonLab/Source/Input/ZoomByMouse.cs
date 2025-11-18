@@ -4,7 +4,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using MonoKit.Camera;
+using MonoKit.Graphics.Camera;
 using MonoKit.Input;
 using System;
 

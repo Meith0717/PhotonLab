@@ -1,10 +1,10 @@
-﻿// IScene.cs 
+﻿// Scene.cs 
 // Copyright (c) 2023-2025 Thierry Meiers 
 // All rights reserved.
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoKit.Camera;
+using MonoKit.Graphics.Camera;
 using MonoKit.Input;
 using PhotonLab.Source.Bodies;
 using PhotonLab.Source.Lights;
@@ -26,7 +26,7 @@ namespace PhotonLab.Source.Scenes
 
         public int FaceCount => _shapes.Sum(s => s.FaseCount);
 
-        public void AddBody(MeshBody mesh)  => _shapes.Add(mesh);
+        public void AddBody(MeshBody mesh) => _shapes.Add(mesh);
 
         public void AddLightSource(ILightSource lightSource)
         {

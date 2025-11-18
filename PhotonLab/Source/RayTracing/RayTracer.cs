@@ -4,9 +4,9 @@
 
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using MonoKit.Camera;
-using MonoKit.Core;
-using MonoKit.Debug;
+using MonoKit.Core.Diagnostics;
+using MonoKit.Core.IO;
+using MonoKit.Graphics.Camera;
 using PhotonLab.Source.Scenes;
 using System;
 using System.Diagnostics;
@@ -104,7 +104,7 @@ namespace PhotonLab.Source.RayTracing
         /// <summary>
         /// Renders and saves the result to disk via the PathManager.
         /// </summary>
-        public void RenderAndSaveResult(PathManager<Paths> pathManager, bool doExr = true)
+        public void RenderAndSaveResult(PathService<Paths> pathManager, bool doExr = true)
         {
             if (!_setUpFlag)
                 throw new Exception();
