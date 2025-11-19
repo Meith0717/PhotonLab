@@ -65,8 +65,8 @@ namespace PhotonLab.Source.Materials
                     }
 
                     var r = Vector3.Reflect(-lightInfo.Direction, n);
-                    float nDotL = MathF.Max(Vector3.Dot(n, lightInfo.Direction), 0);
-                    float rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), SpecExponent);
+                    var nDotL = MathF.Max(Vector3.Dot(n, lightInfo.Direction), 0);
+                    var rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), SpecExponent);
 
                     var diffuse = OneOverPi * lightInfo.Color * textureColor * nDotL;
                     var specular = lightInfo.Color * Vector3.One * rDotV;

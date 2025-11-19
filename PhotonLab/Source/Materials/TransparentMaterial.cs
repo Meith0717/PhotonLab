@@ -47,17 +47,17 @@ namespace PhotonLab.Source.Materials
             var reflectedColor = ReflectetStrength * RayTracer.Trace(scene, reflectedRay, depth + 1);
 
             // Determine if we’re entering or exiting the medium
-            float cosi = float.Clamp(Vector3.Dot(ray.Direction, n), -1, 1);
-            float etai = 1.0f;
-            float etat = RefractiveIndex;
+            var cosi = float.Clamp(Vector3.Dot(ray.Direction, n), -1, 1);
+            var etai = 1.0f;
+            var etat = RefractiveIndex;
 
             if (cosi > 0)
                 (etai, etat, n) = (etat, etai, -n);
 
-            float eta = etai / etat;
-            float k = 1 - eta * eta * (1 - cosi * cosi);
+            var eta = etai / etat;
+            var k = 1 - eta * eta * (1 - cosi * cosi);
 
-            Vector3 refractedColor = Vector3.Zero;
+            var refractedColor = Vector3.Zero;
             if (k >= 0)
             {
                 var refractDir = Vector3.Normalize(eta * ray.Direction - (eta * cosi + MathF.Sqrt(k)) * n);
@@ -67,8 +67,8 @@ namespace PhotonLab.Source.Materials
             }
 
             // Fresnel reflectance (Schlick’s approximation)
-            float R0 = MathF.Pow((etai - etat) / (etai + etat), 2);
-            float fresnel = R0 + (1 - R0) * MathF.Pow(1 - MathF.Abs(cosi), 5);
+            var R0 = MathF.Pow((etai - etat) / (etai + etat), 2);
+            var fresnel = R0 + (1 - R0) * MathF.Pow(1 - MathF.Abs(cosi), 5);
 
             // Combine reflection + refraction
             var color = fresnel * reflectedColor + (1 - fresnel) * refractedColor;

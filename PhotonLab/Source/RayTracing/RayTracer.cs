@@ -70,9 +70,9 @@ namespace PhotonLab.Source.RayTracing
 
             _tracingWatch.Restart();
 
-            int completed = 0;
-            int maxDone = 0;
-            int total = _cameraRays.Length;
+            var completed = 0;
+            var maxDone = 0;
+            var total = _cameraRays.Length;
             Parallel.For(0, total, i =>
             {
                 _lightData[i] = Trace(_scene, _cameraRays[i]);
@@ -165,8 +165,8 @@ namespace PhotonLab.Source.RayTracing
 
             Parallel.For(0, height, y =>
             {
-                int rowOffset = y * width;
-                for (int x = 0; x < width; x++)
+                var rowOffset = y * width;
+                for (var x = 0; x < width; x++)
                     _cameraRays[rowOffset + x] = GeneratePixelRay(position, fov, aspectRatio, fw, right, up, x, y, width, height);
             });
         }
@@ -176,11 +176,11 @@ namespace PhotonLab.Source.RayTracing
         /// </summary>
         private static RaySIMD GeneratePixelRay(Vector3 positoin, float fov, float aspectRatio, Vector3 forward, Vector3 right, Vector3 up, int x, int y, int w, int h)
         {
-            float imagePlaneHeight = 2f * float.Tan(fov / 2f);
-            float imagePlaneWidth = imagePlaneHeight * aspectRatio;
+            var imagePlaneHeight = 2f * float.Tan(fov / 2f);
+            var imagePlaneWidth = imagePlaneHeight * aspectRatio;
 
-            float u = (x + 0.5f) / w - 0.5f;
-            float v = 0.5f - (y + 0.5f) / h;
+            var u = (x + 0.5f) / w - 0.5f;
+            var v = 0.5f - (y + 0.5f) / h;
 
             var px = u * imagePlaneWidth;
             var py = v * imagePlaneHeight;
