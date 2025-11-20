@@ -5,6 +5,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Content;
+using MonoKit.Input;
 using PhotonLab.Source.Bodies;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.Lights;
@@ -17,9 +18,8 @@ namespace PhotonLab.Source.Scenes
         public PlaneScene(GraphicsDevice graphicsDevice)
             : base(graphicsDevice)
         {
-            Camer3D.AddBehaviour(new MoveByMouse());
-            Camer3D.AddBehaviour(new ZoomByMouse(1));
-
+            Camer3D.AddBehaviour(new RotateCamera(.01f, new Vector3(0, 5, 0), 10, 10));
+            
             AddLightSource(new LightSources.SpotLight(new Vector3(0, 30, 0), new(0, -1, 0), 5, Color.LightYellow));
 
             var model = BasicBodies.CreateQuad(graphicsDevice);

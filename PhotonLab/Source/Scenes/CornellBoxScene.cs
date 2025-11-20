@@ -24,8 +24,6 @@ namespace PhotonLab.Source.Scenes
         };
         public readonly static Vector3 _lookAtPos = new(0, 12.5f, 0);
 
-        private readonly MeshBody _rotatingBody;
-        private float _rotaton;
         private int _cameraPosIndex;
 
 
@@ -37,16 +35,16 @@ namespace PhotonLab.Source.Scenes
             CornellBox.Build(graphicsDevice, this, 25);
 
             var model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
-            model.Material = new MirrorMaterial(Color.White, .75f);
+            model.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Interpolated);
             model.ModelTransform = Matrix.CreateScale(4)
                 * Matrix.CreateTranslation(5f, 5f, 5f);
-            AddBody(_rotatingBody = model);
+            AddBody(model);
 
             model = BasicBodies.CreateCube(graphicsDevice, 1, 4f, 1);
             model.Material = new PhongMaterial(Color.Orange, NormalMode.Face);
             model.ModelTransform = Matrix.CreateScale(4)
                 * Matrix.CreateTranslation(-9f, 8, 9f);
-            AddBody(_rotatingBody = model);
+            AddBody(model);
 
             model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
             model.Material = new TransparentMaterial();
@@ -57,8 +55,9 @@ namespace PhotonLab.Source.Scenes
 
         public override void Update(double elapsedMilliseconds, InputHandler inputHandler)
         {
-            _rotaton += .05f;
-
+            // Camer3D.Position = Vector3.Transform(Camer3D.Position, Matrix.CreateRotationY(.02f));
+            Camer3D.Target = _lookAtPos;
+            
             inputHandler.DoAction((byte)ActionType.NextCam, () =>
             {
                 _cameraPosIndex++;

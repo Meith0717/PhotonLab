@@ -11,7 +11,7 @@ namespace PhotonLab.Source
 {
     public static class ImageSaver
     {
-        public static void SaveEXR(string path, System.Numerics.Vector3[] pixels, int width, int height)
+        public static void SaveExr(string path, System.Numerics.Vector3[] pixels, int width, int height)
         {
             float[] data = new float[width * height * 3];
             for (int i = 0; i < pixels.Length; i++)
@@ -27,7 +27,7 @@ namespace PhotonLab.Source
                 throw new Exception($"SaveEXR failed: {result}");
         }
 
-        public static void SavePNG(string path, byte[] colorData, int width, int height)
+        public static void SavePng(string path, byte[] colorData, int width, int height)
         {
             using var image = new Image<Rgba32>(width, height);
 

@@ -12,12 +12,10 @@ namespace PhotonLab.Source.Materials
 
     internal interface IMaterial
     {
-        const float Epsilon = 1e-1f;
-
         CpuTexture2D DiffuseTexture { get; }
 
         Vector3 DiffuseColor { get; }
 
-        Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit);
+        Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit, out byte hitCount);
     }
 }

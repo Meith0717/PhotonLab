@@ -31,6 +31,7 @@ namespace PhotonLab.Source.RayTracing
         public Size TargetRes { get; private set; }
         private bool _setUpFlag = false;
         private Scene _scene;
+        private byte[] _hitData;
         private Vector3[] _lightData;
         private RaySIMD[] _cameraRays;
 
@@ -60,6 +61,11 @@ namespace PhotonLab.Source.RayTracing
             _setUpFlag = true;
         }
 
+        public void ResetCameraRays(Scene scene)
+        {
+            CreateCameraRaysParallel(scene.Camer3D);
+        }
+
         /// <summary>
         /// Performs the actual ray tracing pass for all camera rays in parallel.
         /// </summary>
@@ -73,15 +79,23 @@ namespace PhotonLab.Source.RayTracing
             var completed = 0;
             var maxDone = 0;
             var total = _cameraRays.Length;
-            Parallel.For(0, total, i =>
+
+            for (var i = 0; i < total; i++)
             {
-                _lightData[i] = Trace(_scene, _cameraRays[i]);
+            }
+            
+            Parallel.For(0, total, i =>
+            {                
+                _lightData[i] = Trace(_scene, _cameraRays[i], 0, out var hits);
+                _hitData[i] = hits;
+                
                 var done = Interlocked.Increment(ref completed);
                 maxDone = int.Max(done, maxDone);
 
                 if (done % 10000 == 0)
                     ConsoleManager.DrawProgressBar("Rendering", maxDone, total);
             });
+            
             ConsoleManager.ClearLine();
 
             _tracingWatch.Stop();
@@ -93,12 +107,16 @@ namespace PhotonLab.Source.RayTracing
         /// Traces a single ray through the scene recursively.
         /// Returns the accumulated light (Vector3) at the intersection or black if no hit.
         /// </summary>
-        public static Vector3 Trace(Scene scene, RaySIMD ray, int depth = 0)
+        public static Vector3 Trace(Scene scene, RaySIMD ray, int depth, out byte hitCount)
         {
-            if (depth > 2 || !scene.Intersect(in ray, out var hit))
-                return Vector3.Zero;
+            hitCount = 0;
 
-            return hit.Material.Shade(scene, depth, in ray, in hit);
+            if (depth > 2 || !scene.Intersect(in ray, out var hit, out hitCount))
+                return Vector3.Zero;
+            
+            var lightData = hit.Material.Shade(scene, depth, in ray, in hit, out var hits);
+            hitCount += hits;
+            return lightData;
         }
 
         /// <summary>
@@ -112,15 +130,23 @@ namespace PhotonLab.Source.RayTracing
             var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}");
 
             if (doExr)
-                ImageSaver.SaveEXR(filePath + ".exr", _lightData, TargetRes.Width, TargetRes.Height);
+                ImageSaver.SaveExr(filePath + ".exr", _lightData, TargetRes.Width, TargetRes.Height);
 
-            var colorData = _imageRenderer.Render(_lightData);
-            ImageSaver.SavePNG(filePath + ".png", colorData, TargetRes.Width, TargetRes.Height);
+            var colorData = _imageRenderer.RenderImage(_lightData);
+            ImageSaver.SavePng(filePath + "render.png", colorData, TargetRes.Width, TargetRes.Height);
+            
+            var hitData = _imageRenderer.RenderHeatmap(_hitData);
+            ImageSaver.SavePng(filePath + "hits.png", hitData, TargetRes.Width, TargetRes.Height);
         }
 
         public byte[] GetColorData()
         {
-            return _imageRenderer.Render(_lightData);
+            return _imageRenderer.RenderImage(_lightData);
+        }
+        
+        public byte[] GetHitData()
+        {
+            return _imageRenderer.RenderHeatmap(_hitData);
         }
 
         /// <summary>
@@ -154,6 +180,7 @@ namespace PhotonLab.Source.RayTracing
             {
                 _cameraRays = new RaySIMD[width * height];
                 _lightData = new Vector3[width * height];
+                _hitData = new byte[width * height];
             }
 
             var position = camera.Position.ToNumerics();

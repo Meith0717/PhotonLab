@@ -13,6 +13,6 @@ namespace PhotonLab.Source.Bodies
 
         Microsoft.Xna.Framework.Matrix ModelTransform { set; }
 
-        bool Intersect(in RaySIMD ray, out HitInfo hit);
+        bool Intersect(in RaySIMD ray, out HitInfo hit, out byte hitCount);
     }
 }

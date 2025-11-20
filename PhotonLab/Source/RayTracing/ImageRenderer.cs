@@ -4,6 +4,7 @@
 
 using MonoGame.Extended;
 using System;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
@@ -34,10 +35,10 @@ namespace PhotonLab.Source.RayTracing
         /// <summary>
         /// Converts Vector3 light data into a Texture2D with gamma correction and Reinhard tone mapping.
         /// </summary>
-        public byte[] Render(Vector3[] lightData, bool toneMapping = true, bool gammaCorrection = true)
+        public byte[] RenderImage(Vector3[] lightData, bool toneMapping = true, bool gammaCorrection = true)
         {
             if (lightData.Length * 3 != _colorData.Length)
-                throw new Exception();
+                throw new Exception("lightData length mismatch");
 
             var width = _targetRes.Width;
             var height = _targetRes.Height;
@@ -64,6 +65,37 @@ namespace PhotonLab.Source.RayTracing
 
             return _colorData;
         }
+        
+        public byte[] RenderHeatmap(byte[] hitData, bool toneMapping = true, bool gammaCorrection = true)
+        {
+            if (hitData.Length != _colorData.Length / 3)
+                throw new Exception("hitData length mismatch");
+
+            var width = _targetRes.Width;
+            var height = _targetRes.Height;
+
+            var maxHitCount = (float)hitData.Max();
+            
+            Parallel.For(0, height, y =>
+            {
+                var uy = y * width;
+                for (var x = 0; x < width; x++)
+                {
+                    var i = uy + x;
+                    
+                    var v = hitData[i] / maxHitCount;
+
+                    var (r, g, b) = HeatmapBlueGreenRed(v);
+
+                    // 5. Write to RGB buffer
+                    _colorData[i * 3 + 0] = (byte)(r * byte.MaxValue);
+                    _colorData[i * 3 + 1] = (byte)(g * byte.MaxValue);
+                    _colorData[i * 3 + 2] = (byte)(b * byte.MaxValue);
+                }
+            });
+
+            return _colorData;
+        }
 
         /// <summary>
         /// Simple Reinhard tone mapping to compress high dynamic range values into [0,1].
@@ -83,5 +115,30 @@ namespace PhotonLab.Source.RayTracing
                 float.Pow(data.Z, gamma)
             );
         }
+        
+        private static (float r, float g, float b) HeatmapBlueGreenRed(float t)
+        {
+            t = Math.Clamp(t, 0f, 1f);
+
+            if (t < 0.5f)
+            {
+                // Blue → Green
+                float u = t / 0.5f; // 0..1
+                float r = 0f;
+                float g = u;
+                float b = 1f - u;
+                return (r, g, b);
+            }
+            else
+            {
+                // Green → Red
+                float u = (t - 0.5f) / 0.5f; // 0..1
+                float r = u;
+                float g = 1f - u;
+                float b = 0f;
+                return (r, g, b);
+            }
+        }
+
     }
 }

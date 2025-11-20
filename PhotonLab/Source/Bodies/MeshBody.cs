@@ -87,14 +87,16 @@ namespace PhotonLab.Source.Bodies
             _vertexBuffer = mainMesh.VertexBuffer;
         }
 
-        public bool Intersect(in RaySIMD ray, out HitInfo hit)
+        public bool Intersect(in RaySIMD ray, out HitInfo hit, out byte hitCount)
         {
             hit = default;
-
+            hitCount = 0;
+                
             var localRay = ray.Transform(_invTransform);
             if (!_boundingBox.IntersectsRay(ref localRay, out var _))
                 return false;
-
+            hitCount++;
+            
             var anyHit = false;
             var minT = float.MaxValue;
 
@@ -123,11 +125,13 @@ namespace PhotonLab.Source.Bodies
                     var faceNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
                     var texturePos = coordinates.InterpolateVector2(t0, t1, t2);
 
-                    if (Vector3.Dot(faceNormal, ray.Direction) > 0)
+                    if (Vector3.Dot(faceNormal, ray.Direction) > 0 ||
+                        coordinates.T <= RayTracingGlobal.IntersectionEpsilon)
                         continue;
 
                     hit = new(coordinates.T, normal, faceNormal, texturePos, Material);
                     anyHit = true;
+                    hitCount++;
                 }
             }
 

@@ -37,8 +37,10 @@ namespace PhotonLab.Source.Materials
             _normalMode = normalMode;
         }
 
-        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
+        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit, out byte hitCount)
         {
+            hitCount = 0;
+            
             var textureColor = DiffuseTexture is null ? DiffuseColor : DiffuseTexture.SampleData3(hit.TexturePos);
             var color = OneOverPi * AmbientStrength * AmbientColor * textureColor;
 
@@ -50,7 +52,7 @@ namespace PhotonLab.Source.Materials
             };
 
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
-            hitPosition += n * IMaterial.Epsilon;
+
             var v = Vector3.Normalize(scene.Camer3D.Position.ToNumerics() - hitPosition);
 
             foreach (var lightSource in scene.LightSources)
@@ -59,10 +61,9 @@ namespace PhotonLab.Source.Materials
                 {
                     lightSource.GetLightInfo(lightPosition, hitPosition, out var lightInfo);
                     var shadowRay = new RaySIMD(hitPosition, lightInfo.Direction);
-                    if (scene.Intersect(shadowRay, out var shadowHit) && shadowHit.Distance < lightInfo.Distance && shadowHit.Distance > IMaterial.Epsilon)
-                    {
+                    if (scene.Intersect(shadowRay, out var shadowHit, out var _) &&
+                        shadowHit.Distance < lightInfo.Distance)
                         continue;
-                    }
 
                     var r = Vector3.Reflect(-lightInfo.Direction, n);
                     var nDotL = MathF.Max(Vector3.Dot(n, lightInfo.Direction), 0);

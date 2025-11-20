@@ -37,16 +37,19 @@ namespace PhotonLab.Source.Scenes
             _lightShapes.Add(lightMesh);
         }
 
-        public bool Intersect(in RaySIMD ray, out HitInfo closestHit)
+        public bool Intersect(in RaySIMD ray, out HitInfo closestHit, out byte hitCount)
         {
             closestHit = new();
+            hitCount = 0;   
+            
             var hitFound = false;
             foreach (var shape in _shapes)
             {
-                if (shape.Intersect(ray, out var hit)
+                if (shape.Intersect(ray, out var hit, out var hits)
                     && hit <= closestHit)
                 {
                     closestHit = hit;
+                    hitCount += hits;
                     hitFound = true;
                 }
             }
