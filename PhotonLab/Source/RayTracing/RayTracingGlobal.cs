@@ -7,4 +7,6 @@ namespace PhotonLab.Source.RayTracing;
 public static class RayTracingGlobal
 {
     public const float IntersectionEpsilon = 1e-5f;
+    public const float HitOffsetEpsilon = 1e-1f;
+    public const int MaxRecursion = 10;
 }

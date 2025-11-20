@@ -18,9 +18,9 @@ namespace PhotonLab.Source.Scenes
         public PlaneScene(GraphicsDevice graphicsDevice)
             : base(graphicsDevice)
         {
-            Camer3D.AddBehaviour(new RotateCamera(.01f, new Vector3(0, 5, 0), 10, 10));
+            Camer3D.AddBehaviour(new RotateCamera(.01f, new Vector3(0, 5, 0), 12, 15));
             
-            AddLightSource(new LightSources.SpotLight(new Vector3(0, 30, 0), new(0, -1, 0), 5, Color.LightYellow));
+            AddLightSource(new LightSources.SpotLight(new Vector3(0, 20, 0), new(0, -1, 0), 5, Color.LightYellow));
 
             var model = BasicBodies.CreateQuad(graphicsDevice);
             model.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(-float.Pi / 2); // floor rotation

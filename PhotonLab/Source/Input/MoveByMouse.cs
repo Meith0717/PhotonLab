@@ -3,17 +3,19 @@
 // All rights reserved.
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoKit.Graphics.Camera;
 using MonoKit.Input;
 
 namespace PhotonLab.Source.Input
 {
-    public class MoveByMouse() : ICamera3dBehavior
+    public class MoveByMouse(float speed = 1) : ICamera3dBehavior
     {
         private MouseState _prevMouseState;
         private float _yaw;
         private float _pitch;
+        private readonly float _speed = speed;
 
         public void Initialize(Camera3D owner)
         {
@@ -48,7 +50,7 @@ namespace PhotonLab.Source.Input
                 owner.Up = Vector3.Cross(owner.Right, owner.Forward);
             }
 
-            float movingSpeed = .01f * (float)elapsedGameTime;
+            var movingSpeed = _speed * .01f * (float)elapsedGameTime;
             if (ks.IsKeyDown(Keys.W))
                 owner.Position += owner.Forward * movingSpeed;
             if (ks.IsKeyDown(Keys.S))

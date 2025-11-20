@@ -111,7 +111,7 @@ namespace PhotonLab.Source.RayTracing
         {
             hitCount = 0;
 
-            if (depth > 2 || !scene.Intersect(in ray, out var hit, out hitCount))
+            if (depth > RayTracingGlobal.MaxRecursion || !scene.Intersect(in ray, out var hit, out hitCount))
                 return Vector3.Zero;
             
             var lightData = hit.Material.Shade(scene, depth, in ray, in hit, out var hits);
@@ -133,10 +133,10 @@ namespace PhotonLab.Source.RayTracing
                 ImageSaver.SaveExr(filePath + ".exr", _lightData, TargetRes.Width, TargetRes.Height);
 
             var colorData = _imageRenderer.RenderImage(_lightData);
-            ImageSaver.SavePng(filePath + "render.png", colorData, TargetRes.Width, TargetRes.Height);
+            ImageSaver.SavePng(filePath + "_render.png", colorData, TargetRes.Width, TargetRes.Height);
             
             var hitData = _imageRenderer.RenderHeatmap(_hitData);
-            ImageSaver.SavePng(filePath + "hits.png", hitData, TargetRes.Width, TargetRes.Height);
+            ImageSaver.SavePng(filePath + "_hits.png", hitData, TargetRes.Width, TargetRes.Height);
         }
 
         public byte[] GetColorData()

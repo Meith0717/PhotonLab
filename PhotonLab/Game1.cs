@@ -90,7 +90,8 @@ namespace PhotonLab
             _sceneManager = new(GraphicsDevice);
             _sceneManager.AddScene("cornellBox", new CornellBoxScene(GraphicsDevice));
             _sceneManager.AddScene("plane", new PlaneScene(GraphicsDevice));
-            _sceneManager.Set("plane"); // <--------------------------------------------------------------------------
+            _sceneManager.AddScene("cornellMirror", new CornellMirrorScene(GraphicsDevice));
+            _sceneManager.Set("cornellBox"); // <--------------------------------------------------------------------------
 
             ConsoleManager.Show(
                 "=== PhotonLap RayTracer ===\n" +
@@ -147,7 +148,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 2);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 4);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager);
                 _rayTracer.End();
@@ -157,7 +158,7 @@ namespace PhotonLab
 
         private bool _renderMultipleImageActive;
         private int _sequenceCount;
-        private readonly int _sequenceAmount = 480;
+        private readonly int _sequenceAmount = 240;
         private FFmpeg _fFmpeg;
         
         private void RenderSequence()
@@ -170,7 +171,7 @@ namespace PhotonLab
 
                 _fFmpeg?.Dispose();
                 Console.WriteLine($"Starting sequence: {_sequenceAmount} images...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 1f);
+                _rayTracer.Begin(_sceneManager.CurrentScene, .5f);
 
                 var filePath = _pathManager.GetFilePath(Paths.Videos, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
                 _fFmpeg = new(_rayTracer.TargetRes.Width, _rayTracer.TargetRes.Height, 21, filePath);

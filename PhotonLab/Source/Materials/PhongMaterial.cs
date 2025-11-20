@@ -52,9 +52,9 @@ namespace PhotonLab.Source.Materials
             };
 
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
-
+            hitPosition  += n * RayTracingGlobal.HitOffsetEpsilon;
+            
             var v = Vector3.Normalize(scene.Camer3D.Position.ToNumerics() - hitPosition);
-
             foreach (var lightSource in scene.LightSources)
             {
                 foreach (var lightPosition in lightSource.Lights)
