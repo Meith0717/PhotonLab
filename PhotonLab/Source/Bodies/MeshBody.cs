@@ -1,6 +1,8 @@
-﻿// MeshBody.cs
+﻿// Body.cs
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
+
+using System.Linq;
 
 namespace PhotonLab.Source.Bodies
 {
@@ -11,7 +13,7 @@ namespace PhotonLab.Source.Bodies
     using PhotonLab.Source.Materials;
     using PhotonLab.Source.RayTracing;
 
-    internal class MeshBody : IBody3D
+    internal class Body : IBody3D
     {
         // CPU stuff (Ray Tracing)
         private readonly BoundingBoxSIMD _boundingBox;
@@ -27,7 +29,7 @@ namespace PhotonLab.Source.Bodies
         private readonly IndexBuffer _indexBuffer;
 
         // Some other Stuff
-        public int FaseCount => _primitiveIndices.Length / 3;
+        public int FacesCount => _primitiveIndices.Length / 3;
         public IMaterial Material { get; set; }
         public Microsoft.Xna.Framework.Matrix ModelTransform
         {
@@ -38,7 +40,7 @@ namespace PhotonLab.Source.Bodies
             }
         }
 
-        public MeshBody(
+        public Body(
             GraphicsDevice graphicsDevice,
             VertexPositionNormalTexture[] vertices,
             ushort[] indices
@@ -62,14 +64,14 @@ namespace PhotonLab.Source.Bodies
             _primitiveIndices = indices;
             _boundingBox = BoundingBoxSIMD.CreateFromPoints(_vertexPositions);
 
-            _vertexBuffer = new(
+            _vertexBuffer = new VertexBuffer(
                 graphicsDevice,
                 typeof(VertexPositionNormalTexture),
                 vertices.Length,
                 BufferUsage.None
             );
             _vertexBuffer.SetData(vertices);
-            _indexBuffer = new(
+            _indexBuffer = new IndexBuffer(
                 graphicsDevice,
                 IndexElementSize.SixteenBits,
                 _primitiveIndices.Length,
@@ -78,18 +80,19 @@ namespace PhotonLab.Source.Bodies
             _indexBuffer.SetData(_primitiveIndices);
         }
 
-        public MeshBody(ModelMesh mesh)
+        public Body(ModelMesh mesh)
         {
             var mainMesh = mesh.MeshParts[0];
+            _indexBuffer = mainMesh.IndexBuffer;
+            _vertexBuffer = mainMesh.VertexBuffer;
 
-            foreach (var part in mesh.MeshParts)
-                if (mainMesh.VertexBuffer != part.VertexBuffer)
-                    throw new Exception();
+            if (mesh.MeshParts.Any(part => mainMesh.VertexBuffer != part.VertexBuffer))
+                throw new Exception();
 
             var vertexCount = mainMesh.NumVertices;
             var primitiveCount = mainMesh.PrimitiveCount;
 
-            // Load iindex data from GPU
+            // Load index data from GPU
             _primitiveIndices = new ushort[primitiveCount * 3];
             _indexBuffer.GetData(_primitiveIndices);
 
@@ -111,9 +114,6 @@ namespace PhotonLab.Source.Bodies
             );
 
             _boundingBox = BoundingBoxSIMD.CreateFromPoints(_vertexNormals);
-
-            _indexBuffer = mainMesh.IndexBuffer;
-            _vertexBuffer = mainMesh.VertexBuffer;
         }
 
         public bool Intersect(in RaySIMD ray, out HitInfo hit, out byte hitCount)
@@ -165,7 +165,7 @@ namespace PhotonLab.Source.Bodies
                     )
                         continue;
 
-                    hit = new(coordinates.T, normal, faceNormal, texturePos, Material);
+                    hit = new HitInfo(coordinates.T, normal, faceNormal, texturePos, Material);
                     anyHit = true;
                     hitCount++;
                 }
