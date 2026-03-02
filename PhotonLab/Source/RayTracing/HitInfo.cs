@@ -1,10 +1,9 @@
-﻿// HitInfo.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// HitInfo.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
-
-using PhotonLab.Source.Materials;
 using System.Numerics;
+using PhotonLab.Source.Materials;
 
 namespace PhotonLab.Source.RayTracing
 {
@@ -23,7 +22,13 @@ namespace PhotonLab.Source.RayTracing
             TexturePos = Vector2.Zero;
         }
 
-        public HitInfo(float distance, Vector3 interpolatedNormal, Vector3 faceNormal, Vector2 texturePos, IMaterial material)
+        public HitInfo(
+            float distance,
+            Vector3 interpolatedNormal,
+            Vector3 faceNormal,
+            Vector2 texturePos,
+            IMaterial material
+        )
         {
             Distance = distance;
             InterpolatedNormal = interpolatedNormal;

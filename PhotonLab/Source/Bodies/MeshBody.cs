@@ -1,15 +1,15 @@
-﻿// MeshBody.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// MeshBody.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
 namespace PhotonLab.Source.Bodies
 {
-    using Microsoft.Xna.Framework.Graphics;
-    using PhotonLab.Source.Materials;
-    using PhotonLab.Source.RayTracing;
     using System;
     using System.Numerics;
     using System.Threading.Tasks;
+    using Microsoft.Xna.Framework.Graphics;
+    using PhotonLab.Source.Materials;
+    using PhotonLab.Source.RayTracing;
 
     internal class MeshBody : IBody3D
     {
@@ -29,27 +29,52 @@ namespace PhotonLab.Source.Bodies
         // Some other Stuff
         public int FaseCount => _primitiveIndices.Length / 3;
         public IMaterial Material { get; set; }
-        public Microsoft.Xna.Framework.Matrix ModelTransform { set { _transform = value.ToNumerics(); Matrix4x4.Invert(_transform, out _invTransform); } }
+        public Microsoft.Xna.Framework.Matrix ModelTransform
+        {
+            set
+            {
+                _transform = value.ToNumerics();
+                Matrix4x4.Invert(_transform, out _invTransform);
+            }
+        }
 
-        public MeshBody(GraphicsDevice graphicsDevice, VertexPositionNormalTexture[] vertices, ushort[] indices)
+        public MeshBody(
+            GraphicsDevice graphicsDevice,
+            VertexPositionNormalTexture[] vertices,
+            ushort[] indices
+        )
         {
             var vertexCount = vertices.Length;
             _vertexPositions = new Vector3[vertexCount];
             _vertexNormals = new Vector3[vertexCount];
             _vertexTextures = new Vector2[vertexCount];
-            Parallel.For(0, vertexCount, i =>
-            {
-                _vertexPositions[i] = vertices[i].Position.ToNumerics();
-                _vertexNormals[i] = vertices[i].Normal.ToNumerics();
-                _vertexTextures[i] = vertices[i].TextureCoordinate.ToNumerics();
-            });
+            Parallel.For(
+                0,
+                vertexCount,
+                i =>
+                {
+                    _vertexPositions[i] = vertices[i].Position.ToNumerics();
+                    _vertexNormals[i] = vertices[i].Normal.ToNumerics();
+                    _vertexTextures[i] = vertices[i].TextureCoordinate.ToNumerics();
+                }
+            );
 
             _primitiveIndices = indices;
             _boundingBox = BoundingBoxSIMD.CreateFromPoints(_vertexPositions);
 
-            _vertexBuffer = new(graphicsDevice, typeof(VertexPositionNormalTexture), vertices.Length, BufferUsage.None);
+            _vertexBuffer = new(
+                graphicsDevice,
+                typeof(VertexPositionNormalTexture),
+                vertices.Length,
+                BufferUsage.None
+            );
             _vertexBuffer.SetData(vertices);
-            _indexBuffer = new(graphicsDevice, IndexElementSize.SixteenBits, _primitiveIndices.Length, BufferUsage.None);
+            _indexBuffer = new(
+                graphicsDevice,
+                IndexElementSize.SixteenBits,
+                _primitiveIndices.Length,
+                BufferUsage.None
+            );
             _indexBuffer.SetData(_primitiveIndices);
         }
 
@@ -74,12 +99,16 @@ namespace PhotonLab.Source.Bodies
             _vertexTextures = new Vector2[vertexCount];
             var vertexBufferData = new VertexPositionNormalTexture[vertexCount];
             _vertexBuffer.GetData(vertexBufferData);
-            Parallel.For(0, vertexCount, i =>
-            {
-                _vertexPositions[i] = vertexBufferData[i].Position.ToNumerics();
-                _vertexNormals[i] = vertexBufferData[i].Normal.ToNumerics();
-                _vertexTextures[i] = vertexBufferData[i].TextureCoordinate.ToNumerics();
-            });
+            Parallel.For(
+                0,
+                vertexCount,
+                i =>
+                {
+                    _vertexPositions[i] = vertexBufferData[i].Position.ToNumerics();
+                    _vertexNormals[i] = vertexBufferData[i].Normal.ToNumerics();
+                    _vertexTextures[i] = vertexBufferData[i].TextureCoordinate.ToNumerics();
+                }
+            );
 
             _boundingBox = BoundingBoxSIMD.CreateFromPoints(_vertexNormals);
 
@@ -91,12 +120,12 @@ namespace PhotonLab.Source.Bodies
         {
             hit = default;
             hitCount = 0;
-                
+
             var localRay = ray.Transform(_invTransform);
             if (!_boundingBox.IntersectsRay(ref localRay, out var _))
                 return false;
             hitCount++;
-            
+
             var anyHit = false;
             var minT = float.MaxValue;
 
@@ -121,12 +150,19 @@ namespace PhotonLab.Source.Bodies
                 if (ray.IntersectsFace((p0, p1, p2), out var coordinates) && coordinates.T < minT)
                 {
                     minT = coordinates.T;
-                    var normal = Vector3.Normalize(Vector3.TransformNormal(coordinates.InterpolateVector3(n0, n1, n2), _transform));
+                    var normal = Vector3.Normalize(
+                        Vector3.TransformNormal(
+                            coordinates.InterpolateVector3(n0, n1, n2),
+                            _transform
+                        )
+                    );
                     var faceNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
                     var texturePos = coordinates.InterpolateVector2(t0, t1, t2);
 
-                    if (Vector3.Dot(faceNormal, ray.Direction) > 0 ||
-                        coordinates.T <= RayTracingGlobal.IntersectionEpsilon)
+                    if (
+                        Vector3.Dot(faceNormal, ray.Direction) > 0
+                        || coordinates.T <= RayTracingGlobal.IntersectionEpsilon
+                    )
                         continue;
 
                     hit = new(coordinates.T, normal, faceNormal, texturePos, Material);
@@ -140,7 +176,12 @@ namespace PhotonLab.Source.Bodies
 
         public void Draw(GraphicsDevice graphicsDevice, BasicEffect basicEffect)
         {
-            if (_vertexBuffer == null || _indexBuffer == null || _primitiveIndices == null || _primitiveIndices.Length == 0)
+            if (
+                _vertexBuffer == null
+                || _indexBuffer == null
+                || _primitiveIndices == null
+                || _primitiveIndices.Length == 0
+            )
                 return;
 
             basicEffect.World = _transform;
@@ -166,7 +207,12 @@ namespace PhotonLab.Source.Bodies
             foreach (var pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _primitiveIndices.Length / 3);
+                graphicsDevice.DrawIndexedPrimitives(
+                    PrimitiveType.TriangleList,
+                    0,
+                    0,
+                    _primitiveIndices.Length / 3
+                );
             }
         }
     }

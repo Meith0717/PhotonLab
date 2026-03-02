@@ -1,5 +1,5 @@
-﻿// RaySIMD.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// RaySIMD.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
 using System;
@@ -12,7 +12,10 @@ namespace PhotonLab.Source.RayTracing
         public readonly Vector3 Position = position;
         public readonly Vector3 Direction = direction;
 
-        public bool IntersectsFace((Vector3, Vector3, Vector3) face, out BarycentricCoordinates coords)
+        public bool IntersectsFace(
+            (Vector3, Vector3, Vector3) face,
+            out BarycentricCoordinates coords
+        )
         {
             coords = default;
 

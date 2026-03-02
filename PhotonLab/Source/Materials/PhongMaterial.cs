@@ -1,12 +1,12 @@
-﻿// PhongMaterial.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// PhongMaterial.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System;
+using System.Numerics;
 using Microsoft.Xna.Framework.Graphics;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;
-using System;
-using System.Numerics;
 
 namespace PhotonLab.Source.Materials
 {
@@ -31,38 +31,51 @@ namespace PhotonLab.Source.Materials
             _normalMode = normalMode;
         }
 
-        public PhongMaterial(Microsoft.Xna.Framework.Color diffuseColor, NormalMode normalMode = NormalMode.Interpolated)
+        public PhongMaterial(
+            Microsoft.Xna.Framework.Color diffuseColor,
+            NormalMode normalMode = NormalMode.Interpolated
+        )
         {
             DiffuseColor = diffuseColor.ToVector3().ToNumerics();
             _normalMode = normalMode;
         }
 
-        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit, out byte hitCount)
+        public Vector3 Shade(
+            Scene scene,
+            int depth,
+            in RaySIMD ray,
+            in HitInfo hit,
+            out byte hitCount
+        )
         {
             hitCount = 0;
-            
-            var textureColor = DiffuseTexture is null ? DiffuseColor : DiffuseTexture.SampleData3(hit.TexturePos);
+
+            var textureColor = DiffuseTexture is null
+                ? DiffuseColor
+                : DiffuseTexture.SampleData3(hit.TexturePos);
             var color = OneOverPi * AmbientStrength * AmbientColor * textureColor;
 
             var n = _normalMode switch
             {
                 NormalMode.Face => hit.FaceNormal,
                 NormalMode.Interpolated => hit.InterpolatedNormal,
-                _ => throw new NotImplementedException()
+                _ => throw new NotImplementedException(),
             };
 
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
-            hitPosition  += n * RayTracingGlobal.HitOffsetEpsilon;
-            
+            hitPosition += n * RayTracingGlobal.HitOffsetEpsilon;
+
             var v = Vector3.Normalize(scene.Camer3D.Position.ToNumerics() - hitPosition);
             foreach (var lightSource in scene.LightSources)
             {
-                foreach (var lightPosition in lightSource.Lights)
+                foreach (var lightPosition in lightSource.EmissionPoints)
                 {
                     lightSource.GetLightInfo(lightPosition, hitPosition, out var lightInfo);
                     var shadowRay = new RaySIMD(hitPosition, lightInfo.Direction);
-                    if (scene.Intersect(shadowRay, out var shadowHit, out var _) &&
-                        shadowHit.Distance < lightInfo.Distance)
+                    if (
+                        scene.Intersect(shadowRay, out var shadowHit, out var _)
+                        && shadowHit.Distance < lightInfo.Distance
+                    )
                         continue;
 
                     var r = Vector3.Reflect(-lightInfo.Direction, n);

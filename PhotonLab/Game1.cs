@@ -1,7 +1,10 @@
-﻿// Game1.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// Game1.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using FlowLab.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,13 +17,14 @@ using MonoKit.Input;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;
-using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace PhotonLab
 {
-    public enum Paths { Images, Videos }
+    public enum Paths
+    {
+        Images,
+        Videos,
+    }
 
     public class Game1 : Game
     {
@@ -48,7 +52,9 @@ namespace PhotonLab
             var consoleCommands = new ConsoleCommands();
             consoleCommands.Register(new("render", "", _ => _renderSingleImage = true));
             consoleCommands.Register(new("render_sequence", "", _ => _renderMultipleImages = true));
-            consoleCommands.Register(new("scenes", "", _ => Console.WriteLine(_sceneManager.ToString())));
+            consoleCommands.Register(
+                new("scenes", "", _ => Console.WriteLine(_sceneManager.ToString()))
+            );
 
             _consoleListerner = new(consoleCommands);
             _inputHandler = new();
@@ -57,24 +63,30 @@ namespace PhotonLab
             _pathManager.RegisterPath(Paths.Images, "images");
             _pathManager.RegisterPath(Paths.Videos, "videos");
 
-            Activated += delegate { _windowActive = true; };
-            Deactivated += delegate { _windowActive = false; };
+            Activated += delegate
+            {
+                _windowActive = true;
+            };
+            Deactivated += delegate
+            {
+                _windowActive = false;
+            };
         }
 
         protected override void Initialize()
         {
             var keyBindings = new Dictionary<(Keys, InputEventType), byte>()
             {
-                {(Keys.F2, InputEventType.Released), (byte)ActionType.RayTracImage },
-                {(Keys.F3, InputEventType.Released), (byte)ActionType.RayTraceSequence },
-                {(Keys.Right, InputEventType.Released), (byte)ActionType.NextCam },
-                {(Keys.Down, InputEventType.Released), (byte)ActionType.ResetCam },
+                { (Keys.F2, InputEventType.Released), (byte)ActionType.RayTracImage },
+                { (Keys.F3, InputEventType.Released), (byte)ActionType.RayTraceSequence },
+                { (Keys.Right, InputEventType.Released), (byte)ActionType.NextCam },
+                { (Keys.Down, InputEventType.Released), (byte)ActionType.ResetCam },
             };
             _inputHandler.RegisterDevice(new KeyboardListener(keyBindings));
 
             var mouseBindings = new Dictionary<(MouseButton, InputEventType), byte>()
             {
-                {(MouseButton.Right, InputEventType.Held), (byte)ActionType.MoveCameraByMouse }
+                { (MouseButton.Right, InputEventType.Held), (byte)ActionType.MoveCameraByMouse },
             };
             _inputHandler.RegisterDevice(new MouseListener(mouseBindings));
 
@@ -91,13 +103,13 @@ namespace PhotonLab
             _sceneManager.AddScene("cornellBox", new CornellBoxScene(GraphicsDevice));
             _sceneManager.AddScene("plane", new PlaneScene(GraphicsDevice));
             _sceneManager.AddScene("cornellMirror", new CornellMirrorScene(GraphicsDevice));
-            _sceneManager.Set("cornellBox"); // <--------------------------------------------------------------------------
+            _sceneManager.Set("plane"); // <--------------------------------------------------------------------------
 
             ConsoleManager.Show(
-                "=== PhotonLap RayTracer ===\n" +
-                "Version: 1.0\n" +
-                "Author: Thierry Meiers\n\n" +
-                $"Output folder: {_pathManager.RootPath}\n"
+                "=== PhotonLap RayTracer ===\n"
+                    + "Version: 1.0\n"
+                    + "Author: Thierry Meiers\n\n"
+                    + $"Output folder: {_pathManager.RootPath}\n"
             );
             _consoleListerner.Start();
         }
@@ -116,8 +128,14 @@ namespace PhotonLab
             if (true)
             {
                 _sceneManager.Update(elapsedMilliseconds, _inputHandler);
-                _inputHandler.DoAction((byte)ActionType.RayTracImage, () => _renderSingleImage = true);
-                _inputHandler.DoAction((byte)ActionType.RayTraceSequence, () => _renderMultipleImages = true);
+                _inputHandler.DoAction(
+                    (byte)ActionType.RayTracImage,
+                    () => _renderSingleImage = true
+                );
+                _inputHandler.DoAction(
+                    (byte)ActionType.RayTraceSequence,
+                    () => _renderMultipleImages = true
+                );
             }
 
             RenderSingleImage();
@@ -160,7 +178,7 @@ namespace PhotonLab
         private int _sequenceCount;
         private readonly int _sequenceAmount = 240;
         private FFmpeg _fFmpeg;
-        
+
         private void RenderSequence()
         {
             if (!_renderMultipleImageActive && _renderMultipleImages)
@@ -173,8 +191,16 @@ namespace PhotonLab
                 Console.WriteLine($"Starting sequence: {_sequenceAmount} images...");
                 _rayTracer.Begin(_sceneManager.CurrentScene, .5f);
 
-                var filePath = _pathManager.GetFilePath(Paths.Videos, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
-                _fFmpeg = new(_rayTracer.TargetRes.Width, _rayTracer.TargetRes.Height, 21, filePath);
+                var filePath = _pathManager.GetFilePath(
+                    Paths.Videos,
+                    $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4"
+                );
+                _fFmpeg = new(
+                    _rayTracer.TargetRes.Width,
+                    _rayTracer.TargetRes.Height,
+                    21,
+                    filePath
+                );
             }
 
             if (_renderMultipleImageActive)

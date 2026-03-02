@@ -11,20 +11,20 @@ using PhotonLab.Source.Materials;
 
 namespace PhotonLab.Source.Scenes;
 
-internal class CornellMirrorScene: Scene
+internal class CornellMirrorScene : Scene
 {
     private static readonly Vector3 LookAtPos = new(0, 12.5f, 0);
 
-    public CornellMirrorScene(GraphicsDevice graphicsDevice) : base(graphicsDevice)
-    {   
+    public CornellMirrorScene(GraphicsDevice graphicsDevice)
+        : base(graphicsDevice)
+    {
         Camer3D.AddBehaviour(new MoveByMouse(5));
-        
-        CornellBox.MirrorBuild(graphicsDevice, this, 25, 1f);
+
+        CornellBox.MirrorBuild(graphicsDevice, this, 25, .25f);
 
         var model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
         model.Material = new PhongMaterial(Color.Yellow);
-        model.ModelTransform = Matrix.CreateScale(4)
-                               * Matrix.CreateTranslation(0, 5f, 0);
+        model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(0, 5f, 0);
         AddBody(model);
     }
 

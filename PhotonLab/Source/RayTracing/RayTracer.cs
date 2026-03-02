@@ -1,18 +1,18 @@
-﻿// RayTracer.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// RayTracer.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System;
+using System.Diagnostics;
+using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoKit.Core.Diagnostics;
 using MonoKit.Core.IO;
 using MonoKit.Graphics.Camera;
 using PhotonLab.Source.Scenes;
-using System;
-using System.Diagnostics;
-using System.Numerics;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace PhotonLab.Source.RayTracing
 {
@@ -42,7 +42,9 @@ namespace PhotonLab.Source.RayTracing
         public void Begin(Scene scene, float resolutionScale)
         {
             if (_setUpFlag)
-                throw new InvalidOperationException("RayTracer is already set up. Call End() before setting up again.");
+                throw new InvalidOperationException(
+                    "RayTracer is already set up. Call End() before setting up again."
+                );
 
             var width = (int)(_gD.Viewport.Width * resolutionScale);
             var height = (int)(_gD.Viewport.Height * resolutionScale);
@@ -72,7 +74,9 @@ namespace PhotonLab.Source.RayTracing
         public void PerformTrace()
         {
             if (!_setUpFlag)
-                throw new InvalidOperationException("RayTracer has not been set up. Call SetUp() before tracing.");
+                throw new InvalidOperationException(
+                    "RayTracer has not been set up. Call SetUp() before tracing."
+                );
 
             _tracingWatch.Restart();
 
@@ -80,22 +84,22 @@ namespace PhotonLab.Source.RayTracing
             var maxDone = 0;
             var total = _cameraRays.Length;
 
-            for (var i = 0; i < total; i++)
-            {
-            }
-            
-            Parallel.For(0, total, i =>
-            {                
-                _lightData[i] = Trace(_scene, _cameraRays[i], 0, out var hits);
-                _hitData[i] = hits;
-                
-                var done = Interlocked.Increment(ref completed);
-                maxDone = int.Max(done, maxDone);
+            Parallel.For(
+                0,
+                total,
+                i =>
+                {
+                    _lightData[i] = Trace(_scene, _cameraRays[i], 0, out var hits);
+                    _hitData[i] = hits;
 
-                if (done % 10000 == 0)
-                    ConsoleManager.DrawProgressBar("Rendering", maxDone, total);
-            });
-            
+                    var done = Interlocked.Increment(ref completed);
+                    maxDone = int.Max(done, maxDone);
+
+                    if (done % 10000 == 0)
+                        ConsoleManager.DrawProgressBar("Rendering", maxDone, total);
+                }
+            );
+
             ConsoleManager.ClearLine();
 
             _tracingWatch.Stop();
@@ -111,9 +115,12 @@ namespace PhotonLab.Source.RayTracing
         {
             hitCount = 0;
 
-            if (depth > RayTracingGlobal.MaxRecursion || !scene.Intersect(in ray, out var hit, out hitCount))
+            if (
+                depth > RayTracingGlobal.MaxRecursion
+                || !scene.Intersect(in ray, out var hit, out hitCount)
+            )
                 return Vector3.Zero;
-            
+
             var lightData = hit.Material.Shade(scene, depth, in ray, in hit, out var hits);
             hitCount += hits;
             return lightData;
@@ -127,14 +134,27 @@ namespace PhotonLab.Source.RayTracing
             if (!_setUpFlag)
                 throw new Exception();
 
-            var filePath = pathManager.GetFilePath(Paths.Images, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}");
+            var filePath = pathManager.GetFilePath(
+                Paths.Images,
+                $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}"
+            );
 
             if (doExr)
-                ImageSaver.SaveExr(filePath + ".exr", _lightData, TargetRes.Width, TargetRes.Height);
+                ImageSaver.SaveExr(
+                    filePath + ".exr",
+                    _lightData,
+                    TargetRes.Width,
+                    TargetRes.Height
+                );
 
             var colorData = _imageRenderer.RenderImage(_lightData);
-            ImageSaver.SavePng(filePath + "_render.png", colorData, TargetRes.Width, TargetRes.Height);
-            
+            ImageSaver.SavePng(
+                filePath + "_render.png",
+                colorData,
+                TargetRes.Width,
+                TargetRes.Height
+            );
+
             var hitData = _imageRenderer.RenderHeatmap(_hitData);
             ImageSaver.SavePng(filePath + "_hits.png", hitData, TargetRes.Width, TargetRes.Height);
         }
@@ -143,7 +163,7 @@ namespace PhotonLab.Source.RayTracing
         {
             return _imageRenderer.RenderImage(_lightData);
         }
-        
+
         public byte[] GetHitData()
         {
             return _imageRenderer.RenderHeatmap(_hitData);
@@ -190,18 +210,44 @@ namespace PhotonLab.Source.RayTracing
             var fov = camera.Fov;
             var aspectRatio = camera.AspectRatio;
 
-            Parallel.For(0, height, y =>
-            {
-                var rowOffset = y * width;
-                for (var x = 0; x < width; x++)
-                    _cameraRays[rowOffset + x] = GeneratePixelRay(position, fov, aspectRatio, fw, right, up, x, y, width, height);
-            });
+            Parallel.For(
+                0,
+                height,
+                y =>
+                {
+                    var rowOffset = y * width;
+                    for (var x = 0; x < width; x++)
+                        _cameraRays[rowOffset + x] = GeneratePixelRay(
+                            position,
+                            fov,
+                            aspectRatio,
+                            fw,
+                            right,
+                            up,
+                            x,
+                            y,
+                            width,
+                            height
+                        );
+                }
+            );
         }
 
         /// <summary>
         /// Computes a normalized ray from the camera through a specific pixel.
         /// </summary>
-        private static RaySIMD GeneratePixelRay(Vector3 positoin, float fov, float aspectRatio, Vector3 forward, Vector3 right, Vector3 up, int x, int y, int w, int h)
+        private static RaySIMD GeneratePixelRay(
+            Vector3 positoin,
+            float fov,
+            float aspectRatio,
+            Vector3 forward,
+            Vector3 right,
+            Vector3 up,
+            int x,
+            int y,
+            int w,
+            int h
+        )
         {
             var imagePlaneHeight = 2f * float.Tan(fov / 2f);
             var imagePlaneWidth = imagePlaneHeight * aspectRatio;

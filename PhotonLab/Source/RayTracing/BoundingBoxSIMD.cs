@@ -1,5 +1,5 @@
-﻿// BoundingBoxSIMD.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// BoundingBoxSIMD.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
 using System;
@@ -24,7 +24,7 @@ namespace PhotonLab.Source.RayTracing
                 new(Min.X, Max.Y, Min.Z),
                 new(Max.X, Max.Y, Min.Z),
                 new(Max.X, Min.Y, Min.Z),
-                new(Min.X, Min.Y, Min.Z)
+                new(Min.X, Min.Y, Min.Z),
             ];
         }
 
@@ -53,8 +53,10 @@ namespace PhotonLab.Source.RayTracing
             if (txMin > tyMax || tyMin > txMax)
                 return false;
 
-            if (tyMin > txMin) txMin = tyMin;
-            if (tyMax < txMax) txMax = tyMax;
+            if (tyMin > txMin)
+                txMin = tyMin;
+            if (tyMax < txMax)
+                txMax = tyMax;
 
             var tzMin = ((signZ ? max.Z : min.Z) - ray.Position.Z) * invDir.Z;
             var tzMax = ((signZ ? min.Z : max.Z) - ray.Position.Z) * invDir.Z;
@@ -62,8 +64,10 @@ namespace PhotonLab.Source.RayTracing
             if (txMin > tzMax || tzMin > txMax)
                 return false;
 
-            if (tzMin > txMin) txMin = tzMin;
-            if (tzMax < txMax) txMax = tzMax;
+            if (tzMin > txMin)
+                txMin = tzMin;
+            if (tzMax < txMax)
+                txMax = tzMax;
 
             t = txMin;
 
@@ -88,7 +92,8 @@ namespace PhotonLab.Source.RayTracing
                 flag = false;
             }
 
-            if (flag) throw new ArgumentException();
+            if (flag)
+                throw new ArgumentException();
 
             return new BoundingBoxSIMD(maxVector, minVector);
         }

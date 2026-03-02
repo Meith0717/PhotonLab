@@ -1,17 +1,22 @@
-﻿// ImageSaver.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// ImageSaver.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System;
 using TinyEXR;
 
 namespace PhotonLab.Source
 {
     public static class ImageSaver
     {
-        public static void SaveExr(string path, System.Numerics.Vector3[] pixels, int width, int height)
+        public static void SaveExr(
+            string path,
+            System.Numerics.Vector3[] pixels,
+            int width,
+            int height
+        )
         {
             float[] data = new float[width * height * 3];
             for (int i = 0; i < pixels.Length; i++)

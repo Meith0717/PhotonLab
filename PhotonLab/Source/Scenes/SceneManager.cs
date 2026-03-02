@@ -1,12 +1,12 @@
-﻿// SceneManager.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// SceneManager.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
-using Microsoft.Xna.Framework.Graphics;
-using MonoKit.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework.Graphics;
+using MonoKit.Input;
 
 namespace PhotonLab.Source.Scenes
 {

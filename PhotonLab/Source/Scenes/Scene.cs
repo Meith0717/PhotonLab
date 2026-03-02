@@ -1,7 +1,9 @@
-﻿// Scene.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// Scene.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Graphics.Camera;
@@ -9,8 +11,6 @@ using MonoKit.Input;
 using PhotonLab.Source.Bodies;
 using PhotonLab.Source.Lights;
 using PhotonLab.Source.RayTracing;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PhotonLab.Source.Scenes
 {
@@ -33,20 +33,20 @@ namespace PhotonLab.Source.Scenes
             LightSources.Add(lightSource);
 
             var lightMesh = BasicBodies.CreateSphere(GraphicsDevice, 4, 4);
-            lightMesh.ModelTransform = Matrix.CreateScale(.1f) * Matrix.CreateTranslation(lightSource.Position);
+            lightMesh.ModelTransform =
+                Matrix.CreateScale(.1f) * Matrix.CreateTranslation(lightSource.Position);
             _lightShapes.Add(lightMesh);
         }
 
         public bool Intersect(in RaySIMD ray, out HitInfo closestHit, out byte hitCount)
         {
             closestHit = new();
-            hitCount = 0;   
-            
+            hitCount = 0;
+
             var hitFound = false;
             foreach (var shape in _shapes)
             {
-                if (shape.Intersect(ray, out var hit, out var hits)
-                    && hit <= closestHit)
+                if (shape.Intersect(ray, out var hit, out var hits) && hit <= closestHit)
                 {
                     closestHit = hit;
                     hitCount += hits;

@@ -1,17 +1,21 @@
-﻿// BasicBodies.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// BasicBodies.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace PhotonLab.Source.Bodies
 {
     internal static class BasicBodies
     {
-        public static MeshBody CreateSphere(GraphicsDevice device, int segments = 16, int rings = 16)
+        public static MeshBody CreateSphere(
+            GraphicsDevice device,
+            int segments = 16,
+            int rings = 16
+        )
         {
             var vertices = new List<VertexPositionNormalTexture>();
             var indices = new List<ushort>();
@@ -20,13 +24,15 @@ namespace PhotonLab.Source.Bodies
             {
                 float v = y / (float)rings;
                 float theta = v * MathF.PI;
-                float sinTheta = MathF.Sin(theta), cosTheta = MathF.Cos(theta);
+                float sinTheta = MathF.Sin(theta),
+                    cosTheta = MathF.Cos(theta);
 
                 for (int x = 0; x <= segments; x++)
                 {
                     float u = x / (float)segments;
                     float phi = u * MathF.PI * 2f;
-                    float sinPhi = MathF.Sin(phi), cosPhi = MathF.Cos(phi);
+                    float sinPhi = MathF.Sin(phi),
+                        cosPhi = MathF.Cos(phi);
 
                     var pos = new Vector3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi);
                     var n = Vector3.Normalize(pos);
@@ -35,38 +41,53 @@ namespace PhotonLab.Source.Bodies
             }
 
             for (int y = 0; y < rings; y++)
-                for (int x = 0; x < segments; x++)
-                {
-                    int first = y * (segments + 1) + x;
-                    int second = first + segments + 1;
-                    indices.AddRange(new ushort[]
+            for (int x = 0; x < segments; x++)
+            {
+                int first = y * (segments + 1) + x;
+                int second = first + segments + 1;
+                indices.AddRange(
+                    new ushort[]
                     {
-                        (ushort)first, (ushort)(first + 1), (ushort)second,
-                        (ushort)second, (ushort)(first + 1), (ushort)(second + 1)
-                    });
-                }
+                        (ushort)first,
+                        (ushort)(first + 1),
+                        (ushort)second,
+                        (ushort)second,
+                        (ushort)(first + 1),
+                        (ushort)(second + 1),
+                    }
+                );
+            }
 
             return new MeshBody(device, [.. vertices], [.. indices]);
         }
 
         public static MeshBody CreateTetrahedron(GraphicsDevice device)
         {
-            float s = 1f, h = (float)(Math.Sqrt(3) / 2f * s);
+            float s = 1f,
+                h = (float)(Math.Sqrt(3) / 2f * s);
             var v = new[]
             {
                 new Vector3(0, s, 0),
-                new Vector3(-s/2f, 0, -h/3f),
-                new Vector3(s/2f, 0, -h/3f),
-                new Vector3(0, 0, 2f * h/3f)
+                new Vector3(-s / 2f, 0, -h / 3f),
+                new Vector3(s / 2f, 0, -h / 3f),
+                new Vector3(0, 0, 2f * h / 3f),
             };
 
-            var verts = Array.ConvertAll(v, p => new VertexPositionNormalTexture(p, Vector3.Normalize(p), Vector2.Zero));
+            var verts = Array.ConvertAll(
+                v,
+                p => new VertexPositionNormalTexture(p, Vector3.Normalize(p), Vector2.Zero)
+            );
             var inds = new ushort[] { 0, 2, 1, 0, 1, 3, 0, 3, 2, 1, 2, 3 };
 
             return new MeshBody(device, verts, inds);
         }
 
-        public static MeshBody CreateCube(GraphicsDevice device, float width = 1f, float height = 1f, float depth = 1f)
+        public static MeshBody CreateCube(
+            GraphicsDevice device,
+            float width = 1f,
+            float height = 1f,
+            float depth = 1f
+        )
         {
             float hw = width / 2f;
             float hh = height / 2f;
@@ -74,25 +95,63 @@ namespace PhotonLab.Source.Bodies
 
             var v = new[]
             {
-                new Vector3(-hw, -hh, -hd), new(hw, -hh, -hd), new(hw, hh, -hd), new(-hw, hh, -hd),
-                new Vector3(-hw, -hh, hd),  new(hw, -hh, hd),  new(hw, hh, hd),  new(-hw, hh, hd)
+                new Vector3(-hw, -hh, -hd),
+                new(hw, -hh, -hd),
+                new(hw, hh, -hd),
+                new(-hw, hh, -hd),
+                new Vector3(-hw, -hh, hd),
+                new(hw, -hh, hd),
+                new(hw, hh, hd),
+                new(-hw, hh, hd),
             };
 
-            var verts = Array.ConvertAll(v, p => new VertexPositionNormalTexture(p, Vector3.Normalize(p), Vector2.Zero));
+            var verts = Array.ConvertAll(
+                v,
+                p => new VertexPositionNormalTexture(p, Vector3.Normalize(p), Vector2.Zero)
+            );
 
             var inds = new ushort[]
             {
-                4,5,6, 4,6,7,     // front
-                1,0,3, 1,3,2,     // back
-                0,4,7, 0,7,3,     // left
-                5,1,2, 5,2,6,     // right
-                3,7,6, 3,6,2,     // top
-                0,1,5, 0,5,4      // bottom
+                4,
+                5,
+                6,
+                4,
+                6,
+                7, // front
+                1,
+                0,
+                3,
+                1,
+                3,
+                2, // back
+                0,
+                4,
+                7,
+                0,
+                7,
+                3, // left
+                5,
+                1,
+                2,
+                5,
+                2,
+                6, // right
+                3,
+                7,
+                6,
+                3,
+                6,
+                2, // top
+                0,
+                1,
+                5,
+                0,
+                5,
+                4, // bottom
             };
 
             return new MeshBody(device, verts, inds);
         }
-
 
         public static MeshBody CreateQuad(GraphicsDevice device)
         {
@@ -102,9 +161,9 @@ namespace PhotonLab.Source.Bodies
             var verts = new[]
             {
                 new VertexPositionNormalTexture(new(-h, -h, 0), n, new Vector2(0, 1)),
-                new VertexPositionNormalTexture(new( h, -h, 0), n, new Vector2(1, 1)),
-                new VertexPositionNormalTexture(new( h,  h, 0), n, new Vector2(1, 0)),
-                new VertexPositionNormalTexture(new(-h,  h, 0), n, new Vector2(0, 0)),
+                new VertexPositionNormalTexture(new(h, -h, 0), n, new Vector2(1, 1)),
+                new VertexPositionNormalTexture(new(h, h, 0), n, new Vector2(1, 0)),
+                new VertexPositionNormalTexture(new(-h, h, 0), n, new Vector2(0, 0)),
             };
 
             return new MeshBody(device, verts, [1, 2, 0, 2, 3, 0]);

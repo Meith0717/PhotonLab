@@ -1,5 +1,5 @@
-﻿// FFmpeg.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// FFmpeg.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
 using System;
@@ -19,18 +19,23 @@ namespace FlowLab.Core
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "ffmpeg",
-                    Arguments = $"-f rawvideo -pix_fmt rgb24 -s {width}x{height} -r {frameRate} -i - -c:v libx264 -pix_fmt yuv420p {outputPath}",
+                    Arguments =
+                        $"-f rawvideo -pix_fmt rgb24 -s {width}x{height} -r {frameRate} -i - -c:v libx264 -pix_fmt yuv420p {outputPath}",
                     UseShellExecute = false,
                     RedirectStandardInput = true,
                     RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
+                    CreateNoWindow = true,
+                },
             };
 
             _ffmpegProcess.Start();
 
             // Optional: Log FFmpeg output
-            _ffmpegProcess.ErrorDataReceived += (sender, e) => { if (e.Data != null) Debug.WriteLine(e.Data); };
+            _ffmpegProcess.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data != null)
+                    Debug.WriteLine(e.Data);
+            };
             _ffmpegProcess.BeginErrorReadLine();
         }
 
@@ -49,7 +54,8 @@ namespace FlowLab.Core
 
         public void Dispose()
         {
-            if (_ffmpegProcess == null) return;
+            if (_ffmpegProcess == null)
+                return;
             if (!_ffmpegProcess.HasExited)
                 _ffmpegProcess.Kill();
             _ffmpegProcess.Dispose();

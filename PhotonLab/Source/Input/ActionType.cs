@@ -1,5 +1,5 @@
-﻿// ActionType.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// ActionType.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
 namespace PhotonLab.Source.Input
@@ -12,6 +12,6 @@ namespace PhotonLab.Source.Input
         NextCam,
         PrevCam,
         LookAtOg,
-        ResetCam
+        ResetCam,
     }
 }

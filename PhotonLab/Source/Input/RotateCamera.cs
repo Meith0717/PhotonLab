@@ -9,13 +9,14 @@ using MonoKit.Input;
 
 namespace PhotonLab.Source.Input;
 
-public class RotateCamera(float rotationSpeed, Vector3 lookAtPos, float distance, float height) : ICamera3dBehavior
+public class RotateCamera(float rotationSpeed, Vector3 lookAtPos, float distance, float height)
+    : ICamera3dBehavior
 {
     private readonly float _rotateSpeed = rotationSpeed;
-    private readonly  Vector3 _lookAtPos = lookAtPos;
-    private readonly float  _distance = distance;
+    private readonly Vector3 _lookAtPos = lookAtPos;
+    private readonly float _distance = distance;
     private readonly float _height = height;
-    
+
     public void Initialize(Camera3D owner)
     {
         owner.Position = new Vector3(0, _height, _distance);

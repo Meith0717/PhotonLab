@@ -1,14 +1,18 @@
-﻿// IMaterial.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// IMaterial.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System.Numerics;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;
-using System.Numerics;
 
 namespace PhotonLab.Source.Materials
 {
-    public enum NormalMode { Face, Interpolated }
+    public enum NormalMode
+    {
+        Face,
+        Interpolated,
+    }
 
     internal interface IMaterial
     {

@@ -2,11 +2,11 @@
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoKit.Graphics.Camera;
 using MonoKit.Input;
-using System;
 
 namespace PhotonLab.Source.Input
 {
@@ -35,12 +35,15 @@ namespace PhotonLab.Source.Input
             {
                 float zoomDelta = delta / 120f;
                 _zoomTarget *= 1f + zoomDelta * 0.2f;
-                _zoomTarget = MathHelper.Clamp(_zoomTarget, MathHelper.ToRadians(10f), MathHelper.ToRadians(120f));
+                _zoomTarget = MathHelper.Clamp(
+                    _zoomTarget,
+                    MathHelper.ToRadians(10f),
+                    MathHelper.ToRadians(120f)
+                );
             }
 
             float t = 1f - (float)Math.Exp(-_smooth * elapsedGameTime);
             owner.Fov = MathHelper.Lerp(owner.Fov, _zoomTarget, t);
         }
-
     }
 }

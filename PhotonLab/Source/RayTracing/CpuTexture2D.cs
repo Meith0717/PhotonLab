@@ -1,10 +1,10 @@
-﻿// CpuTexture2D.cs 
-// Copyright (c) 2023-2025 Thierry Meiers 
+﻿// CpuTexture2D.cs
+// Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 
 namespace PhotonLab.Source.RayTracing
 {
@@ -48,10 +48,8 @@ namespace PhotonLab.Source.RayTracing
             return SampleData(x, y);
         }
 
-        public System.Numerics.Vector4 SampleData(Point point)
-            => SampleData(point.X, point.Y);
+        public System.Numerics.Vector4 SampleData(Point point) => SampleData(point.X, point.Y);
 
-        public System.Numerics.Vector4 SampleData(int x, int y)
-            => _colorData[y * Width + x];
+        public System.Numerics.Vector4 SampleData(int x, int y) => _colorData[y * Width + x];
     }
 }
