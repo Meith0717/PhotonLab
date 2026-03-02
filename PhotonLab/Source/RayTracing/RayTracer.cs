@@ -50,22 +50,22 @@ namespace PhotonLab.Source.RayTracing
             var height = (int)(_gD.Viewport.Height * resolutionScale);
 
             _scene = scene;
-            TargetRes = new(width, height);
+            TargetRes = new Size(width, height);
             _imageRenderer.ApplyScale(TargetRes);
 
             int totalRays = width * height;
             Console.WriteLine($"\n=== RayTracer START ===");
             Console.WriteLine($"Resolution: {width}x{height}");
-            Console.WriteLine($"Total Rays: {totalRays:N0}|Scene Faces: {scene.FaceCount}");
+            Console.WriteLine($"Total Rays: {totalRays:N0}|Scene Faces: {scene.Meshes.FaceCount}");
 
             _totalWatch.Restart();
-            CreateCameraRaysParallel(scene.Camer3D);
+            CreateCameraRaysParallel(scene.Camera3D);
             _setUpFlag = true;
         }
 
         public void ResetCameraRays(Scene scene)
         {
-            CreateCameraRaysParallel(scene.Camer3D);
+            CreateCameraRaysParallel(scene.Camera3D);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace PhotonLab.Source.RayTracing
 
             if (
                 depth > RayTracingGlobal.MaxRecursion
-                || !scene.Intersect(in ray, out var hit, out hitCount)
+                || !scene.Meshes.Intersect(in ray, out var hit, out hitCount)
             )
                 return Vector3.Zero;
 
@@ -259,7 +259,7 @@ namespace PhotonLab.Source.RayTracing
             var py = v * imagePlaneHeight;
 
             var dir = Vector3.Normalize(forward + px * right + py * up);
-            return new(positoin, dir);
+            return new RaySIMD(positoin, dir);
         }
     }
 }

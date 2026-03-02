@@ -17,9 +17,11 @@ namespace PhotonLab.Source.Lights
             Microsoft.Xna.Framework.Color color
         ) : ILightSource
         {
-            public Vector3 Position => position.ToNumerics();
-            public Vector3 Color => color.ToVector3().ToNumerics();
-            public Vector3[] EmissionPoints => LightSources._emissionPoints;
+            public Vector3 Position => _position.ToNumerics();
+            public Vector3[] EmissionPoints => _emissionPoints;
+
+            private Microsoft.Xna.Framework.Vector3 _position = position;
+            private readonly Vector3 _color = color.ToVector3().ToNumerics();
 
             public void GetLightInfo(Vector3 light, Vector3 hitPosition, out LightInfo lightInfo)
             {
@@ -27,7 +29,7 @@ namespace PhotonLab.Source.Lights
                 var toLight = lightPosition - hitPosition;
                 var distance = toLight.Length();
                 var toLightDir = Vector3.Normalize(toLight);
-                lightInfo = new(Color, toLightDir, distance);
+                lightInfo = new LightInfo(_color, toLightDir, distance);
             }
         }
 
@@ -71,7 +73,7 @@ namespace PhotonLab.Source.Lights
                 );
 
                 var attenuatedColor = _color * attenuation;
-                lightInfo = new(attenuatedColor, toLightDir, distance);
+                lightInfo = new LightInfo(attenuatedColor, toLightDir, distance);
             }
         }
     }

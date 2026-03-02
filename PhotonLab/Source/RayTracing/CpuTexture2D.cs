@@ -5,6 +5,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.RayTracing
 {
@@ -29,18 +30,18 @@ namespace PhotonLab.Source.RayTracing
 
         public System.Numerics.Vector3 SampleData3(Vector2 uv)
         {
-            uv = Vector2.Clamp(uv, new(0), new(1));
+            uv = Vector2.Clamp(uv, new Vector2(0), new Vector2(1));
 
             var x = (int)(uv.X * (Width - 1));
             var y = (int)(uv.Y * (Height - 1));
 
             var data = SampleData(x, y);
-            return new(data.X, data.Y, data.Z);
+            return new Vector3(data.X, data.Y, data.Z);
         }
 
         public System.Numerics.Vector4 SampleData4(Vector2 uv)
         {
-            uv = Vector2.Clamp(uv, new(0), new(1));
+            uv = Vector2.Clamp(uv, new Vector2(0), new Vector2(1));
 
             var x = (int)(uv.X * (Width - 1));
             var y = (int)(uv.Y * (Height - 1));

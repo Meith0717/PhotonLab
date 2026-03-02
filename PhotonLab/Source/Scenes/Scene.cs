@@ -17,16 +17,11 @@ namespace PhotonLab.Source.Scenes
     internal abstract class Scene(GraphicsDevice graphicsDevice)
     {
         protected readonly GraphicsDevice GraphicsDevice = graphicsDevice;
-        private readonly List<MeshBody> _shapes = [];
+        public readonly Camera3D Camera3D = new(new Vector3(0, 12.5f, -30), graphicsDevice);
+        public readonly MeshCollection Meshes = new MeshCollection();
         private readonly List<MeshBody> _lightShapes = [];
 
         public List<ILightSource> LightSources { get; } = [];
-
-        public Camera3D Camer3D { get; } = new(new(0, 12.5f, -30), graphicsDevice);
-
-        public int FaceCount => _shapes.Sum(s => s.FaseCount);
-
-        public void AddBody(MeshBody mesh) => _shapes.Add(mesh);
 
         public void AddLightSource(ILightSource lightSource)
         {
@@ -38,44 +33,19 @@ namespace PhotonLab.Source.Scenes
             _lightShapes.Add(lightMesh);
         }
 
-        public bool Intersect(in RaySIMD ray, out HitInfo closestHit, out byte hitCount)
+        public void Initialize()
         {
-            closestHit = new();
-            hitCount = 0;
-
-            var hitFound = false;
-            foreach (var shape in _shapes)
-            {
-                if (shape.Intersect(ray, out var hit, out var hits) && hit <= closestHit)
-                {
-                    closestHit = hit;
-                    hitCount += hits;
-                    hitFound = true;
-                }
-            }
-            return hitFound;
+            Meshes.Initialize();
         }
 
         public virtual void Update(double elapsedMilliseconds, InputHandler inputHandler)
         {
-            Camer3D.Update(elapsedMilliseconds, inputHandler);
+            Camera3D.Update(elapsedMilliseconds, inputHandler);
         }
 
         public void Draw(BasicEffect basicEffect, GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.BlendState = BlendState.Opaque;
-            graphicsDevice.DepthStencilState = DepthStencilState.Default;
-            graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
-
-            basicEffect.World = Matrix.Identity;
-            basicEffect.View = Camer3D.View;
-            basicEffect.Projection = Camer3D.Projection;
-
-            foreach (var shape in _shapes)
-                shape.Draw(graphicsDevice, basicEffect);
-
-            foreach (var shape in _lightShapes)
-                shape.Draw(graphicsDevice, basicEffect);
+            Meshes.Draw(Camera3D, basicEffect, graphicsDevice);
         }
     }
 }

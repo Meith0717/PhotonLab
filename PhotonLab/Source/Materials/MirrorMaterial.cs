@@ -42,7 +42,7 @@ namespace PhotonLab.Source.Materials
             var reflectedRay = new RaySIMD(hitPosition, reflectDir);
             var reflectedColor = RayTracer.Trace(scene, reflectedRay, depth + 1, out hitCount);
 
-            /*var v = Vector3.Normalize(scene.Camer3D.Position.ToNumerics() - hitPosition);
+            /*var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
             foreach (var lightSource in scene.LightSources)
             {
                 foreach (var lightPosition in lightSource.EmissionPoints)
@@ -57,7 +57,7 @@ namespace PhotonLab.Source.Materials
                     var nDotL = MathF.Max(Vector3.Dot(n, lightInfo.Direction), 0);
                     var rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), 100);
                     
-                    reflectedColor += lightInfo.Color * Vector3.One * rDotV;
+                    reflectedColor += lightInfo._color * Vector3.One * rDotV;
                 }
             }*/
 

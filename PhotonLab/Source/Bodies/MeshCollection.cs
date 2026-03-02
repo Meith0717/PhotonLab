@@ -1,7 +1,8 @@
-// MeshContainer.cs
+// MeshCollection.cs
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -11,16 +12,31 @@ using PhotonLab.Source.RayTracing;
 
 namespace PhotonLab.Source.Bodies;
 
-internal class MeshContainer
+internal class MeshCollection
 {
     private readonly List<MeshBody> _bodies = [];
+    private bool _isInitialized;
 
-    public int FaceCount => _bodies.Sum(s => s.FacesCount);
+    public int FaceCount { get; private set; }
 
-    public void AddMesh(MeshBody mesh) => _bodies.Add(mesh);
+    public void AddMesh(MeshBody mesh)
+    {
+        if (_isInitialized)
+            throw new Exception("Can not add new Mesh if already initialized");
+        _bodies.Add(mesh);
+        FaceCount += mesh.FacesCount;
+    }
+
+    public void Initialize()
+    {
+        _isInitialized = true;
+    }
 
     public bool Intersect(in RaySIMD ray, out HitInfo closestHit, out byte hitCount)
     {
+        if (!_isInitialized)
+            throw new Exception("MeshCollection is not initialized");
+
         closestHit = new HitInfo();
         hitCount = 0;
 

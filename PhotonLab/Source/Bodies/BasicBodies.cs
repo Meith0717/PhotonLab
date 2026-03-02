@@ -36,7 +36,7 @@ namespace PhotonLab.Source.Bodies
 
                     var pos = new Vector3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi);
                     var n = Vector3.Normalize(pos);
-                    vertices.Add(new(pos, n, Vector2.Zero));
+                    vertices.Add(new VertexPositionNormalTexture(pos, n, Vector2.Zero));
                 }
             }
 
@@ -160,10 +160,10 @@ namespace PhotonLab.Source.Bodies
 
             var verts = new[]
             {
-                new VertexPositionNormalTexture(new(-h, -h, 0), n, new Vector2(0, 1)),
-                new VertexPositionNormalTexture(new(h, -h, 0), n, new Vector2(1, 1)),
-                new VertexPositionNormalTexture(new(h, h, 0), n, new Vector2(1, 0)),
-                new VertexPositionNormalTexture(new(-h, h, 0), n, new Vector2(0, 0)),
+                new VertexPositionNormalTexture(new Vector3(-h, -h, 0), n, new Vector2(0, 1)),
+                new VertexPositionNormalTexture(new Vector3(h, -h, 0), n, new Vector2(1, 1)),
+                new VertexPositionNormalTexture(new Vector3(h, h, 0), n, new Vector2(1, 0)),
+                new VertexPositionNormalTexture(new Vector3(-h, h, 0), n, new Vector2(0, 0)),
             };
 
             return new MeshBody(device, verts, [1, 2, 0, 2, 3, 0]);

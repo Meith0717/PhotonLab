@@ -17,14 +17,14 @@ namespace PhotonLab.Source.RayTracing
         {
             return
             [
-                new(Min.X, Max.Y, Max.Z),
-                new(Max.X, Max.Y, Max.Z),
-                new(Max.X, Min.Y, Max.Z),
-                new(Min.X, Min.Y, Max.Z),
-                new(Min.X, Max.Y, Min.Z),
-                new(Max.X, Max.Y, Min.Z),
-                new(Max.X, Min.Y, Min.Z),
-                new(Min.X, Min.Y, Min.Z),
+                new Vector3(Min.X, Max.Y, Max.Z),
+                new Vector3(Max.X, Max.Y, Max.Z),
+                new Vector3(Max.X, Min.Y, Max.Z),
+                new Vector3(Min.X, Min.Y, Max.Z),
+                new Vector3(Min.X, Max.Y, Min.Z),
+                new Vector3(Max.X, Max.Y, Min.Z),
+                new Vector3(Max.X, Min.Y, Min.Z),
+                new Vector3(Min.X, Min.Y, Min.Z),
             ];
         }
 

@@ -22,7 +22,7 @@ namespace PhotonLab.Source.Input
             var x = float.Cos(_pitch) * float.Sin(_yaw);
             var y = float.Sin(_pitch);
             var z = float.Cos(_pitch) * float.Cos(_yaw);
-            owner.Forward = new(x, y, z);
+            owner.Forward = new Vector3(x, y, z);
             owner.Right = Vector3.Normalize(Vector3.Cross(owner.Forward, Vector3.Up));
             owner.Up = Vector3.Cross(owner.Right, owner.Forward);
         }
@@ -45,7 +45,7 @@ namespace PhotonLab.Source.Input
                 var x = float.Cos(_pitch) * float.Sin(_yaw);
                 var y = float.Sin(_pitch);
                 var z = float.Cos(_pitch) * float.Cos(_yaw);
-                owner.Forward = new(x, y, z);
+                owner.Forward = new Vector3(x, y, z);
                 owner.Right = Vector3.Normalize(Vector3.Cross(owner.Forward, Vector3.Up));
                 owner.Up = Vector3.Cross(owner.Right, owner.Forward);
             }

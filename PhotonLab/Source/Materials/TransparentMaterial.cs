@@ -56,7 +56,7 @@ namespace PhotonLab.Source.Materials
             var reflectedColor =
                 ReflectetStrength * RayTracer.Trace(scene, reflectedRay, depth + 1, out hitCount);
 
-            var v = Vector3.Normalize(scene.Camer3D.Position.ToNumerics() - hitPosition);
+            var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
             foreach (var lightSource in scene.LightSources)
             {
                 foreach (var lightPosition in lightSource.EmissionPoints)
@@ -64,7 +64,7 @@ namespace PhotonLab.Source.Materials
                     lightSource.GetLightInfo(lightPosition, hitPosition, out var lightInfo);
                     var shadowRay = new RaySIMD(hitPosition, lightInfo.Direction);
                     if (
-                        scene.Intersect(shadowRay, out var shadowHit, out var _)
+                        scene.Meshes.Intersect(shadowRay, out var shadowHit, out var _)
                         && shadowHit.Distance < lightInfo.Distance
                     )
                         continue;

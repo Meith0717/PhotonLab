@@ -12,7 +12,7 @@ namespace PhotonLab.Source.Materials
 {
     internal class PhongMaterial : IMaterial
     {
-        private const float OneOverPi = 1 / float.Pi;
+        private const float OneOverPi = 1; // 1 / float.Pi;
         private readonly NormalMode _normalMode;
 
         public CpuTexture2D DiffuseTexture { get; }
@@ -27,7 +27,7 @@ namespace PhotonLab.Source.Materials
 
         public PhongMaterial(Texture2D albedo, NormalMode normalMode = NormalMode.Interpolated)
         {
-            DiffuseTexture = new(albedo);
+            DiffuseTexture = new CpuTexture2D(albedo);
             _normalMode = normalMode;
         }
 
@@ -53,6 +53,7 @@ namespace PhotonLab.Source.Materials
             var textureColor = DiffuseTexture is null
                 ? DiffuseColor
                 : DiffuseTexture.SampleData3(hit.TexturePos);
+
             var color = OneOverPi * AmbientStrength * AmbientColor * textureColor;
 
             var n = _normalMode switch
@@ -65,7 +66,7 @@ namespace PhotonLab.Source.Materials
             var hitPosition = ray.Position + ray.Direction * hit.Distance;
             hitPosition += n * RayTracingGlobal.HitOffsetEpsilon;
 
-            var v = Vector3.Normalize(scene.Camer3D.Position.ToNumerics() - hitPosition);
+            var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
             foreach (var lightSource in scene.LightSources)
             {
                 foreach (var lightPosition in lightSource.EmissionPoints)
@@ -73,7 +74,7 @@ namespace PhotonLab.Source.Materials
                     lightSource.GetLightInfo(lightPosition, hitPosition, out var lightInfo);
                     var shadowRay = new RaySIMD(hitPosition, lightInfo.Direction);
                     if (
-                        scene.Intersect(shadowRay, out var shadowHit, out var _)
+                        scene.Meshes.Intersect(shadowRay, out var shadowHit, out var _)
                         && shadowHit.Distance < lightInfo.Distance
                     )
                         continue;

@@ -45,21 +45,28 @@ namespace PhotonLab
 
         public Game1()
         {
-            _graphics = new(this);
+            _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
 
             var consoleCommands = new ConsoleCommands();
-            consoleCommands.Register(new("render", "", _ => _renderSingleImage = true));
-            consoleCommands.Register(new("render_sequence", "", _ => _renderMultipleImages = true));
             consoleCommands.Register(
-                new("scenes", "", _ => Console.WriteLine(_sceneManager.ToString()))
+                new ConsoleCommand("render", "", _ => _renderSingleImage = true)
+            );
+            consoleCommands.Register(
+                new ConsoleCommand("render_sequence", "", _ => _renderMultipleImages = true)
+            );
+            consoleCommands.Register(
+                new ConsoleCommand("scenes", "", _ => Console.WriteLine(_sceneManager.ToString()))
             );
 
-            _consoleListerner = new(consoleCommands);
-            _inputHandler = new();
-            _graphicsController = new(this, Window, _graphics);
-            _pathManager = new("PhotonLab", Environment.SpecialFolder.MyDocuments);
+            _consoleListerner = new ConsoleListener(consoleCommands);
+            _inputHandler = new InputHandler();
+            _graphicsController = new GraphicsController(this, Window, _graphics);
+            _pathManager = new PathService<Paths>(
+                "PhotonLab",
+                Environment.SpecialFolder.MyDocuments
+            );
             _pathManager.RegisterPath(Paths.Images, "images");
             _pathManager.RegisterPath(Paths.Videos, "videos");
 
@@ -96,10 +103,10 @@ namespace PhotonLab
 
             base.Initialize();
 
-            _rayTracer = new(GraphicsDevice);
-            _spriteBatch = new(GraphicsDevice);
-            _frameCounter = new(ContentProvider.Get<SpriteFont>("default_font"));
-            _sceneManager = new(GraphicsDevice);
+            _rayTracer = new RayTracer(GraphicsDevice);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            _frameCounter = new FrameCounter(ContentProvider.Get<SpriteFont>("default_font"));
+            _sceneManager = new SceneManager(GraphicsDevice);
             _sceneManager.AddScene("cornellBox", new CornellBoxScene(GraphicsDevice));
             _sceneManager.AddScene("plane", new PlaneScene(GraphicsDevice));
             _sceneManager.AddScene("cornellMirror", new CornellMirrorScene(GraphicsDevice));
@@ -166,7 +173,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 4);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 1);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager);
                 _rayTracer.End();
@@ -195,7 +202,7 @@ namespace PhotonLab
                     Paths.Videos,
                     $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4"
                 );
-                _fFmpeg = new(
+                _fFmpeg = new FFmpeg(
                     _rayTracer.TargetRes.Width,
                     _rayTracer.TargetRes.Height,
                     21,

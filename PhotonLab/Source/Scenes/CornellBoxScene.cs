@@ -29,25 +29,25 @@ namespace PhotonLab.Source.Scenes
         public CornellBoxScene(GraphicsDevice graphicsDevice)
             : base(graphicsDevice)
         {
-            // Camer3D.AddBehaviour(new RotateCamera(0.01f, LookAtPos, 35, 12.5f));
-            Camer3D.AddBehaviour(new MoveByMouse());
+            // Camera3D.AddBehaviour(new RotateCamera(0.01f, LookAtPos, 35, 12.5f));
+            Camera3D.AddBehaviour(new MoveByMouse());
 
-            CornellBox.Build(graphicsDevice, this, 25);
+            CornellBox.Build(graphicsDevice, Meshes, this, 25);
 
             var model = BasicBodies.CreateSphere(graphicsDevice, 20, 20);
             model.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Interpolated);
             model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(5f, 5f, 5f);
-            AddBody(model);
+            Meshes.AddMesh(model);
 
             model = BasicBodies.CreateCube(graphicsDevice, 1, 4f, 1);
             model.Material = new PhongMaterial(Color.Orange, NormalMode.Face);
             model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(-9f, 8, 9f);
-            AddBody(model);
+            Meshes.AddMesh(model);
 
             model = BasicBodies.CreateSphere(graphicsDevice, 20, 20);
             model.Material = new TransparentMaterial();
             model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(-4f, 5f, -8f);
-            AddBody(model);
+            Meshes.AddMesh(model);
         }
 
         public override void Update(double elapsedMilliseconds, InputHandler inputHandler)
@@ -58,8 +58,8 @@ namespace PhotonLab.Source.Scenes
                 {
                     _cameraPosIndex++;
                     _cameraPosIndex %= CamPositions.Length;
-                    Camer3D.Position = CamPositions[_cameraPosIndex];
-                    Camer3D.Target = LookAtPos;
+                    Camera3D.Position = CamPositions[_cameraPosIndex];
+                    Camera3D.Target = LookAtPos;
                 }
             );
 
@@ -67,8 +67,8 @@ namespace PhotonLab.Source.Scenes
                 (byte)ActionType.ResetCam,
                 () =>
                 {
-                    Camer3D.Position = CamPositions[_cameraPosIndex];
-                    Camer3D.Target = LookAtPos;
+                    Camera3D.Position = CamPositions[_cameraPosIndex];
+                    Camera3D.Target = LookAtPos;
                 }
             );
 

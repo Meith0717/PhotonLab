@@ -17,7 +17,12 @@ namespace PhotonLab.Source.Bodies
         private static readonly float AmbientStrength = .1f;
         private static readonly float SpecularStrength = .75f;
 
-        public static void Build(GraphicsDevice graphicsDevice, Scene scene, float scale)
+        public static void Build(
+            GraphicsDevice graphicsDevice,
+            MeshCollection meshCollection,
+            Scene scene,
+            float scale
+        )
         {
             // Floor
             var quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -27,7 +32,7 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Ceiling
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -40,7 +45,7 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Front wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -53,7 +58,7 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Back wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -64,7 +69,7 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Right wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -77,7 +82,7 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Left wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -90,13 +95,13 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Light
             scene.AddLightSource(
                 new LightSources.SpotLight(
                     new Vector3(0, scale - .1f, 0),
-                    new(0, -1, 0),
+                    new Vector3(0, -1, 0),
                     45,
                     50,
                     Color.LightYellow
@@ -106,6 +111,7 @@ namespace PhotonLab.Source.Bodies
 
         public static void MirrorBuild(
             GraphicsDevice graphicsDevice,
+            MeshCollection meshCollection,
             Scene scene,
             float scale,
             float mirrorStrength
@@ -119,7 +125,7 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Ceiling
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -132,7 +138,7 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Front wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -141,14 +147,14 @@ namespace PhotonLab.Source.Bodies
                 * Matrix.CreateRotationX(float.Pi)
                 * Matrix.CreateTranslation(0, scale / 2, scale / 2);
             quad.Material = new MirrorMaterial(Color.White, mirrorStrength, NormalMode.Face);
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Back wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
             quad.ModelTransform =
                 Matrix.CreateScale(scale) * Matrix.CreateTranslation(0, scale / 2, -scale / 2);
             quad.Material = new MirrorMaterial(Color.White, mirrorStrength, NormalMode.Face);
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Right wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -161,7 +167,7 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Left wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
@@ -174,13 +180,13 @@ namespace PhotonLab.Source.Bodies
                 AmbientStrength = AmbientStrength,
                 SpecularStrength = SpecularStrength,
             };
-            scene.AddBody(quad);
+            meshCollection.AddMesh(quad);
 
             // Light
             scene.AddLightSource(
                 new LightSources.SpotLight(
                     new Vector3(0, scale - .1f, 0),
-                    new(0, -1, 0),
+                    new Vector3(0, -1, 0),
                     45,
                     50,
                     Color.LightYellow

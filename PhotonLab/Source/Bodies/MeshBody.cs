@@ -1,4 +1,4 @@
-﻿// Body.cs
+﻿// MeshBody.cs
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
@@ -13,7 +13,7 @@ namespace PhotonLab.Source.Bodies
     using PhotonLab.Source.Materials;
     using PhotonLab.Source.RayTracing;
 
-    internal class Body : IBody3D
+    internal class MeshBody : IBody3D
     {
         // CPU stuff (Ray Tracing)
         private readonly BoundingBoxSIMD _boundingBox;
@@ -40,7 +40,7 @@ namespace PhotonLab.Source.Bodies
             }
         }
 
-        public Body(
+        public MeshBody(
             GraphicsDevice graphicsDevice,
             VertexPositionNormalTexture[] vertices,
             ushort[] indices
@@ -80,7 +80,7 @@ namespace PhotonLab.Source.Bodies
             _indexBuffer.SetData(_primitiveIndices);
         }
 
-        public Body(ModelMesh mesh)
+        public MeshBody(ModelMesh mesh)
         {
             var mainMesh = mesh.MeshParts[0];
             _indexBuffer = mainMesh.IndexBuffer;

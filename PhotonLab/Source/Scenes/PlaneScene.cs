@@ -18,17 +18,11 @@ namespace PhotonLab.Source.Scenes
         public PlaneScene(GraphicsDevice graphicsDevice)
             : base(graphicsDevice)
         {
-            Camer3D.AddBehaviour(new RotateCamera(.0f, new Vector3(0, 0, 0), 30, 30));
+            Camera3D.AddBehaviour(new RotateCamera(.0f, new Vector3(0, 5, 0), 15, 10));
+            Camera3D.AddBehaviour(new MoveByMouse(1));
+            Camera3D.AddBehaviour(new ZoomByMouse(1));
 
-            AddLightSource(
-                new LightSources.SpotLight(
-                    new Vector3(0, 20, 0),
-                    new Vector3(0, -1, 0),
-                    40,
-                    40,
-                    Color.LightYellow
-                )
-            );
+            AddLightSource(new LightSources.PointLight(new Vector3(0, 20, 0), Color.LightYellow));
 
             var model = BasicBodies.CreateQuad(graphicsDevice);
             model.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(-float.Pi / 2); // floor rotation
@@ -40,12 +34,16 @@ namespace PhotonLab.Source.Scenes
                 SpecularStrength = 0,
                 AmbientStrength = 0,
             };
-            AddBody(model);
+            Meshes.AddMesh(model);
 
-            //model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
-            //model.Material = new TransparentMaterial();
-            //model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(0, 5, 0);
-            //AddBody(model);
+            model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
+            model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(0, 5, 0);
+            model.Material = new PhongMaterial(Color.Red, NormalMode.Interpolated)
+            {
+                SpecularStrength = 1,
+                AmbientStrength = 0,
+            };
+            Meshes.AddMesh(model);
         }
     }
 }

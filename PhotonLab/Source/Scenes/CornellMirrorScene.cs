@@ -18,19 +18,19 @@ internal class CornellMirrorScene : Scene
     public CornellMirrorScene(GraphicsDevice graphicsDevice)
         : base(graphicsDevice)
     {
-        Camer3D.AddBehaviour(new MoveByMouse(5));
+        Camera3D.AddBehaviour(new MoveByMouse(5));
 
-        CornellBox.MirrorBuild(graphicsDevice, this, 25, .25f);
+        CornellBox.MirrorBuild(graphicsDevice, Meshes, this, 25, .25f);
 
         var model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
         model.Material = new PhongMaterial(Color.Yellow);
         model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(0, 5f, 0);
-        AddBody(model);
+        Meshes.AddMesh(model);
     }
 
     public override void Update(double elapsedMilliseconds, InputHandler inputHandler)
     {
-        Camer3D.Target = LookAtPos;
+        Camera3D.Target = LookAtPos;
         base.Update(elapsedMilliseconds, inputHandler);
     }
 }
