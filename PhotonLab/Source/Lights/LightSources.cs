@@ -2,34 +2,35 @@
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
-using System;
-using System.ComponentModel.Design.Serialization;
+using System.Collections.Generic;
 using System.Numerics;
+using PhotonLab.Source.RayTracing;
 
 namespace PhotonLab.Source.Lights
 {
     internal static class LightSources
     {
-        private static Vector3[] _emissionPoints => [Vector3.Zero];
-
         internal class PointLight(
             Microsoft.Xna.Framework.Vector3 position,
             Microsoft.Xna.Framework.Color color
-        ) : ILightSource
+        ) : LightSource(color)
         {
-            public Vector3 Position => _position.ToNumerics();
-            public Vector3[] EmissionPoints => _emissionPoints;
-
             private Microsoft.Xna.Framework.Vector3 _position = position;
-            private readonly Vector3 _color = color.ToVector3().ToNumerics();
 
-            public void GetLightInfo(Vector3 light, Vector3 hitPosition, out LightInfo lightInfo)
+            protected override Vector3[] GenerateEmittingPositions()
             {
-                var lightPosition = light + Position;
-                var toLight = lightPosition - hitPosition;
-                var distance = toLight.Length();
-                var toLightDir = Vector3.Normalize(toLight);
-                lightInfo = new LightInfo(_color, toLightDir, distance);
+                var res = new List<Vector3>();
+                for (var i = -10; i < 10; i++)
+                for (var j = -10; j < 10; j++)
+                    res.Add(
+                        new Vector3(_position.X + (i * .3f), _position.Y, _position.Z + (j * .3f))
+                    );
+                return res.ToArray();
+            }
+
+            protected override float GetAttenuation(Vector3 lightPosition, in HitInfo hitInfo)
+            {
+                return 1;
             }
         }
 
@@ -39,26 +40,26 @@ namespace PhotonLab.Source.Lights
             float innerAngleThresholdDeg,
             float outerAngleThresholdDeg,
             Microsoft.Xna.Framework.Color color
-        ) : ILightSource
+        ) : LightSource(color)
         {
-            public Vector3 Position => _position.ToNumerics();
-            public Vector3[] EmissionPoints => _emissionPoints;
-
             private Microsoft.Xna.Framework.Vector3 _position = position;
-            private readonly Vector3 _color = color.ToVector3().ToNumerics();
-            private readonly Vector3 _direction = Vector3.Normalize(direction.ToNumerics());
-            private readonly float _innerAngleThresholdRad = float.DegreesToRadians(
-                innerAngleThresholdDeg
-            );
+            private readonly Vector3 _direction = direction.ToNumerics();
+
             private readonly float _outerAngleThresholdRad = float.DegreesToRadians(
                 outerAngleThresholdDeg
             );
+            private readonly float _innerAngleThresholdRad = float.DegreesToRadians(
+                innerAngleThresholdDeg
+            );
 
-            public void GetLightInfo(Vector3 light, Vector3 hitPosition, out LightInfo lightInfo)
+            protected override Vector3[] GenerateEmittingPositions()
             {
-                var lightPosition = light + Position;
-                var toLight = lightPosition - hitPosition;
-                var distance = toLight.Length();
+                return [_position.ToNumerics()];
+            }
+
+            protected override float GetAttenuation(Vector3 lightPosition, in HitInfo hitInfo)
+            {
+                var toLight = lightPosition - hitInfo.Position;
                 var toLightDir = Vector3.Normalize(toLight);
                 var angle = float.Acos(Vector3.Dot(-toLightDir, _direction));
 
@@ -66,14 +67,7 @@ namespace PhotonLab.Source.Lights
                 var cosAngle = float.Cos(angle);
                 var cosOuter = float.Cos(_outerAngleThresholdRad);
                 var cosInner = float.Cos(_innerAngleThresholdRad);
-                var attenuation = float.Clamp(
-                    (cosAngle - cosOuter) / (cosInner - cosOuter),
-                    0f,
-                    1f
-                );
-
-                var attenuatedColor = _color * attenuation;
-                lightInfo = new LightInfo(attenuatedColor, toLightDir, distance);
+                return float.Clamp((cosAngle - cosOuter) / (cosInner - cosOuter), 0f, 1f);
             }
         }
     }

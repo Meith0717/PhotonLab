@@ -20,13 +20,7 @@ namespace PhotonLab.Source.Materials
         private readonly NormalMode _normalMode = normalMode;
         public float Reflectivity { get; } = Math.Clamp(reflectivity, 0f, 1f);
 
-        public Vector3 Shade(
-            Scene scene,
-            int depth,
-            in RaySIMD ray,
-            in HitInfo hit,
-            out byte hitCount
-        )
+        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
         {
             var n = _normalMode switch
             {
@@ -40,7 +34,7 @@ namespace PhotonLab.Source.Materials
 
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
             var reflectedRay = new RaySIMD(hitPosition, reflectDir);
-            var reflectedColor = RayTracer.Trace(scene, reflectedRay, depth + 1, out hitCount);
+            var reflectedColor = RayTracer.Trace(scene, reflectedRay, depth + 1);
 
             /*var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
             foreach (var lightSource in scene.LightSources)

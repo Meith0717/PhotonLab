@@ -2,6 +2,7 @@
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace PhotonLab.Source.Bodies
@@ -16,28 +17,30 @@ namespace PhotonLab.Source.Bodies
     internal class MeshBody : IBody3D
     {
         // CPU stuff (Ray Tracing)
-        private readonly BoundingBoxSIMD _boundingBox;
-        private readonly ushort[] _primitiveIndices;
-        private readonly Vector3[] _vertexPositions;
-        private readonly Vector3[] _vertexNormals;
-        private readonly Vector2[] _vertexTextures;
+        public Matrix4x4 InvTransform { get; private set; }
+        public readonly BoundingBoxSIMD BoundingBox;
+        public readonly ushort[] PrimitiveIndices;
+        public readonly Vector3[] VertexPositions;
+        public readonly Vector3[] VertexNormals;
+        public readonly Vector2[] VertexTextures;
         private Matrix4x4 _transform;
-        private Matrix4x4 _invTransform;
 
         // GPU stuff (Rasterisation)
         private readonly VertexBuffer _vertexBuffer;
         private readonly IndexBuffer _indexBuffer;
 
         // Some other Stuff
-        public int FacesCount => _primitiveIndices.Length / 3;
+        public int FacesCount => PrimitiveIndices.Length / 3;
         public IMaterial Material { get; set; }
         public Microsoft.Xna.Framework.Matrix ModelTransform
         {
             set
             {
                 _transform = value.ToNumerics();
-                Matrix4x4.Invert(_transform, out _invTransform);
+                Matrix4x4.Invert(_transform, out var invTransform);
+                InvTransform = invTransform;
             }
+            get => _transform;
         }
 
         public MeshBody(
@@ -47,22 +50,22 @@ namespace PhotonLab.Source.Bodies
         )
         {
             var vertexCount = vertices.Length;
-            _vertexPositions = new Vector3[vertexCount];
-            _vertexNormals = new Vector3[vertexCount];
-            _vertexTextures = new Vector2[vertexCount];
+            VertexPositions = new Vector3[vertexCount];
+            VertexNormals = new Vector3[vertexCount];
+            VertexTextures = new Vector2[vertexCount];
             Parallel.For(
                 0,
                 vertexCount,
                 i =>
                 {
-                    _vertexPositions[i] = vertices[i].Position.ToNumerics();
-                    _vertexNormals[i] = vertices[i].Normal.ToNumerics();
-                    _vertexTextures[i] = vertices[i].TextureCoordinate.ToNumerics();
+                    VertexPositions[i] = vertices[i].Position.ToNumerics();
+                    VertexNormals[i] = vertices[i].Normal.ToNumerics();
+                    VertexTextures[i] = vertices[i].TextureCoordinate.ToNumerics();
                 }
             );
 
-            _primitiveIndices = indices;
-            _boundingBox = BoundingBoxSIMD.CreateFromPoints(_vertexPositions);
+            PrimitiveIndices = indices;
+            BoundingBox = BoundingBoxSIMD.CreateFromPoints(VertexPositions);
 
             _vertexBuffer = new VertexBuffer(
                 graphicsDevice,
@@ -74,10 +77,10 @@ namespace PhotonLab.Source.Bodies
             _indexBuffer = new IndexBuffer(
                 graphicsDevice,
                 IndexElementSize.SixteenBits,
-                _primitiveIndices.Length,
+                PrimitiveIndices.Length,
                 BufferUsage.None
             );
-            _indexBuffer.SetData(_primitiveIndices);
+            _indexBuffer.SetData(PrimitiveIndices);
         }
 
         public MeshBody(ModelMesh mesh)
@@ -93,13 +96,13 @@ namespace PhotonLab.Source.Bodies
             var primitiveCount = mainMesh.PrimitiveCount;
 
             // Load index data from GPU
-            _primitiveIndices = new ushort[primitiveCount * 3];
-            _indexBuffer.GetData(_primitiveIndices);
+            PrimitiveIndices = new ushort[primitiveCount * 3];
+            _indexBuffer.GetData(PrimitiveIndices);
 
             // Load vertex data from GPU
-            _vertexPositions = new Vector3[vertexCount];
-            _vertexNormals = new Vector3[vertexCount];
-            _vertexTextures = new Vector2[vertexCount];
+            VertexPositions = new Vector3[vertexCount];
+            VertexNormals = new Vector3[vertexCount];
+            VertexTextures = new Vector2[vertexCount];
             var vertexBufferData = new VertexPositionNormalTexture[vertexCount];
             _vertexBuffer.GetData(vertexBufferData);
             Parallel.For(
@@ -107,71 +110,13 @@ namespace PhotonLab.Source.Bodies
                 vertexCount,
                 i =>
                 {
-                    _vertexPositions[i] = vertexBufferData[i].Position.ToNumerics();
-                    _vertexNormals[i] = vertexBufferData[i].Normal.ToNumerics();
-                    _vertexTextures[i] = vertexBufferData[i].TextureCoordinate.ToNumerics();
+                    VertexPositions[i] = vertexBufferData[i].Position.ToNumerics();
+                    VertexNormals[i] = vertexBufferData[i].Normal.ToNumerics();
+                    VertexTextures[i] = vertexBufferData[i].TextureCoordinate.ToNumerics();
                 }
             );
 
-            _boundingBox = BoundingBoxSIMD.CreateFromPoints(_vertexNormals);
-        }
-
-        public bool Intersect(in RaySIMD ray, out HitInfo hit, out byte hitCount)
-        {
-            hit = default;
-            hitCount = 0;
-
-            var localRay = ray.Transform(_invTransform);
-            if (!_boundingBox.IntersectsRay(ref localRay, out var _))
-                return false;
-            hitCount++;
-
-            var anyHit = false;
-            var minT = float.MaxValue;
-
-            for (int i = 0; i < _primitiveIndices.Length; i += 3)
-            {
-                var i0 = _primitiveIndices[i];
-                var i1 = _primitiveIndices[i + 1];
-                var i2 = _primitiveIndices[i + 2];
-
-                var p0 = Vector3.Transform(_vertexPositions[i0], _transform);
-                var p1 = Vector3.Transform(_vertexPositions[i1], _transform);
-                var p2 = Vector3.Transform(_vertexPositions[i2], _transform);
-
-                var n0 = _vertexNormals[i0];
-                var n1 = _vertexNormals[i1];
-                var n2 = _vertexNormals[i2];
-
-                var t0 = _vertexTextures[i0];
-                var t1 = _vertexTextures[i1];
-                var t2 = _vertexTextures[i2];
-
-                if (ray.IntersectsFace((p0, p1, p2), out var coordinates) && coordinates.T < minT)
-                {
-                    minT = coordinates.T;
-                    var normal = Vector3.Normalize(
-                        Vector3.TransformNormal(
-                            coordinates.InterpolateVector3(n0, n1, n2),
-                            _transform
-                        )
-                    );
-                    var faceNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
-                    var texturePos = coordinates.InterpolateVector2(t0, t1, t2);
-
-                    if (
-                        Vector3.Dot(faceNormal, ray.Direction) > 0
-                        || coordinates.T <= RayTracingGlobal.IntersectionEpsilon
-                    )
-                        continue;
-
-                    hit = new HitInfo(coordinates.T, normal, faceNormal, texturePos, Material);
-                    anyHit = true;
-                    hitCount++;
-                }
-            }
-
-            return anyHit;
+            BoundingBox = BoundingBoxSIMD.CreateFromPoints(VertexNormals);
         }
 
         public void Draw(GraphicsDevice graphicsDevice, BasicEffect basicEffect)
@@ -179,8 +124,8 @@ namespace PhotonLab.Source.Bodies
             if (
                 _vertexBuffer == null
                 || _indexBuffer == null
-                || _primitiveIndices == null
-                || _primitiveIndices.Length == 0
+                || PrimitiveIndices == null
+                || PrimitiveIndices.Length == 0
             )
                 return;
 
@@ -211,7 +156,7 @@ namespace PhotonLab.Source.Bodies
                     PrimitiveType.TriangleList,
                     0,
                     0,
-                    _primitiveIndices.Length / 3
+                    PrimitiveIndices.Length / 3
                 );
             }
         }

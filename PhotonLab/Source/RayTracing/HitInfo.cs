@@ -9,6 +9,7 @@ namespace PhotonLab.Source.RayTracing
 {
     internal readonly struct HitInfo
     {
+        public readonly Vector3 Position;
         public readonly float Distance { get; }
         public readonly Vector3 InterpolatedNormal { get; }
         public readonly Vector3 FaceNormal { get; }
@@ -23,6 +24,7 @@ namespace PhotonLab.Source.RayTracing
         }
 
         public HitInfo(
+            Vector3 position,
             float distance,
             Vector3 interpolatedNormal,
             Vector3 faceNormal,
@@ -30,6 +32,7 @@ namespace PhotonLab.Source.RayTracing
             IMaterial material
         )
         {
+            Position = position;
             Distance = distance;
             InterpolatedNormal = interpolatedNormal;
             FaceNormal = faceNormal;

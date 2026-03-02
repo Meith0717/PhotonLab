@@ -32,7 +32,7 @@ namespace PhotonLab.Source.Scenes
             // Camera3D.AddBehaviour(new RotateCamera(0.01f, LookAtPos, 35, 12.5f));
             Camera3D.AddBehaviour(new MoveByMouse());
 
-            CornellBox.Build(graphicsDevice, Meshes, this, 25);
+            CornellBox.Build(graphicsDevice, Meshes, LightSources, 25);
 
             var model = BasicBodies.CreateSphere(graphicsDevice, 20, 20);
             model.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Interpolated);

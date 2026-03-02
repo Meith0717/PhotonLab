@@ -19,23 +19,12 @@ namespace PhotonLab.Source.Scenes
         protected readonly GraphicsDevice GraphicsDevice = graphicsDevice;
         public readonly Camera3D Camera3D = new(new Vector3(0, 12.5f, -30), graphicsDevice);
         public readonly MeshCollection Meshes = new MeshCollection();
-        private readonly List<MeshBody> _lightShapes = [];
-
-        public List<ILightSource> LightSources { get; } = [];
-
-        public void AddLightSource(ILightSource lightSource)
-        {
-            LightSources.Add(lightSource);
-
-            var lightMesh = BasicBodies.CreateSphere(GraphicsDevice, 4, 4);
-            lightMesh.ModelTransform =
-                Matrix.CreateScale(.1f) * Matrix.CreateTranslation(lightSource.Position);
-            _lightShapes.Add(lightMesh);
-        }
+        public readonly LightSourceCollection LightSources = new LightSourceCollection();
 
         public void Initialize()
         {
             Meshes.Initialize();
+            LightSources.Initialize();
         }
 
         public virtual void Update(double elapsedMilliseconds, InputHandler inputHandler)

@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Graphics.Camera;
 using PhotonLab.Source.RayTracing;
+using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Bodies;
 
@@ -32,25 +32,141 @@ internal class MeshCollection
         _isInitialized = true;
     }
 
-    public bool Intersect(in RaySIMD ray, out HitInfo closestHit, out byte hitCount)
+    public bool Intersect(in RaySIMD ray, out HitInfo closestHit)
     {
         if (!_isInitialized)
             throw new Exception("MeshCollection is not initialized");
 
         closestHit = new HitInfo();
-        hitCount = 0;
-
         var hitFound = false;
-        foreach (var shape in _bodies)
+
+        foreach (var meshBody in _bodies)
         {
-            if (!shape.Intersect(ray, out var hit, out var hits) || hit > closestHit)
+            if (!IntersectBody(meshBody, in ray, out var hit) || hit > closestHit)
                 continue;
 
             closestHit = hit;
-            hitCount += hits;
             hitFound = true;
         }
+
         return hitFound;
+    }
+
+    // --- Refactored Intersection Logic ---
+
+    private bool IntersectBody(MeshBody body, in RaySIMD ray, out HitInfo hit)
+    {
+        hit = default;
+
+        if (!IntersectsBoundingBox(body, in ray))
+            return false;
+
+        if (!TryFindClosestFace(body, in ray, out var hitData))
+            return false;
+
+        hit = ConstructHitInfo(body, in ray, in hitData);
+        return true;
+    }
+
+    private static bool IntersectsBoundingBox(MeshBody body, in RaySIMD ray)
+    {
+        var localRay = ray.Transform(body.InvTransform);
+        return body.BoundingBox.IntersectsRay(ref localRay, out _);
+    }
+
+    private static bool TryFindClosestFace(
+        MeshBody body,
+        in RaySIMD ray,
+        out TriangleHitData hitData
+    )
+    {
+        hitData = default;
+        var minT = float.MaxValue;
+        var anyHit = false;
+
+        var primitiveIndices = body.PrimitiveIndices;
+        var vertexPositions = body.VertexPositions;
+        var transform = body.ModelTransform.ToNumerics();
+
+        for (int i = 0; i < primitiveIndices.Length; i += 3)
+        {
+            var i0 = primitiveIndices[i];
+            var i1 = primitiveIndices[i + 1];
+            var i2 = primitiveIndices[i + 2];
+
+            var p0 = Vector3.Transform(vertexPositions[i0], transform);
+            var p1 = Vector3.Transform(vertexPositions[i1], transform);
+            var p2 = Vector3.Transform(vertexPositions[i2], transform);
+
+            if (ray.IntersectsFace((p0, p1, p2), out var coordinates) && coordinates.T < minT)
+            {
+                // Backface culling check using unnormalized face normal to save performance
+                var faceNormalRaw = Vector3.Cross(p1 - p0, p2 - p0);
+
+                if (
+                    Vector3.Dot(faceNormalRaw, ray.Direction) > 0
+                    || coordinates.T <= RayTracingGlobal.IntersectionEpsilon
+                )
+                    continue;
+
+                minT = coordinates.T;
+                anyHit = true;
+
+                // Store the best hit data to defer heavy calculations
+                hitData = new TriangleHitData
+                {
+                    MinT = minT,
+                    I0 = i0,
+                    I1 = i1,
+                    I2 = i2,
+                    P0 = p0,
+                    P1 = p1,
+                    P2 = p2,
+                    Coordinates = coordinates,
+                };
+            }
+        }
+
+        return anyHit;
+    }
+
+    private static HitInfo ConstructHitInfo(
+        MeshBody body,
+        in RaySIMD ray,
+        in TriangleHitData hitData
+    )
+    {
+        var transform = body.ModelTransform.ToNumerics();
+
+        var n0 = body.VertexNormals[hitData.I0];
+        var n1 = body.VertexNormals[hitData.I1];
+        var n2 = body.VertexNormals[hitData.I2];
+
+        var t0 = body.VertexTextures[hitData.I0];
+        var t1 = body.VertexTextures[hitData.I1];
+        var t2 = body.VertexTextures[hitData.I2];
+
+        // Perform normalizations and interpolations ONLY for the final confirmed hit
+        var interpolatedNormal = Vector3.Normalize(
+            Vector3.TransformNormal(hitData.Coordinates.InterpolateVector3(n0, n1, n2), transform)
+        );
+
+        var faceNormal = Vector3.Normalize(
+            Vector3.Cross(hitData.P1 - hitData.P0, hitData.P2 - hitData.P0)
+        );
+        var texturePos = hitData.Coordinates.InterpolateVector2(t0, t1, t2);
+
+        var hitPosition = ray.Position + ray.Direction * hitData.MinT;
+        hitPosition += faceNormal * RayTracingGlobal.HitOffsetEpsilon;
+
+        return new HitInfo(
+            hitPosition,
+            hitData.MinT,
+            interpolatedNormal,
+            faceNormal,
+            texturePos,
+            body.Material
+        );
     }
 
     public void Draw(Camera3D camera3D, BasicEffect basicEffect, GraphicsDevice graphicsDevice)
@@ -65,5 +181,19 @@ internal class MeshCollection
 
         foreach (var shape in _bodies)
             shape.Draw(graphicsDevice, basicEffect);
+    }
+
+    // --- Helper Structs ---
+
+    private struct TriangleHitData
+    {
+        public float MinT;
+        public int I0,
+            I1,
+            I2;
+        public Vector3 P0,
+            P1,
+            P2;
+        public BarycentricCoordinates Coordinates;
     }
 }

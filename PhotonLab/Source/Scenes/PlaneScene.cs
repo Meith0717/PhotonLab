@@ -22,7 +22,9 @@ namespace PhotonLab.Source.Scenes
             Camera3D.AddBehaviour(new MoveByMouse(1));
             Camera3D.AddBehaviour(new ZoomByMouse(1));
 
-            AddLightSource(new LightSources.PointLight(new Vector3(0, 20, 0), Color.LightYellow));
+            LightSources.AddSource(
+                new LightSources.PointLight(new Vector3(0, 20, 0), Color.LightYellow)
+            );
 
             var model = BasicBodies.CreateQuad(graphicsDevice);
             model.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(-float.Pi / 2); // floor rotation

@@ -20,7 +20,7 @@ internal class CornellMirrorScene : Scene
     {
         Camera3D.AddBehaviour(new MoveByMouse(5));
 
-        CornellBox.MirrorBuild(graphicsDevice, Meshes, this, 25, .25f);
+        CornellBox.MirrorBuild(graphicsDevice, Meshes, LightSources, 25, .25f);
 
         var model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
         model.Material = new PhongMaterial(Color.Yellow);

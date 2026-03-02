@@ -31,7 +31,6 @@ namespace PhotonLab.Source.RayTracing
         public Size TargetRes { get; private set; }
         private bool _setUpFlag = false;
         private Scene _scene;
-        private byte[] _hitData;
         private Vector3[] _lightData;
         private RaySIMD[] _cameraRays;
 
@@ -89,8 +88,7 @@ namespace PhotonLab.Source.RayTracing
                 total,
                 i =>
                 {
-                    _lightData[i] = Trace(_scene, _cameraRays[i], 0, out var hits);
-                    _hitData[i] = hits;
+                    _lightData[i] = Trace(_scene, _cameraRays[i], 0);
 
                     var done = Interlocked.Increment(ref completed);
                     maxDone = int.Max(done, maxDone);
@@ -111,18 +109,15 @@ namespace PhotonLab.Source.RayTracing
         /// Traces a single ray through the scene recursively.
         /// Returns the accumulated light (Vector3) at the intersection or black if no hit.
         /// </summary>
-        public static Vector3 Trace(Scene scene, RaySIMD ray, int depth, out byte hitCount)
+        public static Vector3 Trace(Scene scene, RaySIMD ray, int depth)
         {
-            hitCount = 0;
-
             if (
                 depth > RayTracingGlobal.MaxRecursion
-                || !scene.Meshes.Intersect(in ray, out var hit, out hitCount)
+                || !scene.Meshes.Intersect(in ray, out var hit)
             )
                 return Vector3.Zero;
 
-            var lightData = hit.Material.Shade(scene, depth, in ray, in hit, out var hits);
-            hitCount += hits;
+            var lightData = hit.Material.Shade(scene, depth, in ray, in hit);
             return lightData;
         }
 
@@ -154,19 +149,11 @@ namespace PhotonLab.Source.RayTracing
                 TargetRes.Width,
                 TargetRes.Height
             );
-
-            var hitData = _imageRenderer.RenderHeatmap(_hitData);
-            ImageSaver.SavePng(filePath + "_hits.png", hitData, TargetRes.Width, TargetRes.Height);
         }
 
         public byte[] GetColorData()
         {
             return _imageRenderer.RenderImage(_lightData);
-        }
-
-        public byte[] GetHitData()
-        {
-            return _imageRenderer.RenderHeatmap(_hitData);
         }
 
         /// <summary>
@@ -200,7 +187,6 @@ namespace PhotonLab.Source.RayTracing
             {
                 _cameraRays = new RaySIMD[width * height];
                 _lightData = new Vector3[width * height];
-                _hitData = new byte[width * height];
             }
 
             var position = camera.Position.ToNumerics();

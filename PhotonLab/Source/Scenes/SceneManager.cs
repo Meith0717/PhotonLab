@@ -27,12 +27,8 @@ namespace PhotonLab.Source.Scenes
             else
                 throw new InvalidOperationException("The Scene already exists!");
 
+            scene.Initialize();
             _currentScene ??= scene;
-        }
-
-        public void RemoveScene(string name)
-        {
-            _scenes.Remove(name);
         }
 
         public void Set(string name)

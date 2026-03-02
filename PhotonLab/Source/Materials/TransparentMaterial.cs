@@ -32,13 +32,7 @@ namespace PhotonLab.Source.Materials
             _normalMode = normalMode;
         }
 
-        public Vector3 Shade(
-            Scene scene,
-            int depth,
-            in RaySIMD ray,
-            in HitInfo hit,
-            out byte hitCount
-        )
+        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
         {
             var n = _normalMode switch
             {
@@ -54,28 +48,7 @@ namespace PhotonLab.Source.Materials
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
             var reflectedRay = new RaySIMD(hitPosition, reflectDir);
             var reflectedColor =
-                ReflectetStrength * RayTracer.Trace(scene, reflectedRay, depth + 1, out hitCount);
-
-            var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
-            foreach (var lightSource in scene.LightSources)
-            {
-                foreach (var lightPosition in lightSource.EmissionPoints)
-                {
-                    lightSource.GetLightInfo(lightPosition, hitPosition, out var lightInfo);
-                    var shadowRay = new RaySIMD(hitPosition, lightInfo.Direction);
-                    if (
-                        scene.Meshes.Intersect(shadowRay, out var shadowHit, out var _)
-                        && shadowHit.Distance < lightInfo.Distance
-                    )
-                        continue;
-
-                    var r = Vector3.Reflect(-lightInfo.Direction, n);
-                    var nDotL = MathF.Max(Vector3.Dot(n, lightInfo.Direction), 0);
-                    var rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), 50);
-
-                    reflectedColor += lightInfo.Color * Vector3.One * rDotV;
-                }
-            }
+                ReflectetStrength * RayTracer.Trace(scene, reflectedRay, depth + 1);
 
             // Determine if we’re entering or exiting the medium
             var cosi = float.Clamp(Vector3.Dot(ray.Direction, n), -1, 1);
@@ -96,8 +69,7 @@ namespace PhotonLab.Source.Materials
                 );
                 hitPosition -= n * (2 * RayTracingGlobal.HitOffsetEpsilon);
                 var refractedRay = new RaySIMD(hitPosition, refractDir);
-                refractedColor = RayTracer.Trace(scene, refractedRay, depth + 1, out var hits);
-                hitCount += hits;
+                refractedColor = RayTracer.Trace(scene, refractedRay, depth + 1);
             }
 
             // Fresnel reflectance (Schlick’s approximation)
