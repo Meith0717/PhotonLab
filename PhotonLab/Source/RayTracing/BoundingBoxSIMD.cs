@@ -81,7 +81,7 @@ namespace PhotonLab.Source.RayTracing
             var flag = true;
             Vector3 maxVector = new(float.MaxValue);
             Vector3 minVector = new(float.MinValue);
-            foreach (Vector3 point in points)
+            foreach (var point in points)
             {
                 maxVector.X = ((maxVector.X < point.X) ? maxVector.X : point.X);
                 maxVector.Y = ((maxVector.Y < point.Y) ? maxVector.Y : point.Y);

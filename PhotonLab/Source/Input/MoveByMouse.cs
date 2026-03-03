@@ -29,14 +29,14 @@ namespace PhotonLab.Source.Input
 
         public void Update(Camera3D owner, InputHandler inputHandler, double elapsedGameTime)
         {
-            KeyboardState ks = Keyboard.GetState();
+            var ks = Keyboard.GetState();
             var mouseState = Mouse.GetState();
-            float sensitivity = 0.002f;
+            var sensitivity = 0.002f;
 
             if (inputHandler.HasAction((byte)ActionType.MoveCameraByMouse))
             {
-                int deltaX = mouseState.X - _prevMouseState.X;
-                int deltaY = mouseState.Y - _prevMouseState.Y;
+                var deltaX = mouseState.X - _prevMouseState.X;
+                var deltaY = mouseState.Y - _prevMouseState.Y;
                 _yaw -= deltaX * sensitivity;
                 _pitch -= deltaY * sensitivity;
 

@@ -16,17 +16,11 @@ using PhotonLab.Source.Scenes;
 
 namespace PhotonLab.Source.RayTracing
 {
-    /// <summary>
-    /// Handles CPU-based ray tracing for a Scene.
-    /// Generates camera rays, traces intersections, and accumulates light contributions.
-    /// Designed for offline rendering; not real-time.
-    /// </summary>
     internal class RayTracer(GraphicsDevice gd)
     {
         private readonly Stopwatch _totalWatch = new();
         private readonly Stopwatch _tracingWatch = new();
         private readonly ImageRenderer _imageRenderer = new();
-        private readonly GraphicsDevice _gD = gd;
 
         public Size TargetRes { get; private set; }
         private bool _setUpFlag = false;
@@ -34,10 +28,6 @@ namespace PhotonLab.Source.RayTracing
         private Vector3[] _lightData;
         private RaySIMD[] _cameraRays;
 
-        /// <summary>
-        /// Initializes the ray tracer for a specific scene and resolution scale.
-        /// Allocates arrays for rays and light accumulation.
-        /// </summary>
         public void Begin(Scene scene, float resolutionScale)
         {
             if (_setUpFlag)
@@ -45,14 +35,14 @@ namespace PhotonLab.Source.RayTracing
                     "RayTracer is already set up. Call End() before setting up again."
                 );
 
-            var width = (int)(_gD.Viewport.Width * resolutionScale);
-            var height = (int)(_gD.Viewport.Height * resolutionScale);
+            var width = (int)(gd.Viewport.Width * resolutionScale);
+            var height = (int)(gd.Viewport.Height * resolutionScale);
 
             _scene = scene;
             TargetRes = new Size(width, height);
             _imageRenderer.ApplyScale(TargetRes);
 
-            int totalRays = width * height;
+            var totalRays = width * height;
             Console.WriteLine($"\n=== RayTracer START ===");
             Console.WriteLine($"Resolution: {width}x{height}");
             Console.WriteLine($"Total Rays: {totalRays:N0}|Scene Faces: {scene.Meshes.FaceCount}");
@@ -67,9 +57,6 @@ namespace PhotonLab.Source.RayTracing
             CreateCameraRaysParallel(scene.Camera3D);
         }
 
-        /// <summary>
-        /// Performs the actual ray tracing pass for all camera rays in parallel.
-        /// </summary>
         public void PerformTrace()
         {
             if (!_setUpFlag)
@@ -105,10 +92,6 @@ namespace PhotonLab.Source.RayTracing
             Console.WriteLine($"Tracing took {_tracingWatch.Elapsed.TotalSeconds:0.00}s");
         }
 
-        /// <summary>
-        /// Traces a single ray through the scene recursively.
-        /// Returns the accumulated light (Vector3) at the intersection or black if no hit.
-        /// </summary>
         public static Vector3 Trace(Scene scene, RaySIMD ray, int depth)
         {
             if (
@@ -121,9 +104,6 @@ namespace PhotonLab.Source.RayTracing
             return lightData;
         }
 
-        /// <summary>
-        /// Renders and saves the result to disk via the PathManager.
-        /// </summary>
         public void RenderAndSaveResult(PathService<Paths> pathManager, bool doExr = true)
         {
             if (!_setUpFlag)
@@ -156,9 +136,6 @@ namespace PhotonLab.Source.RayTracing
             return _imageRenderer.RenderImage(_lightData);
         }
 
-        /// <summary>
-        /// Ends the ray tracing session and resets internal state.
-        /// </summary>
         public void End()
         {
             if (!_setUpFlag)
@@ -174,10 +151,6 @@ namespace PhotonLab.Source.RayTracing
             _setUpFlag = false;
         }
 
-        /// <summary>
-        /// Generates camera rays for all pixels in parallel.
-        /// Each ray is stored in _cameraRays for later tracing.
-        /// </summary>
         private void CreateCameraRaysParallel(Camera3D camera)
         {
             var width = TargetRes.Width;
@@ -219,9 +192,6 @@ namespace PhotonLab.Source.RayTracing
             );
         }
 
-        /// <summary>
-        /// Computes a normalized ray from the camera through a specific pixel.
-        /// </summary>
         private static RaySIMD GeneratePixelRay(
             Vector3 positoin,
             float fov,

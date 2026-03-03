@@ -88,7 +88,7 @@ internal class MeshCollection
         var vertexPositions = body.VertexPositions;
         var transform = body.ModelTransform.ToNumerics();
 
-        for (int i = 0; i < primitiveIndices.Length; i += 3)
+        for (var i = 0; i < primitiveIndices.Length; i += 3)
         {
             var i0 = primitiveIndices[i];
             var i1 = primitiveIndices[i + 1];

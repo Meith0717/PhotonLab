@@ -20,17 +20,17 @@ namespace PhotonLab.Source.Bodies
             var vertices = new List<VertexPositionNormalTexture>();
             var indices = new List<ushort>();
 
-            for (int y = 0; y <= rings; y++)
+            for (var y = 0; y <= rings; y++)
             {
-                float v = y / (float)rings;
-                float theta = v * MathF.PI;
+                var v = y / (float)rings;
+                var theta = v * MathF.PI;
                 float sinTheta = MathF.Sin(theta),
                     cosTheta = MathF.Cos(theta);
 
-                for (int x = 0; x <= segments; x++)
+                for (var x = 0; x <= segments; x++)
                 {
-                    float u = x / (float)segments;
-                    float phi = u * MathF.PI * 2f;
+                    var u = x / (float)segments;
+                    var phi = u * MathF.PI * 2f;
                     float sinPhi = MathF.Sin(phi),
                         cosPhi = MathF.Cos(phi);
 
@@ -40,11 +40,11 @@ namespace PhotonLab.Source.Bodies
                 }
             }
 
-            for (int y = 0; y < rings; y++)
-            for (int x = 0; x < segments; x++)
+            for (var y = 0; y < rings; y++)
+            for (var x = 0; x < segments; x++)
             {
-                int first = y * (segments + 1) + x;
-                int second = first + segments + 1;
+                var first = y * (segments + 1) + x;
+                var second = first + segments + 1;
                 indices.AddRange(
                     new ushort[]
                     {
@@ -89,9 +89,9 @@ namespace PhotonLab.Source.Bodies
             float depth = 1f
         )
         {
-            float hw = width / 2f;
-            float hh = height / 2f;
-            float hd = depth / 2f;
+            var hw = width / 2f;
+            var hh = height / 2f;
+            var hd = depth / 2f;
 
             var v = new[]
             {
@@ -155,7 +155,7 @@ namespace PhotonLab.Source.Bodies
 
         public static MeshBody CreateQuad(GraphicsDevice device)
         {
-            float h = 0.5f;
+            var h = 0.5f;
             var n = new Vector3(0, 0, 1);
 
             var verts = new[]

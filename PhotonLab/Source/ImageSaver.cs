@@ -18,8 +18,8 @@ namespace PhotonLab.Source
             int height
         )
         {
-            float[] data = new float[width * height * 3];
-            for (int i = 0; i < pixels.Length; i++)
+            var data = new float[width * height * 3];
+            for (var i = 0; i < pixels.Length; i++)
             {
                 data[i * 3 + 0] = pixels[i].X;
                 data[i * 3 + 1] = pixels[i].Y;
@@ -36,10 +36,10 @@ namespace PhotonLab.Source
         {
             using var image = new Image<Rgba32>(width, height);
 
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
                 var uy = y * width;
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
                     var i = uy + x;
                     var r = colorData[i * 3 + 0];

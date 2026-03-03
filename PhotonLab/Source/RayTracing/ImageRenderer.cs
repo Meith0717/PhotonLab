@@ -138,19 +138,19 @@ namespace PhotonLab.Source.RayTracing
             if (t < 0.5f)
             {
                 // Blue → Green
-                float u = t / 0.5f; // 0..1
-                float r = 0f;
-                float g = u;
-                float b = 1f - u;
+                var u = t / 0.5f; // 0..1
+                var r = 0f;
+                var g = u;
+                var b = 1f - u;
                 return (r, g, b);
             }
             else
             {
                 // Green → Red
-                float u = (t - 0.5f) / 0.5f; // 0..1
-                float r = u;
-                float g = 1f - u;
-                float b = 0f;
+                var u = (t - 0.5f) / 0.5f; // 0..1
+                var r = u;
+                var g = 1f - u;
+                var b = 0f;
                 return (r, g, b);
             }
         }

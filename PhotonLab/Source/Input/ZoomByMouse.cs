@@ -28,12 +28,12 @@ namespace PhotonLab.Source.Input
         public void Update(Camera3D owner, InputHandler inputHandler, double elapsedGameTime)
         {
             var mouse = Mouse.GetState();
-            int delta = mouse.ScrollWheelValue - _lastScrollValue;
+            var delta = mouse.ScrollWheelValue - _lastScrollValue;
             _lastScrollValue = mouse.ScrollWheelValue;
 
             if (delta != 0)
             {
-                float zoomDelta = delta / 120f;
+                var zoomDelta = delta / 120f;
                 _zoomTarget *= 1f + zoomDelta * 0.2f;
                 _zoomTarget = MathHelper.Clamp(
                     _zoomTarget,
@@ -42,7 +42,7 @@ namespace PhotonLab.Source.Input
                 );
             }
 
-            float t = 1f - (float)Math.Exp(-_smooth * elapsedGameTime);
+            var t = 1f - (float)Math.Exp(-_smooth * elapsedGameTime);
             owner.Fov = MathHelper.Lerp(owner.Fov, _zoomTarget, t);
         }
     }
