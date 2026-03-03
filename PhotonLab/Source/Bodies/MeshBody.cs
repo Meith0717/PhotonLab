@@ -143,7 +143,7 @@ namespace PhotonLab.Source.Bodies
                 }
                 else
                 {
-                    basicEffect.DiffuseColor = Material.DiffuseColor;
+                    basicEffect.DiffuseColor = Material.DiffuseColor.ToVector3();
                 }
             }
 

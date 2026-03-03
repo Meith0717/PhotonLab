@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using System.Numerics;
+using Microsoft.Xna.Framework;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;
 
@@ -18,8 +19,8 @@ namespace PhotonLab.Source.Materials
     {
         CpuTexture2D DiffuseTexture { get; }
 
-        Vector3 DiffuseColor { get; }
+        Color DiffuseColor { get; }
 
-        Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit);
+        Radiance Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit);
     }
 }

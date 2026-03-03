@@ -8,11 +8,10 @@ using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Lights;
 
-internal delegate Vector3 LightSourceQuery(Vector3 color, Vector3 pointLightPosition);
+internal delegate Radiance LightSourceQuery(Radiance radiance, Vector3 pointLightPosition);
 
 internal abstract class LightSource(Color color)
 {
-    private readonly Vector3 _color = color.ToVector3().ToNumerics();
     private Vector3[] _pointLights;
 
     protected abstract Vector3[] GenerateEmittingPositions();
@@ -24,14 +23,15 @@ internal abstract class LightSource(Color color)
         _pointLights = GenerateEmittingPositions();
     }
 
-    public Vector3 QueryAreaLinearly(in HitInfo hitInfo, LightSourceQuery query)
+    public Radiance QueryAreaLinearly(in HitInfo hitInfo, LightSourceQuery query)
     {
-        var totalRadiance = Vector3.Zero;
-        var color = _color * (1f / _pointLights.Length);
+        var totalRadiance = Radiance.Zero;
+        var lightRadiance = new Radiance(color * (1f / _pointLights.Length));
         foreach (var lightPosition in _pointLights)
         {
-            var radiance = query.Invoke(color, lightPosition);
-            totalRadiance += radiance * GetAttenuation(lightPosition, in hitInfo);
+            var radiance = query.Invoke(lightRadiance, lightPosition);
+            radiance.Attenuate(GetAttenuation(lightPosition, in hitInfo));
+            totalRadiance += radiance;
         }
         return totalRadiance;
     }

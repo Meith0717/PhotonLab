@@ -12,45 +12,27 @@ namespace PhotonLab.Source.RayTracing
     internal class CpuTexture2D
     {
         public readonly Texture2D Texture2D;
-        public readonly int Width;
-        public readonly int Height;
-        private readonly System.Numerics.Vector4[] _colorData;
+        private readonly int _width;
+        private readonly int _height;
+        private readonly Color[] _colorData;
 
         public CpuTexture2D(Texture2D texture2D)
         {
             Texture2D = texture2D;
-            Width = texture2D.Width;
-            Height = texture2D.Height;
-
-            var colorData = new Color[Width * Height];
-            texture2D.GetData(colorData);
-
-            _colorData = Array.ConvertAll(colorData, c => c.ToVector4().ToNumerics());
+            _width = texture2D.Width;
+            _height = texture2D.Height;
+            _colorData = new Color[_width * _height];
+            texture2D.GetData(_colorData);
         }
 
-        public System.Numerics.Vector3 SampleData3(Vector2 uv)
+        public Color SampleData(Vector2 uv)
         {
             uv = Vector2.Clamp(uv, new Vector2(0), new Vector2(1));
-
-            var x = (int)(uv.X * (Width - 1));
-            var y = (int)(uv.Y * (Height - 1));
-
-            var data = SampleData(x, y);
-            return new Vector3(data.X, data.Y, data.Z);
-        }
-
-        public System.Numerics.Vector4 SampleData4(Vector2 uv)
-        {
-            uv = Vector2.Clamp(uv, new Vector2(0), new Vector2(1));
-
-            var x = (int)(uv.X * (Width - 1));
-            var y = (int)(uv.Y * (Height - 1));
-
+            var x = (int)(uv.X * (_width - 1));
+            var y = (int)(uv.Y * (_height - 1));
             return SampleData(x, y);
         }
 
-        public System.Numerics.Vector4 SampleData(Point point) => SampleData(point.X, point.Y);
-
-        public System.Numerics.Vector4 SampleData(int x, int y) => _colorData[y * Width + x];
+        private Color SampleData(int x, int y) => _colorData[y * _width + x];
     }
 }

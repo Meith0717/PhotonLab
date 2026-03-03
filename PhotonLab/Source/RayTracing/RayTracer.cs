@@ -25,7 +25,7 @@ namespace PhotonLab.Source.RayTracing
         public Size TargetRes { get; private set; }
         private bool _setUpFlag = false;
         private Scene _scene;
-        private Vector3[] _lightData;
+        private Radiance[] _radianceData;
         private RaySIMD[] _cameraRays;
 
         public void Begin(Scene scene, float resolutionScale)
@@ -75,7 +75,7 @@ namespace PhotonLab.Source.RayTracing
                 total,
                 i =>
                 {
-                    _lightData[i] = Trace(_scene, _cameraRays[i], 0);
+                    _radianceData[i] = Trace(_scene, _cameraRays[i], 0);
 
                     var done = Interlocked.Increment(ref completed);
                     maxDone = int.Max(done, maxDone);
@@ -92,16 +92,16 @@ namespace PhotonLab.Source.RayTracing
             Console.WriteLine($"Tracing took {_tracingWatch.Elapsed.TotalSeconds:0.00}s");
         }
 
-        public static Vector3 Trace(Scene scene, RaySIMD ray, int depth)
+        public static Radiance Trace(Scene scene, RaySIMD ray, int depth)
         {
             if (
                 depth > RayTracingGlobal.MaxRecursion
                 || !scene.Meshes.Intersect(in ray, out var hit)
             )
-                return Vector3.Zero;
+                return Radiance.Zero;
 
-            var lightData = hit.Material.Shade(scene, depth, in ray, in hit);
-            return lightData;
+            var radiance = hit.Material.Shade(scene, depth, in ray, in hit);
+            return radiance;
         }
 
         public void RenderAndSaveResult(PathService<Paths> pathManager, bool doExr = true)
@@ -117,12 +117,12 @@ namespace PhotonLab.Source.RayTracing
             if (doExr)
                 ImageSaver.SaveExr(
                     filePath + ".exr",
-                    _lightData,
+                    _radianceData,
                     TargetRes.Width,
                     TargetRes.Height
                 );
 
-            var colorData = _imageRenderer.RenderImage(_lightData);
+            var colorData = _imageRenderer.RenderImage(_radianceData);
             ImageSaver.SavePng(
                 filePath + "_render.png",
                 colorData,
@@ -133,7 +133,7 @@ namespace PhotonLab.Source.RayTracing
 
         public byte[] GetColorData()
         {
-            return _imageRenderer.RenderImage(_lightData);
+            return _imageRenderer.RenderImage(_radianceData);
         }
 
         public void End()
@@ -159,7 +159,7 @@ namespace PhotonLab.Source.RayTracing
             if (_cameraRays is null || _cameraRays.Length != width * height)
             {
                 _cameraRays = new RaySIMD[width * height];
-                _lightData = new Vector3[width * height];
+                _radianceData = new Radiance[width * height];
             }
 
             var position = camera.Position.ToNumerics();
@@ -193,7 +193,7 @@ namespace PhotonLab.Source.RayTracing
         }
 
         private static RaySIMD GeneratePixelRay(
-            Vector3 positoin,
+            Vector3 position,
             float fov,
             float aspectRatio,
             Vector3 forward,
@@ -215,7 +215,7 @@ namespace PhotonLab.Source.RayTracing
             var py = v * imagePlaneHeight;
 
             var dir = Vector3.Normalize(forward + px * right + py * up);
-            return new RaySIMD(positoin, dir);
+            return new RaySIMD(position, dir);
         }
     }
 }

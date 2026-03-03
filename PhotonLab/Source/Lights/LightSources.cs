@@ -20,8 +20,8 @@ namespace PhotonLab.Source.Lights
             protected override Vector3[] GenerateEmittingPositions()
             {
                 var res = new List<Vector3>();
-                for (var i = -10; i < 10; i++)
-                for (var j = -10; j < 10; j++)
+                for (var i = -0; i < 1; i++)
+                for (var j = -0; j < 1; j++)
                     res.Add(
                         new Vector3(_position.X + (i * .3f), _position.Y, _position.Z + (j * .3f))
                     );

@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using System.Numerics;
+using Microsoft.Xna.Framework;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;
 
@@ -12,10 +13,11 @@ internal class GlowingMaterial : IMaterial
 {
     public CpuTexture2D DiffuseTexture { get; set; }
 
-    public Vector3 DiffuseColor { get; set; }
+    public Color DiffuseColor { get; set; }
 
-    public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
+    public Radiance Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
     {
-        return DiffuseTexture?.SampleData3(hit.TexturePos) ?? DiffuseColor;
+        var color = DiffuseTexture?.SampleData(hit.TexturePos) ?? DiffuseColor;
+        return new Radiance(color);
     }
 }

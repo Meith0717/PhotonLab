@@ -3,60 +3,36 @@
 // All rights reserved.
 
 using System;
-using System.Numerics;
+using Microsoft.Xna.Framework;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;
+using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Materials
 {
     internal class MirrorMaterial(
-        Microsoft.Xna.Framework.Color color,
+        Color color,
         float reflectivity = 1f,
         NormalMode normalMode = NormalMode.Interpolated
     ) : IMaterial
     {
         public CpuTexture2D DiffuseTexture { get; } = null!;
-        public Vector3 DiffuseColor { get; } = color.ToVector3().ToNumerics();
-        private readonly NormalMode _normalMode = normalMode;
-        public float Reflectivity { get; } = Math.Clamp(reflectivity, 0f, 1f);
+        public Color DiffuseColor { get; } = color;
 
-        public Vector3 Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
+        public Radiance Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
         {
-            var n = _normalMode switch
+            var n = normalMode switch
             {
                 NormalMode.Face => hit.FaceNormal,
                 NormalMode.Interpolated => hit.InterpolatedNormal,
                 _ => throw new NotImplementedException(),
             };
 
-            var hitPosition = ray.Position + ray.Direction * hit.Distance;
-            hitPosition += n * RayTracingGlobal.HitOffsetEpsilon;
-
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
-            var reflectedRay = new RaySIMD(hitPosition, reflectDir);
-            var reflectedColor = RayTracer.Trace(scene, reflectedRay, depth + 1);
+            var reflectedRay = new RaySIMD(hit.Position, reflectDir);
+            var reflectedRadiance = RayTracer.Trace(scene, reflectedRay, depth + 1);
 
-            /*var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
-            foreach (var lightSource in scene.LightSources)
-            {
-                foreach (var lightPosition in lightSource.EmissionPoints)
-                {
-                    lightSource.GetLightInfo(lightPosition, hitPosition, out var lightInfo);
-                    var shadowRay = new RaySIMD(hitPosition, lightInfo.Direction);
-                    if (scene.Intersect(shadowRay, out var shadowHit, out var _) &&
-                        shadowHit.Distance < lightInfo.Distance)
-                        continue;
-
-                    var r = Vector3.Reflect(-lightInfo.Direction, n);
-                    var nDotL = MathF.Max(Vector3.Dot(n, lightInfo.Direction), 0);
-                    var rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), 100);
-                    
-                    reflectedColor += lightInfo._color * Vector3.One * rDotV;
-                }
-            }*/
-
-            var color = DiffuseColor * Reflectivity * reflectedColor;
-            return color;
+            return reflectedRadiance.Attenuate(DiffuseColor, Math.Clamp(reflectivity, 0f, 1f));
         }
     }
 }

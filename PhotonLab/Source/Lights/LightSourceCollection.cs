@@ -28,9 +28,9 @@ internal class LightSourceCollection
             lightSource.Initialize();
     }
 
-    public Vector3 Forall(in HitInfo hitInfo, LightSourceQuery lightSourceQuery)
+    public Radiance Forall(in HitInfo hitInfo, LightSourceQuery lightSourceQuery)
     {
-        var totalRadiance = Vector3.Zero;
+        var totalRadiance = Radiance.Zero;
         for (var i = 0; i < _lightSources.Count; i++)
         {
             var lightSource = _lightSources[i];

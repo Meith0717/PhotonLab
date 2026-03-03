@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using System;
+using PhotonLab.Source.RayTracing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TinyEXR;
@@ -11,19 +12,14 @@ namespace PhotonLab.Source
 {
     public static class ImageSaver
     {
-        public static void SaveExr(
-            string path,
-            System.Numerics.Vector3[] pixels,
-            int width,
-            int height
-        )
+        public static void SaveExr(string path, Radiance[] radianceData, int width, int height)
         {
             var data = new float[width * height * 3];
-            for (var i = 0; i < pixels.Length; i++)
+            for (var i = 0; i < radianceData.Length; i++)
             {
-                data[i * 3 + 0] = pixels[i].X;
-                data[i * 3 + 1] = pixels[i].Y;
-                data[i * 3 + 2] = pixels[i].Z;
+                data[i * 3 + 0] = radianceData[i].X;
+                data[i * 3 + 1] = radianceData[i].Y;
+                data[i * 3 + 2] = radianceData[i].Z;
             }
 
             var result = Exr.SaveEXR(data, width, height, 3, asFp16: false, path);

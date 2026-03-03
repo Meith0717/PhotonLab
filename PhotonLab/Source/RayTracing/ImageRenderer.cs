@@ -10,18 +10,11 @@ using MonoGame.Extended;
 
 namespace PhotonLab.Source.RayTracing
 {
-    /// <summary>
-    /// Converts raw Vector3 light data into a Texture2D and optionally saves it as PNG.
-    /// Applies gamma correction and tone mapping for display.
-    /// </summary>
     internal sealed class ImageRenderer()
     {
         private byte[] _colorData;
         private Size _targetRes;
 
-        /// <summary>
-        /// Sets up the internal color array for a given target resolution.
-        /// </summary>
         public void ApplyScale(Size targetResolution)
         {
             var width = targetResolution.Width;
@@ -32,17 +25,14 @@ namespace PhotonLab.Source.RayTracing
                 _colorData = new byte[width * height * 3];
         }
 
-        /// <summary>
-        /// Converts Vector3 light data into a Texture2D with gamma correction and Reinhard tone mapping.
-        /// </summary>
         public byte[] RenderImage(
-            Vector3[] lightData,
+            Radiance[] radianceData,
             bool toneMapping = true,
             bool gammaCorrection = true
         )
         {
-            if (lightData.Length * 3 != _colorData.Length)
-                throw new Exception("lightData length mismatch");
+            if (radianceData.Length * 3 != _colorData.Length)
+                throw new Exception("radianceData length mismatch");
 
             var width = _targetRes.Width;
             var height = _targetRes.Height;
@@ -56,17 +46,18 @@ namespace PhotonLab.Source.RayTracing
                     for (var x = 0; x < width; x++)
                     {
                         var i = uy + x;
-                        var l = lightData[i];
+                        var radiance = radianceData[i];
+                        var rgb = radiance.Value;
 
                         if (toneMapping)
-                            l = ReinhardToneMapping(l);
+                            rgb = ReinhardToneMapping(rgb);
 
                         if (gammaCorrection)
-                            l = GammaCorrect(l);
+                            rgb = GammaCorrect(rgb);
 
-                        _colorData[i * 3 + 0] = (byte)(byte.MaxValue * l.X);
-                        _colorData[i * 3 + 1] = (byte)(byte.MaxValue * l.Y);
-                        _colorData[i * 3 + 2] = (byte)(byte.MaxValue * l.Z);
+                        _colorData[i * 3 + 0] = (byte)(byte.MaxValue * rgb.X);
+                        _colorData[i * 3 + 1] = (byte)(byte.MaxValue * rgb.Y);
+                        _colorData[i * 3 + 2] = (byte)(byte.MaxValue * rgb.Z);
                     }
                 }
             );
@@ -74,53 +65,8 @@ namespace PhotonLab.Source.RayTracing
             return _colorData;
         }
 
-        public byte[] RenderHeatmap(
-            byte[] hitData,
-            bool toneMapping = true,
-            bool gammaCorrection = true
-        )
-        {
-            if (hitData.Length != _colorData.Length / 3)
-                throw new Exception("hitData length mismatch");
-
-            var width = _targetRes.Width;
-            var height = _targetRes.Height;
-
-            var maxHitCount = (float)hitData.Max();
-
-            Parallel.For(
-                0,
-                height,
-                y =>
-                {
-                    var uy = y * width;
-                    for (var x = 0; x < width; x++)
-                    {
-                        var i = uy + x;
-
-                        var v = hitData[i] / maxHitCount;
-
-                        var (r, g, b) = HeatmapBlueGreenRed(v);
-
-                        // 5. Write to RGB buffer
-                        _colorData[i * 3 + 0] = (byte)(r * byte.MaxValue);
-                        _colorData[i * 3 + 1] = (byte)(g * byte.MaxValue);
-                        _colorData[i * 3 + 2] = (byte)(b * byte.MaxValue);
-                    }
-                }
-            );
-
-            return _colorData;
-        }
-
-        /// <summary>
-        /// Simple Reinhard tone mapping to compress high dynamic range values into [0,1].
-        /// </summary>
         private static Vector3 ReinhardToneMapping(Vector3 data) => data / (Vector3.One + data);
 
-        /// <summary>
-        /// Gamma correction (default gamma 2.2) for sRGB display.
-        /// </summary>
         private static Vector3 GammaCorrect(Vector3 data)
         {
             var gamma = 1f / 2.2f;
@@ -129,30 +75,6 @@ namespace PhotonLab.Source.RayTracing
                 float.Pow(data.Y, gamma),
                 float.Pow(data.Z, gamma)
             );
-        }
-
-        private static (float r, float g, float b) HeatmapBlueGreenRed(float t)
-        {
-            t = Math.Clamp(t, 0f, 1f);
-
-            if (t < 0.5f)
-            {
-                // Blue → Green
-                var u = t / 0.5f; // 0..1
-                var r = 0f;
-                var g = u;
-                var b = 1f - u;
-                return (r, g, b);
-            }
-            else
-            {
-                // Green → Red
-                var u = (t - 0.5f) / 0.5f; // 0..1
-                var r = u;
-                var g = 1f - u;
-                var b = 0f;
-                return (r, g, b);
-            }
         }
     }
 }
