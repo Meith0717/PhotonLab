@@ -35,7 +35,7 @@ namespace PhotonLab.Source.Materials
         public Radiance Shade(
             Scene scene,
             int depth,
-            in RaySIMD ray,
+            in RaySimd ray,
             in SurfaceIntersectionData surfaceData
         )
         {
@@ -45,7 +45,7 @@ namespace PhotonLab.Source.Materials
 
             // Compute reflection direction
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
-            var reflectedRay = new RaySIMD(hitPosition, reflectDir);
+            var reflectedRay = new RaySimd(hitPosition, reflectDir);
             var reflectedRadiance = RayTracer.Trace(scene, reflectedRay, depth + 1);
             reflectedRadiance.Attenuate(ReflectetStrength);
 
@@ -67,7 +67,7 @@ namespace PhotonLab.Source.Materials
                     eta * ray.Direction - (eta * cosi + MathF.Sqrt(k)) * n
                 );
                 hitPosition -= n * (2 * RayTracingGlobal.HitOffsetEpsilon);
-                var refractedRay = new RaySIMD(hitPosition, refractDir);
+                var refractedRay = new RaySimd(hitPosition, refractDir);
                 refractedRadiance = RayTracer.Trace(scene, refractedRay, depth + 1);
             }
 

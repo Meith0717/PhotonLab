@@ -24,7 +24,7 @@ namespace PhotonLab.Source.Materials
         Radiance Shade(
             Scene scene,
             int depth,
-            in RaySIMD ray,
+            in RaySimd ray,
             in SurfaceIntersectionData surfaceData
         );
     }

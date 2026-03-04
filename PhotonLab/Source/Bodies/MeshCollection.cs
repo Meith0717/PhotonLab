@@ -33,61 +33,73 @@ internal class MeshCollection
         _isInitialized = true;
     }
 
-    public bool Intersect(in RaySIMD ray, out SurfaceIntersectionData closestHit)
+    public bool Intersect(
+        in RaySimd ray,
+        out float minRayLength,
+        out SurfaceIntersectionData closestHit
+    )
     {
         if (!_isInitialized)
             throw new Exception("MeshCollection is not initialized");
 
         closestHit = new SurfaceIntersectionData();
-        var hitFound = false;
+        minRayLength = float.PositiveInfinity;
 
+        MeshBody nearestBody = null;
+        IntersectionHelper nearestIntersectionHelper = default;
         foreach (var meshBody in _bodies)
         {
-            if (!IntersectBody(meshBody, in ray, out var hit) || hit > closestHit)
+            if (
+                !IntersectBody(meshBody, in ray, out var intersectionHelper)
+                || intersectionHelper.Coordinates.T > minRayLength
+            )
                 continue;
 
-            closestHit = hit;
-            hitFound = true;
+            nearestIntersectionHelper = intersectionHelper;
+            nearestBody = meshBody;
         }
 
-        return hitFound;
-    }
-
-    // --- Refactored Intersection Logic ---
-
-    private bool IntersectBody(MeshBody body, in RaySIMD ray, out SurfaceIntersectionData hit)
-    {
-        hit = default;
-
-        if (!IntersectsBoundingBox(body, in ray))
+        if (nearestBody == null)
             return false;
 
-        if (!TryFindClosestFace(body, in ray, out var hitData))
-            return false;
+        minRayLength = nearestIntersectionHelper.Coordinates.T;
+        closestHit = ConstructHitInfo(nearestBody, in ray, nearestIntersectionHelper);
 
-        hit = ConstructHitInfo(body, in ray, in hitData);
         return true;
     }
 
-    private static bool IntersectsBoundingBox(MeshBody body, in RaySIMD ray)
+    private static bool IntersectBody(
+        MeshBody body,
+        in RaySimd ray,
+        out IntersectionHelper intersectionHelper
+    )
+    {
+        intersectionHelper = default;
+        return IntersectsBoundingBox(body, in ray)
+            && TryFindClosestBodyFace(body, in ray, out intersectionHelper);
+    }
+
+    private static bool IntersectsBoundingBox(MeshBody body, in RaySimd ray)
     {
         var localRay = ray.Transform(body.InvTransform);
         return body.BoundingBox.IntersectsRay(ref localRay, out _);
     }
 
-    private static bool TryFindClosestFace(
+    private static bool TryFindClosestBodyFace(
         MeshBody body,
-        in RaySIMD ray,
-        out TriangleHitData hitData
+        in RaySimd ray,
+        out IntersectionHelper intersectionHelper
     )
     {
-        hitData = default;
-        var minT = float.MaxValue;
-        var anyHit = false;
+        intersectionHelper = default;
+
+        var localRay = ray.Transform(body.InvTransform);
 
         var primitiveIndices = body.PrimitiveIndices;
         var vertexPositions = body.VertexPositions;
-        var transform = body.ModelTransform.ToNumerics();
+
+        var anyHit = false;
+        var minT = float.MaxValue;
 
         for (var i = 0; i < primitiveIndices.Length; i += 3)
         {
@@ -95,17 +107,16 @@ internal class MeshCollection
             var i1 = primitiveIndices[i + 1];
             var i2 = primitiveIndices[i + 2];
 
-            var p0 = Vector3.Transform(vertexPositions[i0], transform);
-            var p1 = Vector3.Transform(vertexPositions[i1], transform);
-            var p2 = Vector3.Transform(vertexPositions[i2], transform);
+            var p0 = vertexPositions[i0];
+            var p1 = vertexPositions[i1];
+            var p2 = vertexPositions[i2];
 
-            if (ray.IntersectsFace((p0, p1, p2), out var coordinates) && coordinates.T < minT)
+            if (localRay.IntersectsFace((p0, p1, p2), out var coordinates) && coordinates.T < minT)
             {
-                // Backface culling check using unnormalized face normal to save performance
                 var faceNormalRaw = Vector3.Cross(p1 - p0, p2 - p0);
 
                 if (
-                    Vector3.Dot(faceNormalRaw, ray.Direction) > 0
+                    Vector3.Dot(faceNormalRaw, localRay.Direction) > 0
                     || coordinates.T <= RayTracingGlobal.IntersectionEpsilon
                 )
                     continue;
@@ -113,10 +124,8 @@ internal class MeshCollection
                 minT = coordinates.T;
                 anyHit = true;
 
-                // Store the best hit data to defer heavy calculations
-                hitData = new TriangleHitData
+                intersectionHelper = new IntersectionHelper
                 {
-                    MinT = minT,
                     I0 = i0,
                     I1 = i1,
                     I2 = i2,
@@ -127,51 +136,46 @@ internal class MeshCollection
                 };
             }
         }
-
         return anyHit;
     }
 
     private static SurfaceIntersectionData ConstructHitInfo(
         MeshBody body,
-        in RaySIMD ray,
-        in TriangleHitData hitData
+        in RaySimd ray,
+        in IntersectionHelper helper
     )
     {
         var transform = body.ModelTransform.ToNumerics();
 
-        var n0 = body.VertexNormals[hitData.I0];
-        var n1 = body.VertexNormals[hitData.I1];
-        var n2 = body.VertexNormals[hitData.I2];
+        var p0 = Vector3.Transform(helper.P0, transform);
+        var p1 = Vector3.Transform(helper.P1, transform);
+        var p2 = Vector3.Transform(helper.P2, transform);
 
-        var t0 = body.VertexTextures[hitData.I0];
-        var t1 = body.VertexTextures[hitData.I1];
-        var t2 = body.VertexTextures[hitData.I2];
+        var n0 = body.VertexNormals[helper.I0];
+        var n1 = body.VertexNormals[helper.I1];
+        var n2 = body.VertexNormals[helper.I2];
 
-        var texturePos = hitData.Coordinates.InterpolateVector2(t0, t1, t2);
+        var t0 = body.VertexTextures[helper.I0];
+        var t1 = body.VertexTextures[helper.I1];
+        var t2 = body.VertexTextures[helper.I2];
+
+        var texturePos = helper.Coordinates.InterpolateVector2(t0, t1, t2);
         var normal = body.Material.NormalMode switch
         {
-            NormalMode.Face => Vector3.Normalize(
-                Vector3.Cross(hitData.P1 - hitData.P0, hitData.P2 - hitData.P0)
-            ),
+            NormalMode.Face => Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0)),
             NormalMode.Interpolated => Vector3.Normalize(
                 Vector3.TransformNormal(
-                    hitData.Coordinates.InterpolateVector3(n0, n1, n2),
+                    helper.Coordinates.InterpolateVector3(n0, n1, n2),
                     transform
                 )
             ),
             _ => throw new NotImplementedException(),
         };
 
-        var hitPosition = ray.Position + ray.Direction * hitData.MinT;
-        hitPosition += normal * RayTracingGlobal.HitOffsetEpsilon;
+        var position = ray.Position + ray.Direction * helper.Coordinates.T;
+        position += normal * RayTracingGlobal.HitOffsetEpsilon;
 
-        return new SurfaceIntersectionData(
-            hitPosition,
-            hitData.MinT,
-            normal,
-            texturePos,
-            body.Material
-        );
+        return new SurfaceIntersectionData(position, normal, texturePos, body.Material);
     }
 
     public void Draw(Camera3D camera3D, BasicEffect basicEffect, GraphicsDevice graphicsDevice)
@@ -188,11 +192,8 @@ internal class MeshCollection
             shape.Draw(graphicsDevice, basicEffect);
     }
 
-    // --- Helper Structs ---
-
-    private struct TriangleHitData
+    private struct IntersectionHelper
     {
-        public float MinT;
         public int I0,
             I1,
             I2;

@@ -18,7 +18,7 @@ internal class GlowingMaterial : IMaterial
     public Radiance Shade(
         Scene scene,
         int depth,
-        in RaySIMD ray,
+        in RaySimd ray,
         in SurfaceIntersectionData surfaceData
     )
     {

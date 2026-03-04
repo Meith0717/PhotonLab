@@ -26,7 +26,7 @@ namespace PhotonLab.Source.RayTracing
         private bool _setUpFlag = false;
         private Scene _scene;
         private Radiance[] _radianceData;
-        private RaySIMD[] _cameraRays;
+        private RaySimd[] _cameraRays;
 
         public void Begin(Scene scene, float resolutionScale)
         {
@@ -92,11 +92,11 @@ namespace PhotonLab.Source.RayTracing
             Console.WriteLine($"Tracing took {_tracingWatch.Elapsed.TotalSeconds:0.00}s");
         }
 
-        public static Radiance Trace(Scene scene, RaySIMD ray, int depth)
+        public static Radiance Trace(Scene scene, RaySimd ray, int depth)
         {
             if (
                 depth > RayTracingGlobal.MaxRecursion
-                || !scene.Meshes.Intersect(in ray, out var hit)
+                || !scene.Meshes.Intersect(in ray, out _, out var hit)
             )
                 return Radiance.Zero;
 
@@ -158,7 +158,7 @@ namespace PhotonLab.Source.RayTracing
 
             if (_cameraRays is null || _cameraRays.Length != width * height)
             {
-                _cameraRays = new RaySIMD[width * height];
+                _cameraRays = new RaySimd[width * height];
                 _radianceData = new Radiance[width * height];
             }
 
@@ -192,7 +192,7 @@ namespace PhotonLab.Source.RayTracing
             );
         }
 
-        private static RaySIMD GeneratePixelRay(
+        private static RaySimd GeneratePixelRay(
             Vector3 position,
             float fov,
             float aspectRatio,
@@ -215,7 +215,7 @@ namespace PhotonLab.Source.RayTracing
             var py = v * imagePlaneHeight;
 
             var dir = Vector3.Normalize(forward + px * right + py * up);
-            return new RaySIMD(position, dir);
+            return new RaySimd(position, dir);
         }
     }
 }

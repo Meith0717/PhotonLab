@@ -41,7 +41,7 @@ namespace PhotonLab.Source.Materials
         public Radiance Shade(
             Scene scene,
             int depth,
-            in RaySIMD ray,
+            in RaySimd ray,
             in SurfaceIntersectionData surfaceData
         )
         {
@@ -61,10 +61,10 @@ namespace PhotonLab.Source.Materials
                     var distanceToLight = lightDirection.Length();
                     lightDirection = Vector3.Normalize(lightDirection);
 
-                    var shadowRay = new RaySIMD(hitPosition, lightDirection);
+                    var shadowRay = new RaySimd(hitPosition, lightDirection);
                     if (
-                        scene.Meshes.Intersect(shadowRay, out var shadowHit)
-                        && shadowHit.Distance < distanceToLight
+                        scene.Meshes.Intersect(shadowRay, out var distance, out _)
+                        && distance < distanceToLight
                     )
                         return Radiance.Zero;
 

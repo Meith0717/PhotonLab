@@ -19,14 +19,14 @@ namespace PhotonLab.Source.Materials
         public Radiance Shade(
             Scene scene,
             int depth,
-            in RaySIMD ray,
+            in RaySimd ray,
             in SurfaceIntersectionData surfaceData
         )
         {
             var n = surfaceData.Normal;
 
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
-            var reflectedRay = new RaySIMD(surfaceData.Position, reflectDir);
+            var reflectedRay = new RaySimd(surfaceData.Position, reflectDir);
             var reflectedRadiance = RayTracer.Trace(scene, reflectedRay, depth + 1);
 
             return reflectedRadiance.Attenuate(Color, 1);

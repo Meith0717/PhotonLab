@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace PhotonLab.Source.RayTracing
 {
-    internal readonly struct RaySIMD(Vector3 position, Vector3 direction)
+    internal readonly struct RaySimd(Vector3 position, Vector3 direction)
     {
         public readonly Vector3 Position = position;
         public readonly Vector3 Direction = direction;
@@ -42,11 +42,11 @@ namespace PhotonLab.Source.RayTracing
             return coords.Inside;
         }
 
-        public RaySIMD Transform(in Matrix4x4 m)
+        public RaySimd Transform(in Matrix4x4 m)
         {
             var pos = Vector3.Transform(Position, m);
             var dir = Vector3.TransformNormal(Direction, m);
-            return new RaySIMD(pos, dir);
+            return new RaySimd(pos, dir);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace PhotonLab.Source.RayTracing
             ];
         }
 
-        public bool IntersectsRay(ref RaySIMD ray, out float t)
+        public bool IntersectsRay(ref RaySimd ray, out float t)
         {
             t = 0f;
 
