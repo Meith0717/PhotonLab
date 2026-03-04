@@ -107,7 +107,7 @@ namespace PhotonLab.Source.Bodies
                     new Vector3(0, scale - .1f, 0),
                     new Vector3(0, -1, 0),
                     45,
-                    60,
+                    50,
                     Color.LightYellow
                 )
             );

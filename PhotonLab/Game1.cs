@@ -96,8 +96,8 @@ namespace PhotonLab
             };
             _inputHandler.RegisterDevice(new MouseListener(mouseBindings));
 
-            _graphics.PreferredBackBufferHeight = 900;
-            _graphics.PreferredBackBufferWidth = 900;
+            _graphics.PreferredBackBufferHeight = 1000;
+            _graphics.PreferredBackBufferWidth = 1000;
             _graphicsController.ApplyRefreshRate(30, false);
 
             base.Initialize();
@@ -172,7 +172,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 2);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 1);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager);
                 _rayTracer.End();

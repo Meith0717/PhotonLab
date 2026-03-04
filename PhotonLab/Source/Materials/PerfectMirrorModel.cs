@@ -19,9 +19,9 @@ namespace PhotonLab.Source.Materials
             in SurfaceIntersectionData surfaceData
         )
         {
-            var n = surfaceData.Normal;
+            var normal = surfaceData.Normal;
 
-            var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
+            var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, normal));
             var reflectedRay = new RaySimd(surfaceData.Position, reflectDir);
             var reflectedRadiance = RayTracer.Trace(scene, reflectedRay, depth + 1);
 

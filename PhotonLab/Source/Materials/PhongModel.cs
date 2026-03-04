@@ -62,11 +62,11 @@ namespace PhotonLab.Source.Materials
         {
             var normal = surfaceData.Normal;
             var hitPosition = surfaceData.Position;
-
             var surfaceColor = Texture?.SampleData(surfaceData.TexturePos) ?? Color;
 
-            var radiance = new Radiance(surfaceColor * scene.AmbientColor * scene.AmbientIntensity);
-            radiance.Attenuate(OneOverPi);
+            var radiance = new Radiance(surfaceColor)
+                .Attenuate(scene.AmbientColor, scene.AmbientIntensity)
+                .Attenuate(OneOverPi);
 
             var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
             radiance += scene.LightSources.Forall(
@@ -74,17 +74,19 @@ namespace PhotonLab.Source.Materials
                 in surfaceData,
                 (lightRadiance, lightDirection) =>
                 {
-                    var nDotL = MathF.Max(Vector3.Dot(normal, lightDirection), 0);
-                    var diffuseRadiance = lightRadiance.Attenuate(surfaceColor, OneOverPi * nDotL);
-                    diffuseRadiance = diffuseRadiance.Attenuate(_diffuseStrength);
+                    var diffuseRadiance = new Radiance(surfaceColor)
+                        .Attenuate(OneOverPi)
+                        .CosLaw(lightDirection, normal)
+                        .Attenuate(_diffuseStrength);
 
                     if (_specularStrength != 0)
                         return diffuseRadiance;
 
                     var r = Vector3.Reflect(-lightDirection, normal);
-                    var rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), _specularExponent);
-                    var specularRadiance = lightRadiance.Attenuate(surfaceColor, rDotV);
-                    specularRadiance = specularRadiance.Attenuate(_specularStrength);
+                    var rDotV = float.Pow(float.Max(Vector3.Dot(r, v), 0), _specularExponent);
+                    var specularRadiance = lightRadiance
+                        .Attenuate(surfaceColor, rDotV)
+                        .Attenuate(_specularStrength);
 
                     return diffuseRadiance + specularRadiance;
                 }

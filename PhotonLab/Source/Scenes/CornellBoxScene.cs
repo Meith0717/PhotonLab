@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Input;
 using PhotonLab.Source.Bodies;
 using PhotonLab.Source.Input;
+using PhotonLab.Source.Lights;
 using PhotonLab.Source.Materials;
 
 namespace PhotonLab.Source.Scenes
@@ -45,7 +46,7 @@ namespace PhotonLab.Source.Scenes
             Meshes.AddMesh(model);
 
             model = BasicBodies.CreateSphere(graphicsDevice, 20, 20);
-            model.SurfaceModel = new TransparentSurfaceModel(NormalMode.Interpolated);
+            model.SurfaceModel = new TransparentSurfaceModel(NormalMode.Interpolated, 1.5f);
             model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(-4f, 5f, -8f);
             Meshes.AddMesh(model);
         }

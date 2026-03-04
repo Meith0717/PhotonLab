@@ -10,24 +10,10 @@ using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Materials
 {
-    internal class TransparentSurfaceModel : ISurfaceModel
+    internal class TransparentSurfaceModel(NormalMode normalMode, float refractiveIndex)
+        : ISurfaceModel
     {
-        public CpuTexture2D Texture { get; } = null!;
-        public Color Color { get; } = Color.White;
-        public NormalMode NormalMode { get; }
-        public float RefractiveIndex { get; } = 1.2f;
-        public float ReflectetStrength { get; } = 1f;
-
-        public TransparentSurfaceModel(NormalMode normalMode)
-        {
-            NormalMode = normalMode;
-        }
-
-        public TransparentSurfaceModel(Color tint, NormalMode normalMode)
-        {
-            Color = tint;
-            NormalMode = normalMode;
-        }
+        public NormalMode NormalMode { get; } = normalMode;
 
         public Radiance Shade(
             Scene scene,
@@ -36,23 +22,20 @@ namespace PhotonLab.Source.Materials
             in SurfaceIntersectionData surfaceData
         )
         {
-            var n = surfaceData.Normal;
-
+            var normal = surfaceData.Normal;
             var hitPosition = surfaceData.Position;
 
-            // Compute reflection direction
-            var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
+            var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, normal));
             var reflectedRay = new RaySimd(hitPosition, reflectDir);
             var reflectedRadiance = RayTracer.Trace(scene, reflectedRay, depth + 1);
-            reflectedRadiance.Attenuate(ReflectetStrength);
 
             // Determine if we’re entering or exiting the medium
-            var cosi = float.Clamp(Vector3.Dot(ray.Direction, n), -1, 1);
+            var cosi = float.Clamp(Vector3.Dot(ray.Direction, normal), -1, 1);
             var etai = 1.0f;
-            var etat = RefractiveIndex;
+            var etat = refractiveIndex;
 
             if (cosi > 0)
-                (etai, etat, n) = (etat, etai, -n);
+                (etai, etat, normal) = (etat, etai, -normal);
 
             var eta = etai / etat;
             var k = 1 - eta * eta * (1 - cosi * cosi);
@@ -61,9 +44,9 @@ namespace PhotonLab.Source.Materials
             if (k >= 0)
             {
                 var refractDir = Vector3.Normalize(
-                    eta * ray.Direction - (eta * cosi + MathF.Sqrt(k)) * n
+                    eta * ray.Direction - (eta * cosi + MathF.Sqrt(k)) * normal
                 );
-                hitPosition -= n * (2 * RayTracingGlobal.HitOffsetEpsilon);
+                hitPosition -= normal * (2 * RayTracingGlobal.HitOffsetEpsilon);
                 var refractedRay = new RaySimd(hitPosition, refractDir);
                 refractedRadiance = RayTracer.Trace(scene, refractedRay, depth + 1);
             }
@@ -75,7 +58,6 @@ namespace PhotonLab.Source.Materials
             // Combine reflection + refraction
             var totalRadiance =
                 reflectedRadiance.Attenuate(fresnel) + refractedRadiance.Attenuate(1 - fresnel);
-            totalRadiance.Attenuate(Color, 1);
             return totalRadiance;
         }
     }
