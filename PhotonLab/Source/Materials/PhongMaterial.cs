@@ -14,11 +14,11 @@ namespace PhotonLab.Source.Materials
     internal class PhongMaterial : IMaterial
     {
         private const float OneOverPi = 1; // 1 / float.Pi;
-        private readonly NormalMode _normalMode;
 
-        public CpuTexture2D DiffuseTexture { get; }
+        public CpuTexture2D Texture { get; }
+        public Color Color { get; } = Color.White;
+        public NormalMode NormalMode { get; }
 
-        public Color DiffuseColor { get; } = Color.White;
         public Color AmbientColor = Color.White;
 
         public float DiffuseStrength = 1;
@@ -28,33 +28,33 @@ namespace PhotonLab.Source.Materials
 
         public PhongMaterial(Texture2D albedo, NormalMode normalMode = NormalMode.Interpolated)
         {
-            DiffuseTexture = new CpuTexture2D(albedo);
-            _normalMode = normalMode;
+            Texture = new CpuTexture2D(albedo);
+            NormalMode = normalMode;
         }
 
         public PhongMaterial(Color diffuseColor, NormalMode normalMode = NormalMode.Interpolated)
         {
-            DiffuseColor = diffuseColor;
-            _normalMode = normalMode;
+            Color = diffuseColor;
+            NormalMode = normalMode;
         }
 
-        public Radiance Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
+        public Radiance Shade(
+            Scene scene,
+            int depth,
+            in RaySIMD ray,
+            in SurfaceIntersectionData surfaceData
+        )
         {
-            var normal = _normalMode switch
-            {
-                NormalMode.Face => hit.FaceNormal,
-                NormalMode.Interpolated => hit.InterpolatedNormal,
-                _ => throw new NotImplementedException(),
-            };
-            var hitPosition = hit.Position;
+            var normal = surfaceData.Normal;
+            var hitPosition = surfaceData.Position;
             var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
 
-            var surfaceColor = DiffuseTexture?.SampleData(hit.TexturePos) ?? DiffuseColor;
+            var surfaceColor = Texture?.SampleData(surfaceData.TexturePos) ?? Color;
             var radiance = Radiance.Zero;
             radiance.Attenuate(AmbientColor, OneOverPi * AmbientStrength);
 
             radiance += scene.LightSources.Forall(
-                in hit,
+                in surfaceData,
                 (lightRadiance, lightPosition) =>
                 {
                     var lightDirection = lightPosition - hitPosition;

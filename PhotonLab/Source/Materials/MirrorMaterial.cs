@@ -10,29 +10,26 @@ using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Materials
 {
-    internal class MirrorMaterial(
-        Color color,
-        float reflectivity = 1f,
-        NormalMode normalMode = NormalMode.Interpolated
-    ) : IMaterial
+    internal class MirrorMaterial : IMaterial
     {
-        public CpuTexture2D DiffuseTexture { get; } = null!;
-        public Color DiffuseColor { get; } = color;
+        public CpuTexture2D Texture { get; } = null!;
+        public Color Color { get; }
+        public NormalMode NormalMode { get; }
 
-        public Radiance Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
+        public Radiance Shade(
+            Scene scene,
+            int depth,
+            in RaySIMD ray,
+            in SurfaceIntersectionData surfaceData
+        )
         {
-            var n = normalMode switch
-            {
-                NormalMode.Face => hit.FaceNormal,
-                NormalMode.Interpolated => hit.InterpolatedNormal,
-                _ => throw new NotImplementedException(),
-            };
+            var n = surfaceData.Normal;
 
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
-            var reflectedRay = new RaySIMD(hit.Position, reflectDir);
+            var reflectedRay = new RaySIMD(surfaceData.Position, reflectDir);
             var reflectedRadiance = RayTracer.Trace(scene, reflectedRay, depth + 1);
 
-            return reflectedRadiance.Attenuate(DiffuseColor, Math.Clamp(reflectivity, 0f, 1f));
+            return reflectedRadiance.Attenuate(Color, 1);
         }
     }
 }

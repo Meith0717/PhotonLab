@@ -35,7 +35,7 @@ namespace PhotonLab.Source.Scenes
             CornellBox.Build(graphicsDevice, Meshes, LightSources, 25);
 
             var model = BasicBodies.CreateSphere(graphicsDevice, 20, 20);
-            model.Material = new MirrorMaterial(Color.White, .75f, NormalMode.Interpolated);
+            model.Material = new MirrorMaterial();
             model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(5f, 5f, 5f);
             Meshes.AddMesh(model);
 

@@ -16,21 +16,27 @@ internal abstract class LightSource(Color color)
 
     protected abstract Vector3[] GenerateEmittingPositions();
 
-    protected abstract float GetAttenuation(Vector3 lightPosition, in HitInfo hitInfo);
+    protected abstract float GetAttenuation(
+        Vector3 lightPosition,
+        in SurfaceIntersectionData surfaceIntersectionData
+    );
 
     public void Initialize()
     {
         _pointLights = GenerateEmittingPositions();
     }
 
-    public Radiance QueryAreaLinearly(in HitInfo hitInfo, LightSourceQuery query)
+    public Radiance QueryAreaLinearly(
+        in SurfaceIntersectionData surfaceIntersectionData,
+        LightSourceQuery query
+    )
     {
         var totalRadiance = Radiance.Zero;
         var lightRadiance = new Radiance(color * (1f / _pointLights.Length));
         foreach (var lightPosition in _pointLights)
         {
             var radiance = query.Invoke(lightRadiance, lightPosition);
-            radiance.Attenuate(GetAttenuation(lightPosition, in hitInfo));
+            radiance.Attenuate(GetAttenuation(lightPosition, in surfaceIntersectionData));
             totalRadiance += radiance;
         }
         return totalRadiance;

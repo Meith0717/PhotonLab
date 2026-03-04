@@ -173,7 +173,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, .5f);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 2);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager);
                 _rayTracer.End();
@@ -196,7 +196,7 @@ namespace PhotonLab
 
                 _fFmpeg?.Dispose();
                 Console.WriteLine($"Starting sequence: {_sequenceAmount} images...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, .5f);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 2f);
 
                 var filePath = _pathManager.GetFilePath(
                     Paths.Videos,

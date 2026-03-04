@@ -136,14 +136,14 @@ namespace PhotonLab.Source.Bodies
             basicEffect.DiffuseColor = Vector3.One;
             if (Material is not null)
             {
-                if (Material.DiffuseTexture is not null)
+                if (Material.Texture is not null)
                 {
-                    basicEffect.Texture = Material.DiffuseTexture.Texture2D;
+                    basicEffect.Texture = Material.Texture.Texture2D;
                     basicEffect.TextureEnabled = true;
                 }
                 else
                 {
-                    basicEffect.DiffuseColor = Material.DiffuseColor.ToVector3();
+                    basicEffect.DiffuseColor = Material.Color.ToVector3();
                 }
             }
 

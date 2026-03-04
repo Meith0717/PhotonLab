@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Graphics.Camera;
+using PhotonLab.Source.Materials;
 using PhotonLab.Source.RayTracing;
 using Vector3 = System.Numerics.Vector3;
 
@@ -32,12 +33,12 @@ internal class MeshCollection
         _isInitialized = true;
     }
 
-    public bool Intersect(in RaySIMD ray, out HitInfo closestHit)
+    public bool Intersect(in RaySIMD ray, out SurfaceIntersectionData closestHit)
     {
         if (!_isInitialized)
             throw new Exception("MeshCollection is not initialized");
 
-        closestHit = new HitInfo();
+        closestHit = new SurfaceIntersectionData();
         var hitFound = false;
 
         foreach (var meshBody in _bodies)
@@ -54,7 +55,7 @@ internal class MeshCollection
 
     // --- Refactored Intersection Logic ---
 
-    private bool IntersectBody(MeshBody body, in RaySIMD ray, out HitInfo hit)
+    private bool IntersectBody(MeshBody body, in RaySIMD ray, out SurfaceIntersectionData hit)
     {
         hit = default;
 
@@ -130,7 +131,7 @@ internal class MeshCollection
         return anyHit;
     }
 
-    private static HitInfo ConstructHitInfo(
+    private static SurfaceIntersectionData ConstructHitInfo(
         MeshBody body,
         in RaySIMD ray,
         in TriangleHitData hitData
@@ -146,24 +147,28 @@ internal class MeshCollection
         var t1 = body.VertexTextures[hitData.I1];
         var t2 = body.VertexTextures[hitData.I2];
 
-        // Perform normalizations and interpolations ONLY for the final confirmed hit
-        var interpolatedNormal = Vector3.Normalize(
-            Vector3.TransformNormal(hitData.Coordinates.InterpolateVector3(n0, n1, n2), transform)
-        );
-
-        var faceNormal = Vector3.Normalize(
-            Vector3.Cross(hitData.P1 - hitData.P0, hitData.P2 - hitData.P0)
-        );
         var texturePos = hitData.Coordinates.InterpolateVector2(t0, t1, t2);
+        var normal = body.Material.NormalMode switch
+        {
+            NormalMode.Face => Vector3.Normalize(
+                Vector3.Cross(hitData.P1 - hitData.P0, hitData.P2 - hitData.P0)
+            ),
+            NormalMode.Interpolated => Vector3.Normalize(
+                Vector3.TransformNormal(
+                    hitData.Coordinates.InterpolateVector3(n0, n1, n2),
+                    transform
+                )
+            ),
+            _ => throw new NotImplementedException(),
+        };
 
         var hitPosition = ray.Position + ray.Direction * hitData.MinT;
-        hitPosition += faceNormal * RayTracingGlobal.HitOffsetEpsilon;
+        hitPosition += normal * RayTracingGlobal.HitOffsetEpsilon;
 
-        return new HitInfo(
+        return new SurfaceIntersectionData(
             hitPosition,
             hitData.MinT,
-            interpolatedNormal,
-            faceNormal,
+            normal,
             texturePos,
             body.Material
         );

@@ -12,16 +12,15 @@ namespace PhotonLab.Source.Materials
 {
     internal class TransparentMaterial : IMaterial
     {
-        private readonly NormalMode _normalMode;
-
-        public CpuTexture2D DiffuseTexture { get; } = null!;
-        public Color DiffuseColor { get; } = Color.White;
+        public CpuTexture2D Texture { get; } = null!;
+        public Color Color { get; } = Color.White;
+        public NormalMode NormalMode { get; }
         public float RefractiveIndex { get; } = 1.2f;
         public float ReflectetStrength { get; } = 1f;
 
         public TransparentMaterial(NormalMode normalMode = NormalMode.Interpolated)
         {
-            _normalMode = normalMode;
+            NormalMode = normalMode;
         }
 
         public TransparentMaterial(
@@ -29,20 +28,20 @@ namespace PhotonLab.Source.Materials
             NormalMode normalMode = NormalMode.Interpolated
         )
         {
-            DiffuseColor = tint;
-            _normalMode = normalMode;
+            Color = tint;
+            NormalMode = normalMode;
         }
 
-        public Radiance Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
+        public Radiance Shade(
+            Scene scene,
+            int depth,
+            in RaySIMD ray,
+            in SurfaceIntersectionData surfaceData
+        )
         {
-            var n = _normalMode switch
-            {
-                NormalMode.Face => hit.FaceNormal,
-                NormalMode.Interpolated => hit.InterpolatedNormal,
-                _ => throw new NotImplementedException(),
-            };
+            var n = surfaceData.Normal;
 
-            var hitPosition = hit.Position;
+            var hitPosition = surfaceData.Position;
 
             // Compute reflection direction
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, n));
@@ -79,7 +78,7 @@ namespace PhotonLab.Source.Materials
             // Combine reflection + refraction
             var totalRadiance =
                 reflectedRadiance.Attenuate(fresnel) + refractedRadiance.Attenuate(1 - fresnel);
-            totalRadiance.Attenuate(DiffuseColor, 1);
+            totalRadiance.Attenuate(Color, 1);
             return totalRadiance;
         }
     }

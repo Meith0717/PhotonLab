@@ -17,10 +17,15 @@ namespace PhotonLab.Source.Materials
 
     internal interface IMaterial
     {
-        CpuTexture2D DiffuseTexture { get; }
+        Color Color { get; }
+        CpuTexture2D Texture { get; }
+        NormalMode NormalMode { get; }
 
-        Color DiffuseColor { get; }
-
-        Radiance Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit);
+        Radiance Shade(
+            Scene scene,
+            int depth,
+            in RaySIMD ray,
+            in SurfaceIntersectionData surfaceData
+        );
     }
 }

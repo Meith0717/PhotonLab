@@ -28,7 +28,10 @@ namespace PhotonLab.Source.Lights
                 return res.ToArray();
             }
 
-            protected override float GetAttenuation(Vector3 lightPosition, in HitInfo hitInfo)
+            protected override float GetAttenuation(
+                Vector3 lightPosition,
+                in SurfaceIntersectionData surfaceIntersectionData
+            )
             {
                 return 1;
             }
@@ -57,9 +60,12 @@ namespace PhotonLab.Source.Lights
                 return [_position.ToNumerics()];
             }
 
-            protected override float GetAttenuation(Vector3 lightPosition, in HitInfo hitInfo)
+            protected override float GetAttenuation(
+                Vector3 lightPosition,
+                in SurfaceIntersectionData surfaceIntersectionData
+            )
             {
-                var toLight = lightPosition - hitInfo.Position;
+                var toLight = lightPosition - surfaceIntersectionData.Position;
                 var toLightDir = Vector3.Normalize(toLight);
                 var angle = float.Acos(Vector3.Dot(-toLightDir, _direction));
 

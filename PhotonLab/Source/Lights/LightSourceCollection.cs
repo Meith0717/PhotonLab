@@ -28,13 +28,19 @@ internal class LightSourceCollection
             lightSource.Initialize();
     }
 
-    public Radiance Forall(in HitInfo hitInfo, LightSourceQuery lightSourceQuery)
+    public Radiance Forall(
+        in SurfaceIntersectionData surfaceIntersectionData,
+        LightSourceQuery lightSourceQuery
+    )
     {
         var totalRadiance = Radiance.Zero;
         for (var i = 0; i < _lightSources.Count; i++)
         {
             var lightSource = _lightSources[i];
-            totalRadiance += lightSource.QueryAreaLinearly(in hitInfo, lightSourceQuery);
+            totalRadiance += lightSource.QueryAreaLinearly(
+                in surfaceIntersectionData,
+                lightSourceQuery
+            );
         }
         return totalRadiance;
     }

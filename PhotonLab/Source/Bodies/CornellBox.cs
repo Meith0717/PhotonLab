@@ -146,14 +146,14 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationX(float.Pi)
                 * Matrix.CreateTranslation(0, scale / 2, scale / 2);
-            quad.Material = new MirrorMaterial(Color.White, mirrorStrength, NormalMode.Face);
+            quad.Material = new MirrorMaterial();
             meshes.AddMesh(quad);
 
             // Back wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
             quad.ModelTransform =
                 Matrix.CreateScale(scale) * Matrix.CreateTranslation(0, scale / 2, -scale / 2);
-            quad.Material = new MirrorMaterial(Color.White, mirrorStrength, NormalMode.Face);
+            quad.Material = new MirrorMaterial();
             meshes.AddMesh(quad);
 
             // Right wall

@@ -11,13 +11,18 @@ namespace PhotonLab.Source.Materials;
 
 internal class GlowingMaterial : IMaterial
 {
-    public CpuTexture2D DiffuseTexture { get; set; }
+    public CpuTexture2D Texture { get; set; }
+    public NormalMode NormalMode { get; set; }
+    public Color Color { get; set; }
 
-    public Color DiffuseColor { get; set; }
-
-    public Radiance Shade(Scene scene, int depth, in RaySIMD ray, in HitInfo hit)
+    public Radiance Shade(
+        Scene scene,
+        int depth,
+        in RaySIMD ray,
+        in SurfaceIntersectionData surfaceData
+    )
     {
-        var color = DiffuseTexture?.SampleData(hit.TexturePos) ?? DiffuseColor;
+        var color = Texture?.SampleData(surfaceData.TexturePos) ?? Color;
         return new Radiance(color);
     }
 }
