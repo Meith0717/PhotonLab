@@ -1,4 +1,4 @@
-﻿// TransparentMaterial.cs
+﻿// TransparentSurfaceModel.cs
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
@@ -10,7 +10,7 @@ using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Materials
 {
-    internal class TransparentMaterial : IMaterial
+    internal class TransparentSurfaceModel : ISurfaceModel
     {
         public CpuTexture2D Texture { get; } = null!;
         public Color Color { get; } = Color.White;
@@ -18,15 +18,12 @@ namespace PhotonLab.Source.Materials
         public float RefractiveIndex { get; } = 1.2f;
         public float ReflectetStrength { get; } = 1f;
 
-        public TransparentMaterial(NormalMode normalMode = NormalMode.Interpolated)
+        public TransparentSurfaceModel(NormalMode normalMode)
         {
             NormalMode = normalMode;
         }
 
-        public TransparentMaterial(
-            Microsoft.Xna.Framework.Color tint,
-            NormalMode normalMode = NormalMode.Interpolated
-        )
+        public TransparentSurfaceModel(Color tint, NormalMode normalMode)
         {
             Color = tint;
             NormalMode = normalMode;

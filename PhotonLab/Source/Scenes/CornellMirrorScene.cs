@@ -16,14 +16,14 @@ internal class CornellMirrorScene : Scene
     private static readonly Vector3 LookAtPos = new(0, 12.5f, 0);
 
     public CornellMirrorScene(GraphicsDevice graphicsDevice)
-        : base(graphicsDevice)
+        : base(graphicsDevice, Color.White, .1f)
     {
         Camera3D.AddBehaviour(new MoveByMouse(5));
 
         CornellBox.MirrorBuild(graphicsDevice, Meshes, LightSources, 25, .25f);
 
         var model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
-        model.Material = new PhongMaterial(Color.Yellow);
+        model.SurfaceModel = new PhongModel(Color.Yellow, NormalMode.Interpolated, 1, 1, 10);
         model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(0, 5f, 0);
         Meshes.AddMesh(model);
     }

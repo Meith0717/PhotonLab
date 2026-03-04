@@ -109,7 +109,7 @@ internal class MeshBody : IBody3D
 
     // Some other Stuff
     public int FacesCount => PrimitiveIndices.Length / 3;
-    public IMaterial Material { get; set; }
+    public ISurfaceModel SurfaceModel { get; set; }
 
     public Matrix ModelTransform
     {
@@ -137,16 +137,20 @@ internal class MeshBody : IBody3D
         // Draw main mesh
         basicEffect.VertexColorEnabled = basicEffect.TextureEnabled = false;
         basicEffect.DiffuseColor = Vector3.One;
-        if (Material is not null)
+        if (SurfaceModel is not null)
         {
-            if (Material.Texture is not null)
+            switch (SurfaceModel)
             {
-                basicEffect.Texture = Material.Texture.Texture2D;
-                basicEffect.TextureEnabled = true;
-            }
-            else
-            {
-                basicEffect.DiffuseColor = Material.Color.ToVector3();
+                case ITexturedSurface { Texture: not null } texturedSurface:
+                    basicEffect.Texture = texturedSurface.Texture.Texture2D;
+                    basicEffect.TextureEnabled = true;
+                    break;
+                case IColoredSurface coloredSurface:
+                    basicEffect.DiffuseColor = coloredSurface.Color.ToVector3();
+                    break;
+                default:
+                    basicEffect.DiffuseColor = Vector3.One;
+                    break;
             }
         }
 

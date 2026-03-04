@@ -100,7 +100,7 @@ namespace PhotonLab.Source.RayTracing
             )
                 return Radiance.Zero;
 
-            var radiance = hit.Material.Shade(scene, depth, in ray, in hit);
+            var radiance = hit.SurfaceModel.Shade(scene, depth, in ray, in hit);
             return radiance;
         }
 

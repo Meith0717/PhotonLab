@@ -11,12 +11,12 @@ namespace PhotonLab.Source.RayTracing
         Vector3 position,
         Vector3 normal,
         Vector2 texturePos,
-        IMaterial material
+        ISurfaceModel surfaceModel
     )
     {
         public Vector3 Position { get; } = position;
         public Vector3 Normal { get; } = normal;
         public Vector2 TexturePos { get; } = texturePos;
-        public IMaterial Material { get; } = material;
+        public ISurfaceModel SurfaceModel { get; } = surfaceModel;
     }
 }

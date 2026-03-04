@@ -8,7 +8,7 @@ namespace PhotonLab.Source.Bodies
 {
     internal interface IBody3D
     {
-        IMaterial Material { get; set; }
+        ISurfaceModel SurfaceModel { get; set; }
 
         Microsoft.Xna.Framework.Matrix ModelTransform { set; }
     }

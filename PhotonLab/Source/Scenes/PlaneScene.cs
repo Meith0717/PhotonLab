@@ -15,35 +15,36 @@ namespace PhotonLab.Source.Scenes
     internal class PlaneScene : Scene
     {
         public PlaneScene(GraphicsDevice graphicsDevice)
-            : base(graphicsDevice)
+            : base(graphicsDevice, Color.LightYellow, .002f)
         {
             Camera3D.AddBehaviour(new RotateCamera(.0f, new Vector3(0, 5, 0), 15, 10));
             Camera3D.AddBehaviour(new MoveByMouse(1));
             Camera3D.AddBehaviour(new ZoomByMouse(1));
 
             LightSources.AddSource(
-                new LightSources.PointLight(new Vector3(0, 20, 0), Color.LightYellow)
+                new LightSources.SpotLight(
+                    new Vector3(0, 20, 0),
+                    new Vector3(0, -1, 0),
+                    30,
+                    50,
+                    Color.LightYellow
+                )
             );
 
             var model = BasicBodies.CreateQuad(graphicsDevice);
-            model.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(-float.Pi / 2); // floor rotation
-            model.Material = new PhongMaterial(
+            model.ModelTransform = Matrix.CreateScale(100) * Matrix.CreateRotationX(-float.Pi / 2);
+            model.SurfaceModel = new PhongModel(
                 ContentProvider.Get<Texture2D>("chestBoard100x100"),
-                NormalMode.Face
-            )
-            {
-                SpecularStrength = 0,
-                AmbientStrength = 0,
-            };
+                NormalMode.Face,
+                1,
+                0,
+                0
+            );
             Meshes.AddMesh(model);
 
             model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
             model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(0, 5, 0);
-            model.Material = new PhongMaterial(Color.Red, NormalMode.Interpolated)
-            {
-                SpecularStrength = 1,
-                AmbientStrength = 0,
-            };
+            model.SurfaceModel = new PerfectMirrorModel(NormalMode.Interpolated);
             Meshes.AddMesh(model);
         }
     }

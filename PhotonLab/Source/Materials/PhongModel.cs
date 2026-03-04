@@ -1,4 +1,4 @@
-﻿// PhongMaterial.cs
+﻿// PhongModel.cs
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
@@ -11,7 +11,7 @@ using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Materials
 {
-    internal class PhongMaterial : IMaterial
+    internal class PhongModel : ISurfaceModel, IColoredSurface, ITexturedSurface
     {
         private const float OneOverPi = 1; // 1 / float.Pi;
 
@@ -19,23 +19,38 @@ namespace PhotonLab.Source.Materials
         public Color Color { get; } = Color.White;
         public NormalMode NormalMode { get; }
 
-        public Color AmbientColor = Color.White;
+        private readonly float _diffuseStrength;
+        private readonly float _specularStrength;
+        private readonly float _specularExponent;
 
-        public float DiffuseStrength = 1;
-        public float SpecularStrength = 1;
-        public float AmbientStrength = 1;
-        public float SpecExponent = 40;
-
-        public PhongMaterial(Texture2D albedo, NormalMode normalMode = NormalMode.Interpolated)
+        public PhongModel(
+            Texture2D albedo,
+            NormalMode normalMode,
+            float diffuseStrength,
+            float specularStrength,
+            float specularExponent
+        )
         {
             Texture = new CpuTexture2D(albedo);
             NormalMode = normalMode;
+            _diffuseStrength = diffuseStrength;
+            _specularStrength = specularStrength;
+            _specularExponent = specularExponent;
         }
 
-        public PhongMaterial(Color diffuseColor, NormalMode normalMode = NormalMode.Interpolated)
+        public PhongModel(
+            Color color,
+            NormalMode normalMode,
+            float diffuseStrength,
+            float specularStrength,
+            float specularExponent
+        )
         {
-            Color = diffuseColor;
+            Color = color;
             NormalMode = normalMode;
+            _diffuseStrength = diffuseStrength;
+            _specularStrength = specularStrength;
+            _specularExponent = specularExponent;
         }
 
         public Radiance Shade(
@@ -47,12 +62,13 @@ namespace PhotonLab.Source.Materials
         {
             var normal = surfaceData.Normal;
             var hitPosition = surfaceData.Position;
-            var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
 
             var surfaceColor = Texture?.SampleData(surfaceData.TexturePos) ?? Color;
-            var radiance = Radiance.Zero;
-            radiance.Attenuate(AmbientColor, OneOverPi * AmbientStrength);
 
+            var radiance = new Radiance(surfaceColor * scene.AmbientColor * scene.AmbientIntensity);
+            radiance.Attenuate(OneOverPi);
+
+            var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
             radiance += scene.LightSources.Forall(
                 scene,
                 in surfaceData,
@@ -60,13 +76,17 @@ namespace PhotonLab.Source.Materials
                 {
                     var nDotL = MathF.Max(Vector3.Dot(normal, lightDirection), 0);
                     var diffuseRadiance = lightRadiance.Attenuate(surfaceColor, OneOverPi * nDotL);
+                    diffuseRadiance = diffuseRadiance.Attenuate(_diffuseStrength);
+
+                    if (_specularStrength != 0)
+                        return diffuseRadiance;
 
                     var r = Vector3.Reflect(-lightDirection, normal);
-                    var rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), SpecExponent);
+                    var rDotV = MathF.Pow(MathF.Max(Vector3.Dot(r, v), 0), _specularExponent);
                     var specularRadiance = lightRadiance.Attenuate(surfaceColor, rDotV);
+                    specularRadiance = specularRadiance.Attenuate(_specularStrength);
 
-                    return diffuseRadiance.Attenuate(DiffuseStrength)
-                        + specularRadiance.Attenuate(SpecularStrength);
+                    return diffuseRadiance + specularRadiance;
                 }
             );
 

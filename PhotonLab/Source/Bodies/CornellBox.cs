@@ -25,11 +25,13 @@ namespace PhotonLab.Source.Bodies
             // Floor
             var quad = BasicBodies.CreateQuad(graphicsDevice);
             quad.ModelTransform = Matrix.CreateScale(scale) * Matrix.CreateRotationX(-float.Pi / 2); // floor rotation
-            quad.Material = new PhongMaterial(ContentProvider.Get<Texture2D>("chestBoard10x10"))
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(
+                ContentProvider.Get<Texture2D>("chestBoard10x10"),
+                NormalMode.Face,
+                1,
+                SpecularStrength,
+                10
+            );
             meshes.AddMesh(quad);
 
             // Ceiling
@@ -38,11 +40,13 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationX(float.Pi / 2)
                 * Matrix.CreateTranslation(0, scale, 0);
-            quad.Material = new PhongMaterial(Color.Gray)
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(
+                Color.Gray,
+                NormalMode.Face,
+                1,
+                SpecularStrength,
+                10
+            );
             meshes.AddMesh(quad);
 
             // Front wall
@@ -51,22 +55,26 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationX(float.Pi)
                 * Matrix.CreateTranslation(0, scale / 2, scale / 2);
-            quad.Material = new PhongMaterial(Color.Gray)
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(
+                Color.Gray,
+                NormalMode.Face,
+                1,
+                SpecularStrength,
+                10
+            );
             meshes.AddMesh(quad);
 
             // Back wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
             quad.ModelTransform =
                 Matrix.CreateScale(scale) * Matrix.CreateTranslation(0, scale / 2, -scale / 2);
-            quad.Material = new PhongMaterial(Color.MediumBlue)
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(
+                Color.MediumBlue,
+                NormalMode.Face,
+                1,
+                SpecularStrength,
+                10
+            );
             meshes.AddMesh(quad);
 
             // Right wall
@@ -75,11 +83,13 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationY(float.Pi / 2)
                 * Matrix.CreateTranslation(-scale / 2, scale / 2, 0);
-            quad.Material = new PhongMaterial(Color.LimeGreen)
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(
+                Color.LimeGreen,
+                NormalMode.Face,
+                1,
+                SpecularStrength,
+                10
+            );
             meshes.AddMesh(quad);
 
             // Left wall
@@ -88,11 +98,7 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationY(-float.Pi / 2)
                 * Matrix.CreateTranslation(scale / 2, scale / 2, 0);
-            quad.Material = new PhongMaterial(Color.Red)
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(Color.Red, NormalMode.Face, 1, SpecularStrength, 10);
             meshes.AddMesh(quad);
 
             // Light
@@ -101,7 +107,7 @@ namespace PhotonLab.Source.Bodies
                     new Vector3(0, scale - .1f, 0),
                     new Vector3(0, -1, 0),
                     45,
-                    50,
+                    60,
                     Color.LightYellow
                 )
             );
@@ -118,11 +124,13 @@ namespace PhotonLab.Source.Bodies
             // Floor
             var quad = BasicBodies.CreateQuad(graphicsDevice);
             quad.ModelTransform = Matrix.CreateScale(scale) * Matrix.CreateRotationX(-float.Pi / 2); // floor rotation
-            quad.Material = new PhongMaterial(ContentProvider.Get<Texture2D>("chestBoard10x10"))
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(
+                ContentProvider.Get<Texture2D>("chestBoard10x10"),
+                NormalMode.Face,
+                1,
+                SpecularStrength,
+                10
+            );
             meshes.AddMesh(quad);
 
             // Ceiling
@@ -131,11 +139,13 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationX(float.Pi / 2)
                 * Matrix.CreateTranslation(0, scale, 0);
-            quad.Material = new PhongMaterial(Color.Gray)
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(
+                Color.Gray,
+                NormalMode.Face,
+                1,
+                SpecularStrength,
+                10
+            );
             meshes.AddMesh(quad);
 
             // Front wall
@@ -144,14 +154,14 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationX(float.Pi)
                 * Matrix.CreateTranslation(0, scale / 2, scale / 2);
-            quad.Material = new MirrorMaterial();
+            quad.SurfaceModel = new PerfectMirrorModel(NormalMode.Face);
             meshes.AddMesh(quad);
 
             // Back wall
             quad = BasicBodies.CreateQuad(graphicsDevice);
             quad.ModelTransform =
                 Matrix.CreateScale(scale) * Matrix.CreateTranslation(0, scale / 2, -scale / 2);
-            quad.Material = new MirrorMaterial();
+            quad.SurfaceModel = new PerfectMirrorModel(NormalMode.Face);
             meshes.AddMesh(quad);
 
             // Right wall
@@ -160,11 +170,13 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationY(float.Pi / 2)
                 * Matrix.CreateTranslation(-scale / 2, scale / 2, 0);
-            quad.Material = new PhongMaterial(Color.LimeGreen)
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(
+                Color.LimeGreen,
+                NormalMode.Face,
+                1,
+                SpecularStrength,
+                10
+            );
             meshes.AddMesh(quad);
 
             // Left wall
@@ -173,11 +185,7 @@ namespace PhotonLab.Source.Bodies
                 Matrix.CreateScale(scale)
                 * Matrix.CreateRotationY(-float.Pi / 2)
                 * Matrix.CreateTranslation(scale / 2, scale / 2, 0);
-            quad.Material = new PhongMaterial(Color.Red)
-            {
-                AmbientStrength = AmbientStrength,
-                SpecularStrength = SpecularStrength,
-            };
+            quad.SurfaceModel = new PhongModel(Color.Red, NormalMode.Face, 1, SpecularStrength, 10);
             meshes.AddMesh(quad);
 
             // Light

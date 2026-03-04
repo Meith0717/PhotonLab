@@ -1,4 +1,4 @@
-// GlowingMaterial.cs
+// GlowingSurfaceModel.cs
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
@@ -8,9 +8,8 @@ using PhotonLab.Source.Scenes;
 
 namespace PhotonLab.Source.Materials;
 
-internal class GlowingMaterial : IMaterial
+internal class GlowingSurfaceModel : ISurfaceModel, IColoredSurface
 {
-    public CpuTexture2D Texture { get; set; }
     public NormalMode NormalMode { get; set; }
     public Color Color { get; set; }
 
@@ -21,7 +20,6 @@ internal class GlowingMaterial : IMaterial
         in SurfaceIntersectionData surfaceData
     )
     {
-        var color = Texture?.SampleData(surfaceData.TexturePos) ?? Color;
-        return new Radiance(color);
+        return new Radiance(Color);
     }
 }

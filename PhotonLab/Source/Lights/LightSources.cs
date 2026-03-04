@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Numerics;
-using PhotonLab.Source.RayTracing;
 
 namespace PhotonLab.Source.Lights
 {
@@ -19,22 +18,13 @@ namespace PhotonLab.Source.Lights
 
             protected override Vector3[] GenerateEmittingPositions()
             {
-                var res = new List<Vector3>();
-                for (var i = -5; i < 5; i++)
-                for (var j = -5; j < 5; j++)
-                    res.Add(
-                        new Vector3(_position.X + (i * .5f), _position.Y, _position.Z + (j * .5f))
-                    );
-                return res.ToArray();
+                return [_position.ToNumerics()];
             }
 
             protected override float GetAttenuation(
                 Vector3 lightPosition,
-                in SurfaceIntersectionData surfaceIntersectionData
-            )
-            {
-                return 1;
-            }
+                Vector3 lightDirection
+            ) => 1;
         }
 
         internal class SpotLight(
@@ -60,20 +50,14 @@ namespace PhotonLab.Source.Lights
                 return [_position.ToNumerics()];
             }
 
-            protected override float GetAttenuation(
-                Vector3 lightPosition,
-                in SurfaceIntersectionData surfaceIntersectionData
-            )
+            protected override float GetAttenuation(Vector3 lightPosition, Vector3 lightDirection)
             {
-                var toLight = lightPosition - surfaceIntersectionData.Position;
-                var toLightDir = Vector3.Normalize(toLight);
-                var angle = float.Acos(Vector3.Dot(-toLightDir, _direction));
-
-                // Calculate smooth angular attenuation
-                var cosAngle = float.Cos(angle);
+                var cosAngle = Vector3.Dot(-lightDirection, _direction);
                 var cosOuter = float.Cos(_outerAngleThresholdRad);
                 var cosInner = float.Cos(_innerAngleThresholdRad);
-                return float.Clamp((cosAngle - cosOuter) / (cosInner - cosOuter), 0f, 1f);
+                var attenuation = (cosAngle - cosOuter) / (cosInner - cosOuter);
+
+                return float.Clamp(attenuation, 0f, 1f);
             }
         }
     }

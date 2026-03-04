@@ -14,10 +14,10 @@ namespace PhotonLab.Source.Materials
         Interpolated,
     }
 
-    internal interface IMaterial
+    internal interface ISurface { }
+
+    internal interface ISurfaceModel : ISurface
     {
-        Color Color { get; }
-        CpuTexture2D Texture { get; }
         NormalMode NormalMode { get; }
 
         Radiance Shade(
@@ -26,5 +26,15 @@ namespace PhotonLab.Source.Materials
             in RaySimd ray,
             in SurfaceIntersectionData surfaceData
         );
+    }
+
+    internal interface IColoredSurface : ISurface
+    {
+        Color Color { get; }
+    }
+
+    internal interface ITexturedSurface : ISurface
+    {
+        CpuTexture2D Texture { get; }
     }
 }

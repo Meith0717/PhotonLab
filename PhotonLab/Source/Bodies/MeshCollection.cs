@@ -160,7 +160,7 @@ internal class MeshCollection
         var t2 = body.VertexTextures[helper.I2];
 
         var texturePos = helper.Coordinates.InterpolateVector2(t0, t1, t2);
-        var normal = body.Material.NormalMode switch
+        var normal = body.SurfaceModel.NormalMode switch
         {
             NormalMode.Face => Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0)),
             NormalMode.Interpolated => Vector3.Normalize(
@@ -175,7 +175,7 @@ internal class MeshCollection
         var position = ray.Position + ray.Direction * helper.Coordinates.T;
         position += normal * RayTracingGlobal.HitOffsetEpsilon;
 
-        return new SurfaceIntersectionData(position, normal, texturePos, body.Material);
+        return new SurfaceIntersectionData(position, normal, texturePos, body.SurfaceModel);
     }
 
     public void Draw(Camera3D camera3D, BasicEffect basicEffect, GraphicsDevice graphicsDevice)

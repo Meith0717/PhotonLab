@@ -109,7 +109,7 @@ namespace PhotonLab
             _sceneManager.AddScene("cornellBox", new CornellBoxScene(GraphicsDevice));
             _sceneManager.AddScene("plane", new PlaneScene(GraphicsDevice));
             _sceneManager.AddScene("cornellMirror", new CornellMirrorScene(GraphicsDevice));
-            _sceneManager.Set("plane"); // <--------------------------------------------------------------------------
+            _sceneManager.Set("cornellBox"); // <--------------------------------------------------------------------------
 
             ConsoleManager.Show(
                 "=== PhotonLap RayTracer ===\n"

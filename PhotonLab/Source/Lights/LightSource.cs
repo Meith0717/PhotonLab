@@ -17,10 +17,7 @@ internal abstract class LightSource(Color color)
 
     protected abstract Vector3[] GenerateEmittingPositions();
 
-    protected abstract float GetAttenuation(
-        Vector3 lightPosition,
-        in SurfaceIntersectionData surfaceIntersectionData
-    );
+    protected abstract float GetAttenuation(Vector3 lightPosition, Vector3 lightDirection);
 
     public void Initialize()
     {
@@ -42,6 +39,10 @@ internal abstract class LightSource(Color color)
             var distanceToLight = lightDirection.Length();
             lightDirection = Vector3.Normalize(lightDirection);
 
+            var attenuation = GetAttenuation(lightPosition, lightDirection);
+            if (attenuation == 0)
+                continue;
+
             var shadowRay = new RaySimd(surfacePosition, lightDirection);
             if (
                 scene.Meshes.Intersect(shadowRay, out var distance, out _)
@@ -50,7 +51,7 @@ internal abstract class LightSource(Color color)
                 continue;
 
             var radiance = query.Invoke(lightRadiance, lightDirection);
-            radiance.Attenuate(GetAttenuation(lightPosition, in surfaceIntersectionData));
+            radiance = radiance.Attenuate(attenuation);
             totalRadiance += radiance;
         }
         return totalRadiance;

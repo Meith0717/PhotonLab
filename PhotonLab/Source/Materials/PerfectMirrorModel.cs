@@ -1,19 +1,16 @@
-﻿// MirrorMaterial.cs
+﻿// PerfectMirrorModel.cs
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
-using Microsoft.Xna.Framework;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;
 using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Materials
 {
-    internal class MirrorMaterial : IMaterial
+    internal class PerfectMirrorModel(NormalMode normalMode) : ISurfaceModel
     {
-        public CpuTexture2D Texture { get; } = null!;
-        public Color Color { get; }
-        public NormalMode NormalMode { get; }
+        public NormalMode NormalMode { get; } = normalMode;
 
         public Radiance Shade(
             Scene scene,
@@ -28,7 +25,7 @@ namespace PhotonLab.Source.Materials
             var reflectedRay = new RaySimd(surfaceData.Position, reflectDir);
             var reflectedRadiance = RayTracer.Trace(scene, reflectedRay, depth + 1);
 
-            return reflectedRadiance.Attenuate(Color, 1);
+            return reflectedRadiance;
         }
     }
 }

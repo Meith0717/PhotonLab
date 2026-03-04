@@ -11,12 +11,17 @@ using PhotonLab.Source.Lights;
 
 namespace PhotonLab.Source.Scenes
 {
-    internal abstract class Scene(GraphicsDevice graphicsDevice)
+    internal abstract class Scene(
+        GraphicsDevice graphicsDevice,
+        Color ambientColor,
+        float ambientIntensity
+    )
     {
-        protected readonly GraphicsDevice GraphicsDevice = graphicsDevice;
         public readonly Camera3D Camera3D = new(new Vector3(0, 12.5f, -30), graphicsDevice);
-        public readonly MeshCollection Meshes = new MeshCollection();
-        public readonly LightSourceCollection LightSources = new LightSourceCollection();
+        public readonly LightSourceCollection LightSources = new();
+        public readonly MeshCollection Meshes = new();
+        public readonly Color AmbientColor = ambientColor;
+        public readonly float AmbientIntensity = ambientIntensity;
 
         public void Initialize()
         {
