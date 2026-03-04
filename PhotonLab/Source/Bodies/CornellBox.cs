@@ -5,10 +5,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Content;
-using MonoKit.Graphics.Camera;
 using PhotonLab.Source.Lights;
 using PhotonLab.Source.Materials;
-using PhotonLab.Source.Scenes;
 
 namespace PhotonLab.Source.Bodies
 {

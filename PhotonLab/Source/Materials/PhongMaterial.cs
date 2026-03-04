@@ -54,20 +54,10 @@ namespace PhotonLab.Source.Materials
             radiance.Attenuate(AmbientColor, OneOverPi * AmbientStrength);
 
             radiance += scene.LightSources.Forall(
+                scene,
                 in surfaceData,
-                (lightRadiance, lightPosition) =>
+                (lightRadiance, lightDirection) =>
                 {
-                    var lightDirection = lightPosition - hitPosition;
-                    var distanceToLight = lightDirection.Length();
-                    lightDirection = Vector3.Normalize(lightDirection);
-
-                    var shadowRay = new RaySimd(hitPosition, lightDirection);
-                    if (
-                        scene.Meshes.Intersect(shadowRay, out var distance, out _)
-                        && distance < distanceToLight
-                    )
-                        return Radiance.Zero;
-
                     var nDotL = MathF.Max(Vector3.Dot(normal, lightDirection), 0);
                     var diffuseRadiance = lightRadiance.Attenuate(surfaceColor, OneOverPi * nDotL);
 

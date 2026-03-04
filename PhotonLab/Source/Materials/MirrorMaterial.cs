@@ -2,7 +2,6 @@
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
-using System;
 using Microsoft.Xna.Framework;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;

@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using FlowLab.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;

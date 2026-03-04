@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.Scenes;
 
 namespace PhotonLab.Source.Lights;
 
@@ -29,6 +29,7 @@ internal class LightSourceCollection
     }
 
     public Radiance Forall(
+        Scene scene,
         in SurfaceIntersectionData surfaceIntersectionData,
         LightSourceQuery lightSourceQuery
     )
@@ -38,6 +39,7 @@ internal class LightSourceCollection
         {
             var lightSource = _lightSources[i];
             totalRadiance += lightSource.QueryAreaLinearly(
+                scene,
                 in surfaceIntersectionData,
                 lightSourceQuery
             );

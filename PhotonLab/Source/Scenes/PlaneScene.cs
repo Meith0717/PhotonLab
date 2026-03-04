@@ -5,7 +5,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Content;
-using MonoKit.Input;
 using PhotonLab.Source.Bodies;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.Lights;

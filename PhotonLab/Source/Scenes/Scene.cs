@@ -2,15 +2,12 @@
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoKit.Graphics.Camera;
 using MonoKit.Input;
 using PhotonLab.Source.Bodies;
 using PhotonLab.Source.Lights;
-using PhotonLab.Source.RayTracing;
 
 namespace PhotonLab.Source.Scenes
 {

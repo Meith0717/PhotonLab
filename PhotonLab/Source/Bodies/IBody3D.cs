@@ -3,7 +3,6 @@
 // All rights reserved.
 
 using PhotonLab.Source.Materials;
-using PhotonLab.Source.RayTracing;
 
 namespace PhotonLab.Source.Bodies
 {

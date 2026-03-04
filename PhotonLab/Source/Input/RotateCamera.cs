@@ -2,7 +2,6 @@
 // Copyright (c) 2023-2025 Thierry Meiers
 // All rights reserved.
 
-using System.Reflection.Metadata.Ecma335;
 using Microsoft.Xna.Framework;
 using MonoKit.Graphics.Camera;
 using MonoKit.Input;
