@@ -174,7 +174,7 @@ namespace PhotonLab
                 Console.WriteLine($"Rendering single image...");
                 _rayTracer.Begin(_sceneManager.CurrentScene, 1);
                 _rayTracer.PerformTrace();
-                _rayTracer.RenderAndSaveResult(_pathManager);
+                _rayTracer.RenderAndSaveResult(_pathManager, false);
                 _rayTracer.End();
             }
             _renderSingleImage = false;
@@ -183,7 +183,7 @@ namespace PhotonLab
         private bool _renderMultipleImageActive;
         private int _sequenceCount;
         private readonly int _sequenceAmount = 240;
-        private FFmpeg _fFmpeg;
+        private FFmpeg _ffmpeg;
 
         private void RenderSequence()
         {
@@ -193,7 +193,7 @@ namespace PhotonLab
                 _renderMultipleImages = false;
                 _sequenceCount = 0;
 
-                _fFmpeg?.Dispose();
+                _ffmpeg?.Dispose();
                 Console.WriteLine($"Starting sequence: {_sequenceAmount} images...");
                 _rayTracer.Begin(_sceneManager.CurrentScene, 2f);
 
@@ -201,7 +201,7 @@ namespace PhotonLab
                     Paths.Videos,
                     $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4"
                 );
-                _fFmpeg = new FFmpeg(
+                _ffmpeg = new FFmpeg(
                     _rayTracer.TargetRes.Width,
                     _rayTracer.TargetRes.Height,
                     21,
@@ -215,14 +215,14 @@ namespace PhotonLab
                 {
                     _renderMultipleImageActive = false;
                     _rayTracer.End();
-                    _fFmpeg.Finish();
+                    _ffmpeg.Finish();
                     return;
                 }
 
                 Console.WriteLine($"({_sequenceCount + 1}/{_sequenceAmount})");
                 _rayTracer.PerformTrace();
                 _rayTracer.ResetCameraRays(_sceneManager.CurrentScene);
-                _fFmpeg.WriteFrame(_rayTracer.GetColorData());
+                _ffmpeg.WriteFrame(_rayTracer.GetColorData());
                 _sequenceCount++;
             }
         }

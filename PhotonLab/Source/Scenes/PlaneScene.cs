@@ -44,7 +44,7 @@ namespace PhotonLab.Source.Scenes
 
             model = BasicBodies.CreateSphere(graphicsDevice, 30, 30);
             model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(0, 5, 0);
-            model.SurfaceModel = new PerfectMirrorModel(NormalMode.Interpolated);
+            model.SurfaceModel = new TransparentSurfaceModel(NormalMode.Interpolated, 1.5f);
             Meshes.AddMesh(model);
         }
     }

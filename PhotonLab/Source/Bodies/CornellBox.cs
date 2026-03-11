@@ -12,8 +12,7 @@ namespace PhotonLab.Source.Bodies
 {
     internal static class CornellBox
     {
-        private static readonly float AmbientStrength = .1f;
-        private static readonly float SpecularStrength = .75f;
+        public static float SpecularStrength { get; set; } = 1f;
 
         public static void Build(
             GraphicsDevice graphicsDevice,
@@ -106,8 +105,8 @@ namespace PhotonLab.Source.Bodies
                 new LightSources.SpotLight(
                     new Vector3(0, scale - .1f, 0),
                     new Vector3(0, -1, 0),
-                    45,
                     50,
+                    60,
                     Color.LightYellow
                 )
             );

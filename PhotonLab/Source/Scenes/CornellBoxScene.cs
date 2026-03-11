@@ -28,7 +28,7 @@ namespace PhotonLab.Source.Scenes
         private int _cameraPosIndex;
 
         public CornellBoxScene(GraphicsDevice graphicsDevice)
-            : base(graphicsDevice, Color.LightYellow, .005f)
+            : base(graphicsDevice, Color.LightYellow, .01f)
         {
             // Camera3D.AddBehaviour(new RotateCamera(0.01f, LookAtPos, 35, 12.5f));
             Camera3D.AddBehaviour(new MoveByMouse());
@@ -46,8 +46,13 @@ namespace PhotonLab.Source.Scenes
             Meshes.AddMesh(model);
 
             model = BasicBodies.CreateSphere(graphicsDevice, 20, 20);
-            model.SurfaceModel = new TransparentSurfaceModel(NormalMode.Interpolated, 1.5f);
+            model.SurfaceModel = new PhongModel(Color.Red, NormalMode.Interpolated, 1, 1, 10);
             model.ModelTransform = Matrix.CreateScale(4) * Matrix.CreateTranslation(-4f, 5f, -8f);
+            Meshes.AddMesh(model);
+
+            model = BasicBodies.CreateCube(graphicsDevice, 8, 8, 2);
+            model.SurfaceModel = new TransparentSurfaceModel(NormalMode.Face, 1.6f);
+            model.ModelTransform = Matrix.CreateTranslation(8f, 5, -8f);
             Meshes.AddMesh(model);
         }
 

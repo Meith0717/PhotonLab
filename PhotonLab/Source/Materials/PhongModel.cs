@@ -61,31 +61,30 @@ namespace PhotonLab.Source.Materials
         )
         {
             var normal = surfaceData.Normal;
-            var hitPosition = surfaceData.Position;
             var surfaceColor = Texture?.SampleData(surfaceData.TexturePos) ?? Color;
 
             var radiance = new Radiance(surfaceColor)
                 .Attenuate(scene.AmbientColor, scene.AmbientIntensity)
                 .Attenuate(OneOverPi);
 
-            var v = Vector3.Normalize(scene.Camera3D.Position.ToNumerics() - hitPosition);
+            var v = -ray.Direction;
             radiance += scene.LightSources.Forall(
                 scene,
                 in surfaceData,
                 (lightRadiance, lightDirection) =>
                 {
-                    var diffuseRadiance = new Radiance(surfaceColor)
+                    var diffuseRadiance = lightRadiance
+                        .Attenuate(surfaceColor, _diffuseStrength)
                         .Attenuate(OneOverPi)
-                        .CosLaw(lightDirection, normal)
-                        .Attenuate(_diffuseStrength);
+                        .CosLaw(lightDirection, normal);
 
-                    if (_specularStrength != 0)
+                    if (_specularStrength == 0)
                         return diffuseRadiance;
 
                     var r = Vector3.Reflect(-lightDirection, normal);
                     var rDotV = float.Pow(float.Max(Vector3.Dot(r, v), 0), _specularExponent);
                     var specularRadiance = lightRadiance
-                        .Attenuate(surfaceColor, rDotV)
+                        .Attenuate(rDotV)
                         .Attenuate(_specularStrength);
 
                     return diffuseRadiance + specularRadiance;
