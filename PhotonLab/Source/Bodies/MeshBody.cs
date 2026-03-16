@@ -3,6 +3,7 @@
 // All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PhotonLab.Source.Materials;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.RayTracing.Data;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
 
@@ -31,25 +33,14 @@ internal class MeshBody : IBody3D
     public MeshBody(
         GraphicsDevice graphicsDevice,
         VertexPositionNormalTexture[] vertices,
-        ushort[] indices
+        ushort[] primitiveIndices
     )
     {
-        var vertexCount = vertices.Length;
-        VertexPositions = new Vector3[vertexCount];
-        VertexNormals = new Vector3[vertexCount];
-        VertexTextures = new Vector2[vertexCount];
-        Parallel.For(
-            0,
-            vertexCount,
-            i =>
-            {
-                VertexPositions[i] = vertices[i].Position.ToNumerics();
-                VertexNormals[i] = vertices[i].Normal.ToNumerics();
-                VertexTextures[i] = vertices[i].TextureCoordinate.ToNumerics();
-            }
-        );
+        PrimitiveIndices = primitiveIndices;
 
-        PrimitiveIndices = indices;
+        ExtractVerticesData(vertices, out VertexPositions, out VertexTextures);
+        CalculateNormals(PrimitiveIndices, VertexPositions, out VertexNormals);
+
         BoundingBox = BoundingBoxSIMD.CreateFromPoints(VertexPositions);
 
         _vertexBuffer = new VertexBuffer(
@@ -68,46 +59,40 @@ internal class MeshBody : IBody3D
         _indexBuffer.SetData(PrimitiveIndices);
     }
 
-    public MeshBody(ModelMesh mesh)
+    public MeshBody(ModelMesh mesh, bool fixMesh)
     {
         var mainMesh = mesh.MeshParts[0];
-        _indexBuffer = mainMesh.IndexBuffer;
-        _vertexBuffer = mainMesh.VertexBuffer;
-
         if (mesh.MeshParts.Any(part => mainMesh.VertexBuffer != part.VertexBuffer))
             throw new Exception();
 
-        var vertexCount = mainMesh.NumVertices;
-        var primitiveCount = mainMesh.PrimitiveCount;
-
         // Load index data from GPU
-        PrimitiveIndices = new ushort[primitiveCount * 3];
+        PrimitiveIndices = new ushort[mainMesh.PrimitiveCount * 3];
+        _indexBuffer = mainMesh.IndexBuffer;
         _indexBuffer.GetData(PrimitiveIndices);
 
-        // Load vertex data from GPU
-        VertexPositions = new Vector3[vertexCount];
-        VertexNormals = new Vector3[vertexCount];
-        VertexTextures = new Vector2[vertexCount];
-        var vertexBufferData = new VertexPositionNormalTexture[vertexCount];
-        _vertexBuffer.GetData(vertexBufferData);
-        Parallel.For(
-            0,
-            vertexCount,
-            i =>
+        if (fixMesh)
+        {
+            for (var i = 0; i < PrimitiveIndices.Length; i += 3)
             {
-                VertexPositions[i] = vertexBufferData[i].Position.ToNumerics();
-                VertexNormals[i] = vertexBufferData[i].Normal.ToNumerics();
-                VertexTextures[i] = vertexBufferData[i].TextureCoordinate.ToNumerics();
+                (PrimitiveIndices[i + 1], PrimitiveIndices[i + 2]) = (
+                    PrimitiveIndices[i + 2],
+                    PrimitiveIndices[i + 1]
+                );
             }
-        );
+            _indexBuffer.SetData(PrimitiveIndices);
+        }
 
-        BoundingBox = BoundingBoxSIMD.CreateFromPoints(VertexNormals);
+        // Load vertex data from GPU
+        var vertices = new VertexPositionNormalTexture[mainMesh.NumVertices];
+        _vertexBuffer = mainMesh.VertexBuffer;
+        _vertexBuffer.GetData(vertices);
+        ExtractVerticesData(vertices, out VertexPositions, out VertexTextures);
+        CalculateNormals(PrimitiveIndices, VertexPositions, out VertexNormals);
+
+        BoundingBox = BoundingBoxSIMD.CreateFromPoints(VertexPositions);
     }
 
-    // CPU stuff (Ray Tracing)
     public Matrix4x4 InvTransform { get; private set; }
-
-    // Some other Stuff
     public int FacesCount => PrimitiveIndices.Length / 3;
     public ISurfaceModel SurfaceModel { get; set; }
 
@@ -165,6 +150,74 @@ internal class MeshBody : IBody3D
                 0,
                 PrimitiveIndices.Length / 3
             );
+        }
+    }
+
+    private void ExtractVerticesData(
+        VertexPositionNormalTexture[] vertices,
+        out Vector3[] vertexPositions,
+        out Vector2[] vertexTextures
+    )
+    {
+        vertexPositions = new Vector3[vertices.Length];
+        vertexTextures = new Vector2[vertices.Length];
+
+        for (var i = 0; i < vertices.Length; i++)
+        {
+            vertexPositions[i] = vertices[i].Position.ToNumerics();
+            vertexTextures[i] = vertices[i].TextureCoordinate.ToNumerics();
+        }
+    }
+
+    private void CalculateNormals(
+        ushort[] primitiveIndices,
+        Vector3[] vertexPositions,
+        out Vector3[] vertexNormals
+    )
+    {
+        vertexNormals = new Vector3[vertexPositions.Length];
+
+        var positionToIndices = new Dictionary<Vector3, List<int>>();
+        for (var i = 0; i < vertexPositions.Length; i++)
+        {
+            if (!positionToIndices.TryGetValue(vertexPositions[i], out var list))
+            {
+                list = [];
+                positionToIndices[vertexPositions[i]] = list;
+            }
+            list.Add(i);
+        }
+
+        for (var i = 0; i < primitiveIndices.Length; i += 3)
+        {
+            var i0 = primitiveIndices[i];
+            var i1 = primitiveIndices[i + 1];
+            var i2 = primitiveIndices[i + 2];
+
+            var p0 = vertexPositions[i0];
+            var p1 = vertexPositions[i1];
+            var p2 = vertexPositions[i2];
+
+            var faceNormal = Vector3.Cross(p1 - p0, p2 - p0);
+
+            vertexNormals[i0] += faceNormal;
+            vertexNormals[i1] += faceNormal;
+            vertexNormals[i2] += faceNormal;
+        }
+
+        foreach (var entry in positionToIndices)
+        {
+            var sharedIndices = entry.Value;
+            var summedNormal = Vector3.Zero;
+
+            foreach (var idx in sharedIndices)
+                summedNormal += vertexNormals[idx];
+
+            summedNormal =
+                summedNormal.LengthSquared() > 0 ? Vector3.Normalize(summedNormal) : Vector3.UnitY;
+
+            foreach (var idx in sharedIndices)
+                vertexNormals[idx] = summedNormal;
         }
     }
 }

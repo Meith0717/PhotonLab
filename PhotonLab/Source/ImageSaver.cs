@@ -4,6 +4,7 @@
 
 using System;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.RayTracing.Data;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TinyEXR;

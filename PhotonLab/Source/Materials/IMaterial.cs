@@ -4,6 +4,7 @@
 
 using Microsoft.Xna.Framework;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.RayTracing.Data;
 using PhotonLab.Source.Scenes;
 
 namespace PhotonLab.Source.Materials

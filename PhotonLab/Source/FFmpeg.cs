@@ -5,7 +5,7 @@
 using System;
 using System.Diagnostics;
 
-namespace FlowLab.Core
+namespace PhotonLab.Source
 {
     internal class FFmpeg : IDisposable
     {

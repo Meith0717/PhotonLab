@@ -25,8 +25,8 @@ namespace PhotonLab.Source.Scenes
 
         public void Initialize()
         {
+            LightSources.Initialize(graphicsDevice, Meshes);
             Meshes.Initialize();
-            LightSources.Initialize();
         }
 
         public virtual void Update(double elapsedMilliseconds, InputHandler inputHandler)
@@ -34,7 +34,7 @@ namespace PhotonLab.Source.Scenes
             Camera3D.Update(elapsedMilliseconds, inputHandler);
         }
 
-        public void Draw(BasicEffect basicEffect, GraphicsDevice graphicsDevice)
+        public void Draw(BasicEffect basicEffect)
         {
             Meshes.Draw(Camera3D, basicEffect, graphicsDevice);
         }

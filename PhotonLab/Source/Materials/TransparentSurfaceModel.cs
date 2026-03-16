@@ -5,6 +5,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.RayTracing.Data;
 using PhotonLab.Source.Scenes;
 using Vector3 = System.Numerics.Vector3;
 

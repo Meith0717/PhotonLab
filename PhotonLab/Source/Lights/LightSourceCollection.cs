@@ -4,7 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Xna.Framework.Graphics;
+using PhotonLab.Source.Bodies;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.RayTracing.Data;
 using PhotonLab.Source.Scenes;
 
 namespace PhotonLab.Source.Lights;
@@ -14,6 +18,8 @@ internal class LightSourceCollection
     private readonly List<LightSource> _lightSources = [];
     private bool _isInitialized;
 
+    public int LightCount => _lightSources.Sum(ls => ls.LightCount);
+
     public void AddSource(LightSource lightSource)
     {
         if (_isInitialized)
@@ -21,11 +27,11 @@ internal class LightSourceCollection
         _lightSources.Add(lightSource);
     }
 
-    public void Initialize()
+    public void Initialize(GraphicsDevice graphicsDevice, MeshCollection meshCollection)
     {
         _isInitialized = true;
         foreach (var lightSource in _lightSources)
-            lightSource.Initialize();
+            lightSource.Initialize(graphicsDevice, meshCollection);
     }
 
     public Radiance Forall(

@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using FlowLab.Core;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -13,6 +13,7 @@ using MonoKit.Core.Diagnostics;
 using MonoKit.Core.IO;
 using MonoKit.Graphics;
 using MonoKit.Input;
+using PhotonLab.Source;
 using PhotonLab.Source.Input;
 using PhotonLab.Source.RayTracing;
 using PhotonLab.Source.Scenes;
@@ -87,6 +88,7 @@ namespace PhotonLab
                 { (Keys.F3, InputEventType.Released), (byte)ActionType.RayTraceSequence },
                 { (Keys.Right, InputEventType.Released), (byte)ActionType.NextCam },
                 { (Keys.Down, InputEventType.Released), (byte)ActionType.ResetCam },
+                { (Keys.E, InputEventType.Released), (byte)ActionType.NextScene },
             };
             _inputHandler.RegisterDevice(new KeyboardListener(keyBindings));
 
@@ -107,9 +109,11 @@ namespace PhotonLab
             _frameCounter = new FrameCounter(ContentProvider.Get<SpriteFont>("default_font"));
             _sceneManager = new SceneManager(GraphicsDevice);
             _sceneManager.AddScene("cornellBox", new CornellBoxScene(GraphicsDevice));
-            _sceneManager.AddScene("plane", new PlaneScene(GraphicsDevice));
+            _sceneManager.AddScene("transparent", new TransparentTest(GraphicsDevice));
             _sceneManager.AddScene("cornellMirror", new CornellMirrorScene(GraphicsDevice));
-            _sceneManager.Set("cornellBox"); // <--------------------------------------------------------------------------
+            _sceneManager.AddScene("phongTest", new PhongTestPlane(GraphicsDevice));
+            _sceneManager.AddScene("lightTest", new SimpleCornellBoxScene(GraphicsDevice));
+            _sceneManager.AddScene("plane", new PlaneScene(GraphicsDevice));
 
             ConsoleManager.Show(
                 "=== PhotonLap RayTracer ===\n"
@@ -124,12 +128,18 @@ namespace PhotonLab
         {
             ContentProvider.Container<SpriteFont>().LoadContent(Content, "Fonts");
             ContentProvider.Container<Texture2D>().LoadContent(Content, "Textures");
+            ContentProvider
+                .Container<Model>()
+                .LoadContent(Content, "Models", null, SearchOption.TopDirectoryOnly);
         }
 
         protected override void Update(GameTime gameTime)
         {
             var elapsedMilliseconds = gameTime.ElapsedGameTime.TotalMilliseconds;
             _inputHandler.Update(elapsedMilliseconds);
+
+            if (_inputHandler.HasAction((byte)ActionType.NextScene))
+                _sceneManager.NextScene();
 
             if (true)
             {
@@ -156,9 +166,9 @@ namespace PhotonLab
             var elapsedSeconds = gameTime.ElapsedGameTime.TotalSeconds;
             _frameCounter.Update(elapsedSeconds, elapsedMilliseconds);
 
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.DarkGray);
 
-            _sceneManager.Draw(GraphicsDevice);
+            _sceneManager.Draw();
 
             _spriteBatch.Begin();
             _frameCounter.Draw(_spriteBatch, GraphicsDevice.Viewport, 1);
@@ -172,7 +182,7 @@ namespace PhotonLab
             if (_renderSingleImage)
             {
                 Console.WriteLine($"Rendering single image...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 1);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 1f);
                 _rayTracer.PerformTrace();
                 _rayTracer.RenderAndSaveResult(_pathManager, false);
                 _rayTracer.End();
@@ -195,7 +205,7 @@ namespace PhotonLab
 
                 _ffmpeg?.Dispose();
                 Console.WriteLine($"Starting sequence: {_sequenceAmount} images...");
-                _rayTracer.Begin(_sceneManager.CurrentScene, 2f);
+                _rayTracer.Begin(_sceneManager.CurrentScene, 1f);
 
                 var filePath = _pathManager.GetFilePath(
                     Paths.Videos,

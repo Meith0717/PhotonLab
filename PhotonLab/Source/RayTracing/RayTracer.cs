@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using MonoGame.Extended;
 using MonoKit.Core.Diagnostics;
 using MonoKit.Core.IO;
 using MonoKit.Graphics.Camera;
+using PhotonLab.Source.RayTracing.Data;
 using PhotonLab.Source.Scenes;
 
 namespace PhotonLab.Source.RayTracing
@@ -43,9 +45,13 @@ namespace PhotonLab.Source.RayTracing
             _imageRenderer.ApplyScale(TargetRes);
 
             var totalRays = width * height;
-            Console.WriteLine($"\n=== RayTracer START ===");
-            Console.WriteLine($"Resolution: {width}x{height}");
-            Console.WriteLine($"Total Rays: {totalRays:N0}|Scene Faces: {scene.Meshes.FaceCount}");
+            var text = $"""
+                === RayTracer START ===
+                Resolution: {width}x{height}
+                Faces: {_scene.Meshes.FaceCount}
+                Lights: {_scene.LightSources.LightCount}
+                """;
+            Console.WriteLine(text);
 
             _totalWatch.Restart();
             CreateCameraRaysParallel(scene.Camera3D);
@@ -129,6 +135,14 @@ namespace PhotonLab.Source.RayTracing
                 TargetRes.Width,
                 TargetRes.Height
             );
+
+            var text = $"""
+                Render Time: {_totalWatch.Elapsed.TotalSeconds:0.00}s
+                Faces: {_scene.Meshes.FaceCount}
+                Lights: {_scene.LightSources.LightCount}
+                """;
+
+            File.WriteAllText(filePath + "_info.txt", text);
         }
 
         public byte[] GetColorData()

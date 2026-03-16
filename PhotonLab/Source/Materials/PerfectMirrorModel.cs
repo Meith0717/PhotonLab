@@ -3,12 +3,13 @@
 // All rights reserved.
 
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.RayTracing.Data;
 using PhotonLab.Source.Scenes;
 using Vector3 = System.Numerics.Vector3;
 
 namespace PhotonLab.Source.Materials
 {
-    internal class PerfectMirrorModel(NormalMode normalMode) : ISurfaceModel
+    internal class PerfectMirrorModel(NormalMode normalMode, float reflectance) : ISurfaceModel
     {
         public NormalMode NormalMode { get; } = normalMode;
 
@@ -23,7 +24,9 @@ namespace PhotonLab.Source.Materials
 
             var reflectDir = Vector3.Normalize(Vector3.Reflect(ray.Direction, normal));
             var reflectedRay = new RaySimd(surfaceData.Position, reflectDir);
-            var reflectedRadiance = RayTracer.Trace(scene, reflectedRay, depth + 1);
+            var reflectedRadiance = RayTracer
+                .Trace(scene, reflectedRay, depth + 1)
+                .Attenuate(reflectance);
 
             return reflectedRadiance;
         }

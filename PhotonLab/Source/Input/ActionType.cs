@@ -13,5 +13,6 @@ namespace PhotonLab.Source.Input
         PrevCam,
         LookAtOg,
         ResetCam,
+        NextScene,
     }
 }

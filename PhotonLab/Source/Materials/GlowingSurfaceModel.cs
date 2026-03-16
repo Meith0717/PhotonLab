@@ -4,14 +4,17 @@
 
 using Microsoft.Xna.Framework;
 using PhotonLab.Source.RayTracing;
+using PhotonLab.Source.RayTracing.Data;
 using PhotonLab.Source.Scenes;
 
 namespace PhotonLab.Source.Materials;
 
-internal class GlowingSurfaceModel : ISurfaceModel, IColoredSurface
+internal class GlowingSurfaceModel(NormalMode normalMode, Color color, float intensity)
+    : ISurfaceModel,
+        IColoredSurface
 {
-    public NormalMode NormalMode { get; set; }
-    public Color Color { get; set; }
+    public NormalMode NormalMode { get; } = normalMode;
+    public Color Color { get; } = color;
 
     public Radiance Shade(
         Scene scene,
@@ -20,6 +23,6 @@ internal class GlowingSurfaceModel : ISurfaceModel, IColoredSurface
         in SurfaceIntersectionData surfaceData
     )
     {
-        return new Radiance(Color);
+        return new Radiance(Color).Attenuate(intensity);
     }
 }

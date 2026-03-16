@@ -6,6 +6,7 @@ using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using MonoGame.Extended;
+using PhotonLab.Source.RayTracing.Data;
 
 namespace PhotonLab.Source.RayTracing
 {
