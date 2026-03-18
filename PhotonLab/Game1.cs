@@ -78,6 +78,14 @@ namespace PhotonLab
             {
                 _windowActive = false;
             };
+
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                e.Cancel = true;
+
+                _sequenceCount = _sequenceAmount;
+                Exit();
+            };
         }
 
         protected override void Initialize()
@@ -89,6 +97,7 @@ namespace PhotonLab
                 { (Keys.Right, InputEventType.Released), (byte)ActionType.NextCam },
                 { (Keys.Down, InputEventType.Released), (byte)ActionType.ResetCam },
                 { (Keys.E, InputEventType.Released), (byte)ActionType.NextScene },
+                { (Keys.Escape, InputEventType.Held), (byte)ActionType.Break },
             };
             _inputHandler.RegisterDevice(new KeyboardListener(keyBindings));
 
@@ -141,6 +150,9 @@ namespace PhotonLab
             if (_inputHandler.HasAction((byte)ActionType.NextScene))
                 _sceneManager.NextScene();
 
+            if (_inputHandler.HasAction((byte)ActionType.Break))
+                _sequenceCount = _sequenceAmount;
+
             if (true)
             {
                 _sceneManager.Update(elapsedMilliseconds, _inputHandler);
@@ -192,7 +204,7 @@ namespace PhotonLab
 
         private bool _renderMultipleImageActive;
         private int _sequenceCount;
-        private readonly int _sequenceAmount = 240;
+        private readonly int _sequenceAmount = 600;
         private FFmpeg _ffmpeg;
 
         private void RenderSequence()
@@ -214,7 +226,7 @@ namespace PhotonLab
                 _ffmpeg = new FFmpeg(
                     _rayTracer.TargetRes.Width,
                     _rayTracer.TargetRes.Height,
-                    21,
+                    30,
                     filePath
                 );
             }

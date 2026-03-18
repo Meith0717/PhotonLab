@@ -38,8 +38,7 @@ internal class MeshBody : IBody3D
     {
         PrimitiveIndices = primitiveIndices;
 
-        ExtractVerticesData(vertices, out VertexPositions, out VertexTextures);
-        CalculateNormals(PrimitiveIndices, VertexPositions, out VertexNormals);
+        ExtractVerticesData(vertices, out VertexPositions, out VertexNormals, out VertexTextures);
 
         BoundingBox = BoundingBoxSIMD.CreateFromPoints(VertexPositions);
 
@@ -86,7 +85,7 @@ internal class MeshBody : IBody3D
         var vertices = new VertexPositionNormalTexture[mainMesh.NumVertices];
         _vertexBuffer = mainMesh.VertexBuffer;
         _vertexBuffer.GetData(vertices);
-        ExtractVerticesData(vertices, out VertexPositions, out VertexTextures);
+        ExtractVerticesData(vertices, out VertexPositions, out _, out VertexTextures);
         CalculateNormals(PrimitiveIndices, VertexPositions, out VertexNormals);
 
         BoundingBox = BoundingBoxSIMD.CreateFromPoints(VertexPositions);
@@ -156,15 +155,18 @@ internal class MeshBody : IBody3D
     private void ExtractVerticesData(
         VertexPositionNormalTexture[] vertices,
         out Vector3[] vertexPositions,
+        out Vector3[] vertexNormals,
         out Vector2[] vertexTextures
     )
     {
         vertexPositions = new Vector3[vertices.Length];
         vertexTextures = new Vector2[vertices.Length];
+        vertexNormals = new Vector3[vertices.Length];
 
         for (var i = 0; i < vertices.Length; i++)
         {
             vertexPositions[i] = vertices[i].Position.ToNumerics();
+            vertexNormals[i] = vertices[i].Normal.ToNumerics();
             vertexTextures[i] = vertices[i].TextureCoordinate.ToNumerics();
         }
     }

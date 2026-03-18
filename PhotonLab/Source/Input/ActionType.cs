@@ -10,8 +10,7 @@ namespace PhotonLab.Source.Input
         RayTracImage,
         RayTraceSequence,
         NextCam,
-        PrevCam,
-        LookAtOg,
+        Break,
         ResetCam,
         NextScene,
     }

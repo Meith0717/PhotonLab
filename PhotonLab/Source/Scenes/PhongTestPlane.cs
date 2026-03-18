@@ -14,9 +14,9 @@ namespace PhotonLab.Source.Scenes;
 internal class PhongTestPlane : Scene
 {
     public PhongTestPlane(GraphicsDevice graphicsDevice)
-        : base(graphicsDevice, Color.Gray, .5f)
+        : base(graphicsDevice, Color.Gray, .001f)
     {
-        Camera3D.AddBehaviour(new RotateCamera(.0f, new Vector3(0, 1.5f, 0), 8, 7));
+        Camera3D.AddBehaviour(new RotateCamera(.0f, new Vector3(0, 3f, 0), 8, 7));
         Camera3D.AddBehaviour(new MoveByMouse(1));
         Camera3D.AddBehaviour(new ZoomByMouse(1));
 
@@ -25,7 +25,7 @@ internal class PhongTestPlane : Scene
                 new Vector3(0, 25, 0),
                 new Vector3(0, -1, 0),
                 40,
-                80,
+                50,
                 Color.LightYellow,
                 1
             )
