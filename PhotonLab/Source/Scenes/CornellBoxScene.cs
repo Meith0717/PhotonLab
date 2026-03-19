@@ -32,12 +32,12 @@ namespace PhotonLab.Source.Scenes
         public CornellBoxScene(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, Color.LightYellow, .0f)
         {
-            Camera3D.AddBehaviour(new RotateCamera(0.015f, LookAtPos, 35, 12.5f));
+            //Camera3D.AddBehaviour(new RotateCamera(0.015f, LookAtPos, 35, 12.5f));
             Camera3D.AddBehaviour(new MoveByMouse());
 
             CornellBox.Build(graphicsDevice, Meshes, 25, 1);
 
-            var segments = 8;
+            var segments = 16;
 
             LightSources.AddSource(
                 new HemisphereLight(
